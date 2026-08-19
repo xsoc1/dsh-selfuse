@@ -52,3 +52,6 @@ git commit -m "chore: bump deepseek-harness fork"
 - `.gitignore` 不再全局忽略 `lib/`，因为 dsh-memory-panel 等插件的源码/运行产物就在 lib 中；插件包需要直接可 link。
 - 更新 `manifest.json` 对应组件状态为 `copied-to-repo`。
 - 将技能集合复制到 `skills/`：mattpocock-skills、math-research-dsh（排除 .git），并更新 manifest 类型/路径/状态。
+- 尝试在仓库内独立 `pnpm install` 验证 profile；因 npm registry 网络错误（error 23）未完整跑完，已终止。
+  - pnpm 已把 `config/profiles/web/pnpm-lock.yaml` 更新为相对 link，并补上 dsh-skill-router / dsh-memory-panel / dsh-wsl-workspace 依赖项；保留该 lockfile 更新。
+  - 相对 link 与插件 main 入口已用脚本验证全部存在；完整安装待网络恢复后重试。
