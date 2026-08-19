@@ -228,7 +228,8 @@ if (Test-Path $profileSrc) {
                 $repoRootFwd = $RepoRoot -replace '\\','/'
                 $content = Get-Content -Raw $template
                 $content = $content.Replace('__REPO_ROOT__', $repoRootFwd)
-                Set-Content -LiteralPath $pkgDst -Value $content -Encoding UTF8
+                $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+                [System.IO.File]::WriteAllText($pkgDst, $content, $utf8NoBom)
                 Write-Host "    generated package.json (repo-root links)"
             }
         }
