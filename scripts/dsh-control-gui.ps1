@@ -1,4 +1,4 @@
-# dsh 图形控制台 (dsh-control-gui.ps1)
+﻿# dsh 图形控制台 (dsh-control-gui.ps1)
 # WinForms 简单界面: 实时状态 + 启动/重启/停止 + Web UI/日志/Ollama/WSL。
 # 非管理员运行时自动提权重启 (会弹 UAC)。附加 -SmokeTest 参数用于自检 (3 秒后自动关闭)。
 

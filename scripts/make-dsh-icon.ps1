@@ -1,4 +1,4 @@
-# 生成 dsh 品牌图标: favicon.svg -> dsh-icon.svg (深蓝圆角底+白鲸) -> PNG -> ICO
+﻿# 生成 dsh 品牌图标: favicon.svg -> dsh-icon.svg (深蓝圆角底+白鲸) -> PNG -> ICO
 $ErrorActionPreference = 'Stop'
 
 $favicon = 'C:\Users\HuangZY\.dsh\profiles\node_modules\@deepseek-ai\dsh-web-frontend\dist\favicon.svg'

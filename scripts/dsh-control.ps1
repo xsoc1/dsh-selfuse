@@ -1,4 +1,4 @@
-# dsh 一键控制台 (dsh-control.ps1)
+﻿# dsh 一键控制台 (dsh-control.ps1)
 # 用法:
 #   powershell -NoProfile -ExecutionPolicy Bypass -File dsh-control.ps1           交互菜单
 #   powershell -NoProfile -ExecutionPolicy Bypass -File dsh-control.ps1 start     启动 dsh

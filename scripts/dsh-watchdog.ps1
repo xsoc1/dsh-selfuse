@@ -1,4 +1,4 @@
-$ErrorActionPreference = "Continue"
+﻿$ErrorActionPreference = "Continue"
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 $HarnessRoot = Join-Path $RepoRoot "vendor\deepseek-harness"
 if (-not (Test-Path (Join-Path $HarnessRoot "package.json"))) {
