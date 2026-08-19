@@ -216,7 +216,19 @@ $profileDst = Join-Path $DshHome "profiles/web"
 if (Test-Path $profileSrc) {
     Invoke-Step "Sync web profile via Copy -> $profileDst" {
         New-Item -ItemType Directory -Force -Path $profileDst | Out-Null
-        # Copy mode intentionally does NOT overwrite package.json/pnpm-lock.yaml:
+        # On a fresh profile (no package.json), generate one with repo-root links.
+        $pkgDst = Join-Path $profileDst "package.json"
+        if (-not (Test-Path $pkgDst)) {
+            $template = Join-Path $profileSrc "package.json.template"
+            if (Test-Path $template) {
+                $repoRootFwd = $RepoRoot -replace '\\','/'
+                $content = Get-Content -Raw $template
+                $content = $content.Replace('__REPO_ROOT__', $repoRootFwd)
+                Set-Content -LiteralPath $pkgDst -Value $content -Encoding UTF8
+                Write-Host "    generated package.json (repo-root links)"
+            }
+        }
+        # Copy mode intentionally does NOT overwrite an existing package.json/pnpm-lock.yaml:
         # those encode link paths and would break an existing profile's node_modules.
         foreach ($file in @('cordis.patch.yml', 'pnpm-workspace.yaml')) {
             $srcFile = Join-Path $profileSrc $file
@@ -231,7 +243,7 @@ if (Test-Path $profileSrc) {
                 Write-Host "    copy: $file"
             }
         }
-        Write-Host "    note: package.json/pnpm-lock.yaml not overwritten (safe copy); node_modules kept in $profileDst"
+        Write-Host "    note: existing package.json/pnpm-lock.yaml not overwritten; new profile gets generated package.json; node_modules kept in $profileDst"
     }
 } else {
     Write-Warning "config/profiles/web not found; skip"
