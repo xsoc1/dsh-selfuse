@@ -318,6 +318,9 @@ if (-not $NoSystem) {
         if (Test-Path "F:\tools\ollama\models") { $ollamaModels = "F:\tools\ollama\models" }
         $hfHome = Join-Path $RepoRoot "services\image-gen\hf"
         if (Test-Path "F:\tools\image-gen\hf") { $hfHome = "F:\tools\image-gen\hf" }
+        foreach ($dir in @($ollamaModels, $hfHome)) {
+            New-Item -ItemType Directory -Force -Path $dir | Out-Null
+        }
         Set-UserEnvironmentVariable "DSH_ROOT" $dshRoot
         Set-UserEnvironmentVariable "OLLAMA_MODELS" $ollamaModels
         Set-UserEnvironmentVariable "HF_HOME" $hfHome
