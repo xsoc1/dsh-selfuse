@@ -126,3 +126,15 @@ git commit -m "chore: bump deepseek-harness fork"
 - 附带：`settings.yaml` 增加 `dsh-better-sidebar.bottomPanelAutoTerminal: false`，减少 node-pty `AttachConsole failed` 错误。
 - 结果：node CPU 从 ~5s/8s 降到 ~1.9s/8s，web 200；runaway 会话已 idle。
 - `install.ps1` 新增 `-ProfileMode Copy|Junction`，默认 `Copy`（只同步 `cordis.patch.yml` / `pnpm-workspace.yaml` / `settings.yaml`，不覆盖 package.json/lock），避免再次因 junction 相对链接问题破坏线上。
+
+### 2026-08-19 执行 Phase 4 系统级动作（install.ps1 -Force -SkipSubmodules -ProfileMode Copy）
+
+- 备份：`C:/Users/HuangZY/Desktop/dsh-backups/dsh-20260819-235620355.tar.gz`
+- 执行结果：
+  - settings.yaml 同步（含 `bottomPanelAutoTerminal: false`）。
+  - agent-presets router-standard/router-spec 改为 junction 指向 `dsh-local/config/agent-presets/*`（原目录已备份）。
+  - web profile Copy 模式：仅同步 `cordis.patch.yml` / `pnpm-workspace.yaml`，未覆盖 package.json/lock。
+  - 环境变量：`DSH_ROOT` 曾被 `-Force` 误设为 `F:\tools\dsh-local\vendor\deepseek-harness`（不存在），已立即恢复为 `F:\tools\deepseek-harness`；`OLLAMA_MODELS`/`HF_HOME` 保持本机实际路径。
+  - 计划任务已指向 `F:\tools\dsh-local\scripts\dsh-watchdog.ps1` / `ensure-dsh-watchdog.ps1`；手动执行 ensure 退出 0。
+  - Ollama/image-gen 已在运行，跳过重复启动。
+- 加固：`install.ps1` 增加服务重复启动检测；`DSH_ROOT` 若 vendor 子模块不存在则回退到 `F:\tools\deepseek-harness`。
