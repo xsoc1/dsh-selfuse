@@ -5,7 +5,7 @@
 把本机 dsh 依赖的 **源码 fork、自研插件、第三方补丁插件、技能、图形控制台脚本、
 本地小模型服务、profile 配置** 统一收进一个可维护、可重装、可给 agent 协作的代码库。
 
-> 当前状态：**GitHub 仓库已建、插件/技能已入库、install.ps1 已实现；本机采用 Copy 模式（不 junction profile）**。
+> 当前状态：**GitHub 仓库已建、插件/技能已入库、install.ps1 已实现；全面弃用 junction，一律真实复制**。
 > 详细计划见 [`docs/PLAN.md`](docs/PLAN.md)，最近维护见 [`docs/maintenance.md`](docs/maintenance.md)。
 
 ## 设计目标

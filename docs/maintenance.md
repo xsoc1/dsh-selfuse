@@ -164,3 +164,12 @@ git commit -m "chore: bump deepseek-harness fork"
   - `install.ps1` 的 agent-presets 同步改为真实复制：遇到已有 Junction 先 `[IO.Directory]::Delete()` 删除链接再 Copy-Item，不再 `New-Item -ItemType Junction`，防止下次 install 复发。
 - 验证：`dsh-control.ps1 restart` 成功，HTTP 200；重启后 `.agent-presets` 自动生成 `wsl-router-standard`/`wsl-router-spec` 真实目录且含 `agent.cordis.yml`/`preset.yml`；`dsh-web.log`/`dsh-watchdog.log` 无 `WSL preset-variant generation failed`；`install.ps1` Parser 0 错误。
 - 经验：agent-presets 不能使用 Junction/符号链接，必须真实目录；`Dirent.isDirectory()` 对 Windows Junction 为 false。
+
+### 2026-08-20 全面弃用 Junction：skills 改为真实目录
+
+- 用户要求全面弃用 junction。
+- 已将 `~/.dsh/skills` 下 39 个技能 junction 全部转换为真实目录（复制目标内容 → 删除 junction → 移入真实目录），验证 remaining links=0、total skills=39。
+- `install.ps1`：
+  - `-ProfileMode` 仅允许 `Copy`，移除 Junction 分支。
+  - 技能同步从 `New-Item -ItemType Junction` 改为 `Copy-Item -Recurse`，遇到旧链接先删链接再复制。
+- 文档同步：`AGENTS.md`、`README.md`、`PLAN.md`、`troubleshooting.md` 均注明全面弃用 junction。

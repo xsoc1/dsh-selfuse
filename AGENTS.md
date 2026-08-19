@@ -19,9 +19,12 @@
 
 ## 关键约束
 
-- agent-presets 必须复制为**真实目录**，不能使用 Junction/符号链接：dsh 扫描时
-  `Dirent.isDirectory()` 对 Windows Junction 返回 false，preset 会从 roster 消失，
-  WSL 变体也不再生成。`install.ps1` 的 agent-presets 同步已按真实复制实现。
+- **全面弃用 Junction/符号链接**：agent-presets、skills、web profile 一律使用真实复制。
+  - agent-presets：dsh 扫描时 `Dirent.isDirectory()` 对 Windows Junction 返回 false，
+    preset 会从 roster 消失，WSL 变体也不再生成。
+  - skills：同样改为真实目录，避免 watcher/junction 解析问题。
+  - web profile：只复制 `cordis.patch.yml` / `pnpm-workspace.yaml`，不 junction。
+- `install.ps1` 已按真实复制实现；`ProfileMode` 仅保留 `Copy`。
 
 ## 组件分类速查
 

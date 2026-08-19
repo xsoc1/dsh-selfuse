@@ -25,9 +25,8 @@
     Do not run `git submodule update --init --recursive`.
 
 .PARAMETER ProfileMode
-    How to apply the web profile: Copy (default, safe: copies config files into
-    the existing profile and keeps its node_modules) or Junction (replaces the
-    profile directory with a junction to the repo).
+    How to apply the web profile. Junction is deprecated and no longer supported;
+    this parameter exists only for compatibility and must be 'Copy'.
 
 .EXAMPLE
     .\install.ps1 -DryRun
@@ -40,7 +39,7 @@ param(
     [switch]$Force,
     [switch]$NoSystem,
     [switch]$SkipSubmodules,
-    [ValidateSet('Copy', 'Junction')]
+    [ValidateSet('Copy')]
     [string]$ProfileMode = 'Copy'
 )
 
@@ -193,48 +192,24 @@ if (Test-Path $presetSrc) {
 $profileSrc = Join-Path $RepoRoot "config/profiles/web"
 $profileDst = Join-Path $DshHome "profiles/web"
 if (Test-Path $profileSrc) {
-    if ($ProfileMode -eq 'Junction') {
-        Invoke-Step "Sync web profile via Junction -> $profileDst" {
-            New-Item -ItemType Directory -Force -Path (Split-Path -Parent $profileDst) | Out-Null
-            if (Test-Path $profileDst) {
-                $item = Get-Item $profileDst -Force
-                if (-not $item.LinkType) {
-                    if ($Force) {
-                        $backup = "$profileDst.bak-$(Get-Date -Format yyyyMMdd-HHmmss)"
-                        Rename-Item $profileDst $backup
-                        Write-Host "    backup: $backup"
-                    } else {
-                        Write-Warning "    $profileDst exists and is not a junction; use -Force to replace"
-                        return
-                    }
+    Invoke-Step "Sync web profile via Copy -> $profileDst" {
+        New-Item -ItemType Directory -Force -Path $profileDst | Out-Null
+        # Copy mode intentionally does NOT overwrite package.json/pnpm-lock.yaml:
+        # those encode link paths and would break an existing profile's node_modules.
+        foreach ($file in @('cordis.patch.yml', 'pnpm-workspace.yaml')) {
+            $srcFile = Join-Path $profileSrc $file
+            $dstFile = Join-Path $profileDst $file
+            if (Test-Path $srcFile) {
+                if (Test-Path $dstFile) {
+                    $backup = "$dstFile.bak-$(Get-Date -Format yyyyMMdd-HHmmss)"
+                    Copy-Item $dstFile $backup -Force
+                    Write-Host "    backup: $backup"
                 }
+                Copy-Item $srcFile $dstFile -Force
+                Write-Host "    copy: $file"
             }
-            if (-not (Test-Path $profileDst)) {
-                New-Item -ItemType Junction -Path $profileDst -Target $profileSrc | Out-Null
-                Write-Host "    junction: $profileDst -> $profileSrc"
-            }
-            Write-Host "    TODO: run 'pnpm install' in $profileDst"
         }
-    } else {
-        Invoke-Step "Sync web profile via Copy -> $profileDst" {
-            New-Item -ItemType Directory -Force -Path $profileDst | Out-Null
-            # Copy mode intentionally does NOT overwrite package.json/pnpm-lock.yaml:
-            # those encode link paths and would break an existing profile's node_modules.
-            foreach ($file in @('cordis.patch.yml', 'pnpm-workspace.yaml')) {
-                $srcFile = Join-Path $profileSrc $file
-                $dstFile = Join-Path $profileDst $file
-                if (Test-Path $srcFile) {
-                    if (Test-Path $dstFile) {
-                        $backup = "$dstFile.bak-$(Get-Date -Format yyyyMMdd-HHmmss)"
-                        Copy-Item $dstFile $backup -Force
-                        Write-Host "    backup: $backup"
-                    }
-                    Copy-Item $srcFile $dstFile -Force
-                    Write-Host "    copy: $file"
-                }
-            }
-            Write-Host "    note: package.json/pnpm-lock.yaml not overwritten (safe copy); node_modules kept in $profileDst"
-        }
+        Write-Host "    note: package.json/pnpm-lock.yaml not overwritten (safe copy); node_modules kept in $profileDst"
     }
 } else {
     Write-Warning "config/profiles/web not found; skip"
@@ -248,7 +223,7 @@ $skillSources = @(
 )
 foreach ($group in $skillSources) {
     if (Test-Path $group.Source) {
-        Invoke-Step "Link skills from $($group.Name)" {
+        Invoke-Step "Copy skills from $($group.Name)" {
             New-Item -ItemType Directory -Force -Path $skillsRoot | Out-Null
             Get-ChildItem $group.Source -Directory -Recurse | Where-Object { Test-Path (Join-Path $_.FullName "SKILL.md") } | ForEach-Object {
                 $skill = $_.Name
@@ -256,19 +231,26 @@ foreach ($group in $skillSources) {
                 $dst = Join-Path $skillsRoot $skill
                 if (Test-Path $dst) {
                     $item = Get-Item $dst -Force
-                    if ($item.LinkType) { return }
-                    if ($Force) {
+                    if ($item.LinkType) {
+                        # Remove only the junction/symlink; the target tree stays.
+                        if ($item.PSIsContainer) {
+                            [System.IO.Directory]::Delete($dst)
+                        } else {
+                            Remove-Item $dst -Force
+                        }
+                        Write-Host "    removed link: $dst"
+                    } elseif ($Force) {
                         $backup = "$dst.bak-$(Get-Date -Format yyyyMMdd-HHmmss)"
                         Rename-Item $dst $backup
                         Write-Host "    backup: $backup"
                     } else {
-                        Write-Warning "    $dst exists and is not a junction; use -Force to replace"
+                        Write-Warning "    $dst exists; use -Force to replace"
                         return
                     }
                 }
                 if (-not (Test-Path $dst)) {
-                    New-Item -ItemType Junction -Path $dst -Target $src | Out-Null
-                    Write-Host "    junction: $dst -> $src"
+                    Copy-Item -Recurse $src $dst
+                    Write-Host "    copy: $dst"
                 }
             }
         }

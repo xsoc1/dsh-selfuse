@@ -18,7 +18,7 @@
 - 桌面封装：`Deepseek-Harness-EAC/`
 - 自研插件：`dsh-image-bridge/`、`dsh-image-vision/`、`dsh-memory-panel/`、`dsh-skill-router/`、`dsh-routing-suite/`
 - 第三方补丁插件：`community-plugins/`（backup、better-sidebar、git-workflow、undo-fixed、wsl-workspace 等）
-- 技能：`mattpocock-skills/` + `math-research-dsh/`（已 junction 到 `~/.dsh/skills`）
+- 技能：`mattpocock-skills/` + `math-research-dsh/`（真实复制到 `~/.dsh/skills`）
 - 图形控制台与看门狗：`deepseek-harness/` 根下的 PowerShell 脚本
 - 本地小模型服务：`ollama/`（qwen3-vl:4b）、`image-gen/`（SDXL-Turbo）
 - 用户配置：`~/.dsh/`（settings.yaml、profiles/web、agent-presets、memory、skills 等）
@@ -37,7 +37,7 @@
    - fork `deepseek-ai/deepseek-harness` → `xsoc1/deepseek-harness`（源码仓）
    - 新建 `xsoc1/dsh-local`（管理仓，聚合个人内容）
 4. 提供 `install.ps1`：
-   - 当前机器：重建/修复 profile、技能 junction、脚本、服务、计划任务。
+   - 当前机器：重建/修复 profile、技能复制、脚本、服务、计划任务。
    - 新机器：安装依赖（Node/pnpm/Ollama/Python/服务）并部署完整环境。
 
 ## 3. 总体架构（双仓）
@@ -177,14 +177,12 @@ dsh-local/
    - 校验 `vendor/deepseek-harness` 的本地分支存在；缺失则提示。
 3. **配置 `~/.dsh`**
    - 把 `config/settings.yaml` 写入 `~/.dsh/settings.yaml`（保留机器差异 overlay，如 Tailscale URL、端口）。
-   - 把 `config/agent-presets/*` 同步到 `~/.dsh/.agent-presets/`（junction 或复制）。
-   - **web profile 两种策略（默认 Copy，Junction 仅限新机器/验证后）**：
-     - Copy：只同步 `cordis.patch.yml` / `pnpm-workspace.yaml` / `settings.yaml`，不覆盖 package.json/lock，最安全。
-     - Junction：把 `~/.dsh/profiles/web` 指向 `$RepoRoot\config\profiles\web`；**注意**：本地插件 link 必须用绝对路径，否则通过 junction 解析会失败（本机已踩坑回滚）。
+   - 把 `config/agent-presets/*` 同步到 `~/.dsh/.agent-presets/`（真实复制，禁止 junction）。
+   - **web profile 只用 Copy**：只同步 `cordis.patch.yml` / `pnpm-workspace.yaml` / `settings.yaml`，不覆盖 package.json/lock，不 junction。
    - 在 profile 内执行 `pnpm install`（依赖为绝对 `link:`，本机已确认；新机器需按实际路径生成）。
-4. **技能链接**
-   - 对每个技能源（mattpocock / math-research），在 `~/.dsh/skills/<name>` 建 junction。
-   - 若目标已存在非 junction，先备份再用 `-Force` 替换。
+4. **技能复制**
+   - 对每个技能源（mattpocock / math-research），把技能目录**真实复制**到 `~/.dsh/skills/<name>`，不用 junction。
+   - 若目标已存在链接或旧目录，先移除/备份再用 `-Force` 替换。
 5. **环境变量**
    - `DSH_ROOT` → `$RepoRoot\vendor\deepseek-harness`
    - `OLLAMA_MODELS` → `$RepoRoot\services\ollama\models` 或本机模型缓存目录
@@ -199,8 +197,8 @@ dsh-local/
 
 ### 6.3 可移植性
 
-- `config/profiles/web/package.json` 使用 `link:../../../plugins/...` 相对路径，仓库克隆到任何位置都可安装。
-- 绝对路径仅出现在运行期由安装器生成的 junction/环境变量中。
+- `config/profiles/web/package.json` 使用绝对 `link:F:/tools/dsh-local/...`（本机已验证）；新机器需按实际路径生成。
+- 不使用 junction；安装器通过真实复制和绝对路径保证可解析。
 - 机器相关配置（Tailscale 域名、端口、API key 环境变量名）集中在 `config/settings.yaml` 或单独的 `local.overrides.yaml`。
 
 ## 7. 实施步骤（迁移路线）
@@ -231,8 +229,8 @@ dsh-local/
 
 ### Phase 3：安装器完善
 
-- [x] 实现 `install.ps1` 的 profile junction/复制逻辑（隔离演练通过）。
-- [x] 实现技能 junction（递归查找 SKILL.md，39 个成功）。
+- [x] 实现 `install.ps1` 的 profile 复制逻辑（Copy 模式，禁用 junction）。
+- [x] 实现技能复制（递归查找 SKILL.md，真实复制，39 个成功）。
 - [x] 实现环境变量、计划任务、服务启动（已实现，DryRun 验证；未在真实机器执行）。
 - [ ] 实现 `-Bootstrap` 新机器依赖安装（当前仅打印安装命令，真正执行为 TODO）。
 - [x] 加 `-DryRun` 与健康检查（均已实现）。
@@ -242,7 +240,7 @@ dsh-local/
 
 - [ ] 确认安装器在当前机器 dry-run 通过。
 - [ ] 备份当前 `~/.dsh` 与 `F:\tools` 关键目录。
-- [ ] 执行安装器，把线上 profile 切到 repo（junction/复制）。
+- [ ] 执行安装器，把线上 profile 同步到 repo（Copy 模式）。
 - [ ] 重启 dsh，验证插件/技能/服务全部正常。
 - [ ] 更新 `F:\tools\AGENTS.md` 维护记录，指向 dsh-local。
 
@@ -250,12 +248,12 @@ dsh-local/
 
 | 风险 | 缓解 |
 |---|---|
-| profile 目录迁移破坏当前运行环境 | 先备份；用 junction 而非直接删除；可随时回退 |
+| profile 目录迁移破坏当前运行环境 | 先备份；只用 Copy 模式，不 junction；可随时回退 |
 | submodule 指向 fork，上游同步复杂 | fork 只保留本地补丁分支，master 保持与上游同步；补丁用 cherry-pick |
 | 插件源码直接入库后与线上副本漂移 | 以 dsh-local 为规范源，安装器负责同步；旧目录逐步退役 |
 | 模型/缓存体积大、不适合 Git | 只存 manifest 和导入脚本；新机器从官方源或本地缓存导入 |
 | 凭据泄露 | `.gitignore` 排除 credentials/secret；安装器从 Windows 凭据管理器读取 |
-| pnpm lock 中 link 路径失效 | 改用相对 link；安装器在 profile 内重新 `pnpm install` |
+| pnpm lock 中 link 路径失效 | 使用绝对 link；安装器在 profile 内重新 `pnpm install` |
 
 ## 9. 待确认事项
 

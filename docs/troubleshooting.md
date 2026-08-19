@@ -1,5 +1,8 @@
 # dsh-local 排障手册
 
+> **重要**：已全面弃用 Junction/符号链接。agent-presets、skills、web profile 一律真实复制，
+> `install.ps1 -ProfileMode` 只接受 `Copy`。
+
 ## 1. dsh 极卡 / 反复 `lake build` 子进程
 
 **现象**：dsh 卡顿；任务管理器出现多个 `lake.exe` / `git.exe` 反复 clone/fetch `mathlib4`。
@@ -34,7 +37,7 @@ ctx.get('agents').get('<sessionId>').cancel()
 **处理**：
 - 回滚：恢复原实体 profile，删除坏 junction。
 - 加固：`package.json` 本地依赖使用绝对 `link:F:/tools/dsh-local/...`；`node_modules` 内链接改为绝对 junction。
-- 默认 `install.ps1 -ProfileMode Copy`，不再默认 junction。
+- **已全面弃用 junction**：`install.ps1 -ProfileMode` 只允许 `Copy`，skills/agent-presets 也改为真实复制。
 
 ## 3. node-pty `AttachConsole failed`
 
