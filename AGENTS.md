@@ -17,6 +17,12 @@
    - 运行区里的实际目录（`F:\tools\deepseek-harness` 等）目前仍是线上运行副本；
      迁移完成前，修改本仓不代表线上生效，需按 `docs/PLAN.md` 执行安装/同步。
 
+## 关键约束
+
+- agent-presets 必须复制为**真实目录**，不能使用 Junction/符号链接：dsh 扫描时
+  `Dirent.isDirectory()` 对 Windows Junction 返回 false，preset 会从 roster 消失，
+  WSL 变体也不再生成。`install.ps1` 的 agent-presets 同步已按真实复制实现。
+
 ## 组件分类速查
 
 | 类型 | 目录 | 说明 |

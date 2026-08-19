@@ -153,6 +153,10 @@ if (Test-Path $settingsSrc) {
 }
 
 # --- 3. agent-presets -------------------------------------------------------
+# Agent presets must be real directories, never junctions: dsh scans them with
+# Dirent.isDirectory(), which reports false for a Windows junction, so a
+# junction preset disappears from the roster and its WSL variant is never
+# generated. Copy instead of link.
 $presetSrc = Join-Path $RepoRoot "config/agent-presets"
 $presetDst = Join-Path $DshHome ".agent-presets"
 if (Test-Path $presetSrc) {
@@ -162,20 +166,22 @@ if (Test-Path $presetSrc) {
             $target = Join-Path $presetDst $_.Name
             if (Test-Path $target) {
                 $item = Get-Item $target -Force
-                if (-not $item.LinkType) {
-                    if ($Force) {
-                        $backup = "$target.bak-$(Get-Date -Format yyyyMMdd-HHmmss)"
-                        Rename-Item $target $backup
-                        Write-Host "    backup: $backup"
-                    } else {
-                        Write-Warning "    $target exists and is not a junction; use -Force to replace"
-                        return
-                    }
+                if ($item.LinkType -eq 'Junction') {
+                    # Remove only the junction link; the target tree stays.
+                    [System.IO.Directory]::Delete($target)
+                    Write-Host "    removed junction: $target"
+                } elseif ($Force) {
+                    $backup = "$target.bak-$(Get-Date -Format yyyyMMdd-HHmmss)"
+                    Rename-Item $target $backup
+                    Write-Host "    backup: $backup"
+                } else {
+                    Write-Warning "    $target exists; use -Force to replace"
+                    return
                 }
             }
             if (-not (Test-Path $target)) {
-                New-Item -ItemType Junction -Path $target -Target $_.FullName | Out-Null
-                Write-Host "    junction: $target -> $($_.FullName)"
+                Copy-Item -Recurse $_.FullName $target
+                Write-Host "    copy: $target"
             }
         }
     }
@@ -297,7 +303,7 @@ if (-not $NoSystem) {
         $watchdog = Join-Path $RepoRoot "scripts\dsh-watchdog.ps1"
         $ensure = Join-Path $RepoRoot "scripts\ensure-dsh-watchdog.ps1"
         schtasks.exe /Create /TN "dsh-watchdog" /TR "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$watchdog`"" /SC ONLOGON /RL HIGHEST /F | Out-Null
-        schtasks.exe /Create /TN "dsh-watchdog-ensure" /TR "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$ensure`"" /SC MINUTE /MO 5 /F | Out-Null
+        schtasks.exe /Create /TN "dsh-watchdog-ensure" /TR "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$ensure`"" /SC MINUTE /MO 5 /RL HIGHEST /F | Out-Null
         Write-Host "    registered dsh-watchdog / dsh-watchdog-ensure"
     }
     Invoke-Step "Start local services (Ollama / image-gen)" {

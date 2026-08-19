@@ -46,6 +46,37 @@ function Test-DshStarting {
     return @($procs).Count -gt 0
 }
 
+$wslDistro = "Ubuntu"
+$wslStartTimeoutSec = 20
+$wslEnsureIntervalSec = 60
+
+function Test-WslGateway {
+    $nic = Get-NetIPAddress -AddressFamily IPv4 -InterfaceAlias "vEthernet (WSL (Hyper-V firewall))" -ErrorAction SilentlyContinue | Where-Object { $_.IPAddress -like "172.*" } | Select-Object -First 1
+    return ($null -ne $nic)
+}
+
+function Start-DshWsl([string]$Distro, [int]$TimeoutSec) {
+    if (Test-WslKeepalive) {
+        Write-Log "wsl ensure: $Distro keepalive already running; skip"
+        return $true
+    }
+    try {
+        Start-Process -FilePath "wsl.exe" -ArgumentList "-d $Distro -e sleep infinity" -WindowStyle Hidden | Out-Null
+        Write-Log "wsl ensure: $Distro keepalive process started"
+        return $true
+    }
+    catch {
+        Write-Log "wsl ensure: $Distro launch failed: $($_.Exception.Message)"
+        return $false
+    }
+}
+
+function Test-WslKeepalive {
+    $procs = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -eq 'wsl.exe' -and $_.CommandLine -like '*sleep infinity*' }
+    return @($procs).Count -gt 0
+}
+
 function Get-ListenerPids([int]$Port) {
     $pids = @()
     try {
@@ -135,8 +166,20 @@ else {
 }
 
 $fails = 0
+$lastWslEnsure = Get-Date
 while ($true) {
     Write-Heartbeat
+    if (((Get-Date) - $lastWslEnsure).TotalSeconds -ge $wslEnsureIntervalSec) {
+        if (-not (Test-WslGateway)) {
+            Write-Log "wsl ensure: gateway missing; starting $wslDistro"
+            Start-DshWsl $wslDistro $wslStartTimeoutSec
+            Start-Sleep -Seconds 2
+            if (-not (Test-WslGateway)) {
+                Write-Log "wsl ensure: gateway still missing after start"
+            }
+        }
+        $lastWslEnsure = Get-Date
+    }
     Start-Sleep -Seconds $pollIntervalSec
     if (Test-DshAlive) {
         if ($fails -gt 0) {

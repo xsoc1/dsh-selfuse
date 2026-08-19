@@ -118,6 +118,21 @@ git commit -m "chore: bump deepseek-harness fork"
 - 仓库加固：`config/profiles/web/package.json` 的本地依赖改为绝对 `link:F:/tools/dsh-local/...`；`node_modules` 内 9 个本地插件链接改为绝对 junction（旧相对链接已清理）；临时 junction 解析测试通过后已清理。
 - 经验：pnpm v11 会把绝对 `link:` 在 `pnpm-lock.yaml` 的 `version` 字段归一化为相对路径；重跑 `pnpm install` 可能再次生成相对符号链接。任何 profile 切换前，必须用临时 junction 做一次 bundle 解析测试，不能只看物理路径下的 `node_modules`。
 
+### 2026-08-20 watchdog-ensure 权限修复
+
+- 现象：`dsh-watchdog.log` 在 00:01/00:06 出现 `ensure: watchdog missing or heartbeat stale, relaunching` + `not elevated; relaunching with administrator privileges`。
+- 结论：dsh 主进程实际仍为管理员（token 探测 elevated=1）；问题出在 `dsh-watchdog-ensure` 计划任务本身。
+- 根因：`install.ps1` 注册 ensure 任务时漏了 `/RL HIGHEST`，任务每 5 分钟以普通权限启动 watchdog，再由 watchdog 用 `-Verb RunAs` 二次提权；无 UAC 交互会话下该链路不可靠。
+- 修复：`install.ps1` 的 ensure 注册补 `/RL HIGHEST`；用 `schtasks /Create /TN dsh-watchdog-ensure /SC MINUTE /MO 5 /RL HIGHEST /F` 更新现有任务，XML 已确认 `RunLevel=HighestAvailable`。
+
+### 2026-08-20 WSL 自动拉起功能
+
+- `scripts/run-dsh-web.ps1` 与 `scripts/dsh-watchdog.ps1` 同步 deepseek-harness 版本，新增 WSL 自动拉起：
+  - 启动阶段：隐藏启动 `wsl.exe -d Ubuntu -e sleep infinity` 作为 Windows 侧 keepalive（已有则跳过），再轮询 30 秒等网关 IP。
+  - watchdog 兜底：每 60 秒检查网关，缺失时重新启动 keepalive。
+- 试过 `-e true` 和 `nohup sleep infinity &`，都不能让 WSL 稳定保持 Running；Windows 侧常驻 `wsl.exe -e sleep infinity` 实测有效。
+- 验证：WSL Stopped → Running 约 2-3 秒，网关 172.22.112.1；dsh 重启后 web.log 有 `wsl auto-start` 记录，HTTP 200；四个脚本 Parser 0 错误。
+
 ### 2026-08-19 修复 dsh 卡顿：终止 runaway lake build 会话
 
 - 现象：dsh 极卡，日志/进程显示多个 `lake build` 子进程反复 clone/fetch mathlib4。
@@ -138,3 +153,14 @@ git commit -m "chore: bump deepseek-harness fork"
   - 计划任务已指向 `F:\tools\dsh-local\scripts\dsh-watchdog.ps1` / `ensure-dsh-watchdog.ps1`；手动执行 ensure 退出 0。
   - Ollama/image-gen 已在运行，跳过重复启动。
 - 加固：`install.ps1` 增加服务重复启动检测；`DSH_ROOT` 若 vendor 子模块不存在则回退到 `F:\tools\deepseek-harness`。
+
+### 2026-08-20 agent-preset Junction 导致 wsl-router-standard 缺失修复
+
+- 现象：每次 dsh 重启，恢复旧 WSL 会话时报 `agent-presets: preset "wsl-router-standard" not found`，可用列表只剩 `router-standard-v011-bak` / `wsl-router-standard-v011-bak`，真正的 router-standard/router-spec 消失。
+- 根因：`install.ps1` 在 Phase 4 把 `~/.dsh/.agent-presets/router-standard` 与 `router-spec` 建成 Junction（指向 `F:\tools\dsh-local\config\agent-presets\*`）。dsh 的 agent-preset 扫描（`packages/preset/agent-presets/src/discovery.ts`）用 `Dirent.isDirectory()` 过滤，Windows Junction 的 `Dirent.isDirectory()` 返回 false，preset 不进 roster；dsh-wsl-workspace 的 `materializeVariants` 只对 roster 可见 preset 生成 `wsl-<id>`，所以 `wsl-router-standard`/`wsl-router-spec` 永不生成，旧 WSL 会话恢复失败。残留的 `router-standard-v011-bak` 因目录名匹配 `PRESET_ID` 反而出现在可用列表。
+- 修复：
+  - 删除两个 Junction（仅删除链接，目标树未动），将 `F:\tools\dsh-local\config\agent-presets\router-standard` / `router-spec` 真实复制到 `~/.dsh\.agent-presets\`；Node 实测 `isDirectory=true`、`isSymbolicLink=false`。
+  - 旧残留 `router-standard-v011-bak`、`wsl-router-standard-v011-bak`、`.bak-20260819-*` 移至 `F:\tools\dsh-local\backups\agent-presets\2026-08-20\`，不再被扫描为 preset。
+  - `install.ps1` 的 agent-presets 同步改为真实复制：遇到已有 Junction 先 `[IO.Directory]::Delete()` 删除链接再 Copy-Item，不再 `New-Item -ItemType Junction`，防止下次 install 复发。
+- 验证：`dsh-control.ps1 restart` 成功，HTTP 200；重启后 `.agent-presets` 自动生成 `wsl-router-standard`/`wsl-router-spec` 真实目录且含 `agent.cordis.yml`/`preset.yml`；`dsh-web.log`/`dsh-watchdog.log` 无 `WSL preset-variant generation failed`；`install.ps1` Parser 0 错误。
+- 经验：agent-presets 不能使用 Junction/符号链接，必须真实目录；`Dirent.isDirectory()` 对 Windows Junction 为 false。

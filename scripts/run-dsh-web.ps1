@@ -19,9 +19,48 @@ function Test-TcpPort([string]$HostName, [int]$Port) {
     }
 }
 
-$wslNic = Get-NetIPAddress -AddressFamily IPv4 -InterfaceAlias "vEthernet (WSL (Hyper-V firewall))" -ErrorAction SilentlyContinue | Where-Object { $_.IPAddress -like "172.*" } | Select-Object -First 1
-$gateway = $null
-if ($wslNic) { $gateway = $wslNic.IPAddress }
+$wslDistro = "Ubuntu"
+$wslStartTimeoutSec = 20
+$wslGatewayTimeoutSec = 30
+
+function Start-DshWsl([string]$Distro, [int]$TimeoutSec) {
+    $log = "F:\tools\deepseek-harness\dsh-web.log"
+    if (Test-WslKeepalive) {
+        Add-Content -LiteralPath $log -Value "wsl auto-start: $Distro keepalive already running; skip" -Encoding UTF8
+        return $true
+    }
+    try {
+        Start-Process -FilePath "wsl.exe" -ArgumentList "-d $Distro -e sleep infinity" -WindowStyle Hidden | Out-Null
+        Add-Content -LiteralPath $log -Value "wsl auto-start: $Distro keepalive process started" -Encoding UTF8
+        return $true
+    }
+    catch {
+        Add-Content -LiteralPath $log -Value "wsl auto-start: $Distro launch failed: $($_.Exception.Message)" -Encoding UTF8
+        return $false
+    }
+}
+
+function Test-WslKeepalive {
+    $procs = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+        Where-Object { $_.Name -eq 'wsl.exe' -and $_.CommandLine -like '*sleep infinity*' }
+    return @($procs).Count -gt 0
+}
+
+function Get-WslGateway([int]$TimeoutSec) {
+    $deadline = (Get-Date).AddSeconds($TimeoutSec)
+    while ((Get-Date) -lt $deadline) {
+        $nic = Get-NetIPAddress -AddressFamily IPv4 -InterfaceAlias "vEthernet (WSL (Hyper-V firewall))" -ErrorAction SilentlyContinue | Where-Object { $_.IPAddress -like "172.*" } | Select-Object -First 1
+        if ($nic) { return $nic.IPAddress }
+        Start-Sleep -Seconds 2
+    }
+    return $null
+}
+
+Start-DshWsl $wslDistro $wslStartTimeoutSec
+$gateway = Get-WslGateway $wslGatewayTimeoutSec
+if (-not $gateway) {
+    Add-Content -LiteralPath "F:\tools\deepseek-harness\dsh-web.log" -Value "wsl auto-start: gateway not found after $wslGatewayTimeoutSec s" -Encoding UTF8
+}
 
 $trustedArgs = @("--host", "127.0.0.1")
 if ($gateway) {
