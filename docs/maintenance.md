@@ -95,3 +95,11 @@ git commit -m "chore: bump deepseek-harness fork"
 - 健康检查：实现 `Invoke-WebRequest` 探测 3080 / 11810 / 17821。
 - Bootstrap：缺失 git/node/pnpm 时打印 winget/corepack 安装命令（真正执行仍为 TODO，避免未测试就在真实机器安装）。
 - 验证：PowerShell Parser 0 错误；`-DryRun -NoSystem` 与 `-DryRun` 均正常；隔离演练仍通过。
+
+### 2026-08-19 Phase 4 预检（未切换）
+
+- 已备份 `~/.dsh`：`C:/Users/HuangZY/Desktop/dsh-backups/dsh-20260819-213751821.tar.gz`。
+- 线上健康基线：dsh web 200、Ollama 200、image-gen 200、watchdog heartbeat 新鲜。
+- 完整 `install.ps1 -DryRun` 预览已执行，动作清单见 `docs/phase4-precheck.md`。
+- 发现硬阻塞：repo profile 的 `node_modules` 未完整安装，直接 junction 会破坏线上 dsh；submodule 也未实际 clone。
+- 结论：暂不切换；建议先完成 repo profile 依赖安装，或采用“只同步配置不 junction”的低风险方案。
