@@ -105,3 +105,7 @@ git commit -m "chore: bump deepseek-harness fork"
 - 结论：暂不切换；建议先完成 repo profile 依赖安装，或采用“只同步配置不 junction”的低风险方案。
 - 后续：用 `pnpm install --registry=https://registry.npmmirror.com --ignore-scripts` 已成功完成 repo profile 安装（233 包，6.6s）。`node_modules` 现为 253MB，相对 link 插件均正确链接。
   - 注意：`--ignore-scripts` 跳过了 cloudflared 等 postinstall，因此 `cloudflared` 二进制可能缺失；remote-web-ui 公网隧道若需要，需后续单独补装。
+- 2026-08-19 已执行“只切文件不重启”：
+  - 再次备份 `~/.dsh`：`C:/Users/HuangZY/Desktop/dsh-backups/dsh-20260819-215715900.tar.gz`。
+  - 原 `~/.dsh/profiles/web` 改名为 `web.bak-20260819-215736`，新建 junction 指向 `F:\tools\dsh-local\config\profiles\web`。
+  - 当前运行中的 dsh 仍用旧已加载模块，dsh web 仍 200；**重启后才会真正加载 repo profile**。

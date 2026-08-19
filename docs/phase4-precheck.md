@@ -59,12 +59,21 @@
 5. 确认正常后再注册计划任务、设置环境变量、启动服务。
 6. 如异常，用备份回滚。
 
-## 6. 结论
+## 6. 结论与当前进度
 
 原硬阻塞（repo profile 依赖未完整）已通过 `--ignore-scripts` 解决；`node_modules` 已完整。
-剩余注意点：
-- submodule 未在 dsh-local 内 clone（实际切换建议 `-SkipSubmodules`）。
-- cloudflared 二进制可能缺失（远程隧道需单独补装）。
-- 系统级动作（env/schtasks/services）尚未在真实机器执行。
 
-若你批准，可以按第 5 节步骤开始实际切换；仍建议先只切 profile + 重启验证，再逐步启用系统级动作。
+### 已执行（2026-08-19，只切文件不重启）
+
+- 再次备份：`C:/Users/HuangZY/Desktop/dsh-backups/dsh-20260819-215715900.tar.gz`
+- 原 `~/.dsh/profiles/web` → `web.bak-20260819-215736`
+- 新建 junction：`~/.dsh/profiles/web` → `F:\tools\dsh-local\config\profiles\web`
+- 当前 dsh web 仍 200（未重启，运行中进程仍用旧加载模块）
+
+### 待办
+
+- 用户手动重启 dsh 后，才会真正加载 repo profile；重启后需验证插件/技能/服务。
+- 剩余注意点：
+  - submodule 未在 dsh-local 内 clone（重启后如需要，可 `-SkipSubmodules`）。
+  - cloudflared 二进制可能缺失（远程隧道需单独补装）。
+  - 系统级动作（env/schtasks/services）尚未执行。
