@@ -1,11 +1,19 @@
-﻿# dsh 图形控制台 (dsh-control-gui.ps1)
+# dsh 图形控制台 (dsh-control-gui.ps1)
 # WinForms 简单界面: 实时状态 + 启动/重启/停止 + Web UI/日志/Ollama/WSL。
 # 非管理员运行时自动提权重启 (会弹 UAC)。附加 -SmokeTest 参数用于自检 (3 秒后自动关闭)。
 
 $ErrorActionPreference = 'Stop'
 
 # ============ 配置区 ============
-$HarnessRoot  = 'F:\tools\deepseek-harness'
+$RepoRoot = Split-Path -Parent $PSScriptRoot
+$HarnessRoot = Join-Path $RepoRoot 'vendor\deepseek-harness'
+if (-not (Test-Path (Join-Path $HarnessRoot 'package.json'))) {
+    if ($env:DSH_ROOT -and (Test-Path (Join-Path $env:DSH_ROOT 'package.json'))) {
+        $HarnessRoot = $env:DSH_ROOT
+    } else {
+        $HarnessRoot = 'F:\tools\deepseek-harness'
+    }
+}
 $WatchdogFile = Join-Path $HarnessRoot 'dsh-watchdog.ps1'
 $WatchdogLog  = Join-Path $HarnessRoot 'dsh-watchdog.log'
 $WebLog       = Join-Path $HarnessRoot 'dsh-web.log'

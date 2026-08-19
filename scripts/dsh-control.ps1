@@ -1,4 +1,4 @@
-﻿# dsh 一键控制台 (dsh-control.ps1)
+# dsh 一键控制台 (dsh-control.ps1)
 # 用法:
 #   powershell -NoProfile -ExecutionPolicy Bypass -File dsh-control.ps1           交互菜单
 #   powershell -NoProfile -ExecutionPolicy Bypass -File dsh-control.ps1 start     启动 dsh
@@ -12,7 +12,15 @@
 $ErrorActionPreference = 'Continue'
 
 # ============ 配置区 ============
-$HarnessRoot  = 'F:\tools\deepseek-harness'
+$RepoRoot = Split-Path -Parent $PSScriptRoot
+$HarnessRoot = Join-Path $RepoRoot 'vendor\deepseek-harness'
+if (-not (Test-Path (Join-Path $HarnessRoot 'package.json'))) {
+    if ($env:DSH_ROOT -and (Test-Path (Join-Path $env:DSH_ROOT 'package.json'))) {
+        $HarnessRoot = $env:DSH_ROOT
+    } else {
+        $HarnessRoot = 'F:\tools\deepseek-harness'
+    }
+}
 $WatchdogFile = Join-Path $HarnessRoot 'dsh-watchdog.ps1'
 $WatchdogLog  = Join-Path $HarnessRoot 'dsh-watchdog.log'
 $WebLog       = Join-Path $HarnessRoot 'dsh-web.log'

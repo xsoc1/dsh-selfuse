@@ -1,7 +1,16 @@
 $ErrorActionPreference = "Continue"
-$log = "F:\tools\deepseek-harness\dsh-watchdog.log"
-$runner = "F:\tools\deepseek-harness\run-dsh-web.ps1"
-$heartbeat = "F:\tools\deepseek-harness\dsh-watchdog.heartbeat"
+$RepoRoot = Split-Path -Parent $PSScriptRoot
+$HarnessRoot = Join-Path $RepoRoot "vendor\deepseek-harness"
+if (-not (Test-Path (Join-Path $HarnessRoot "package.json"))) {
+    if ($env:DSH_ROOT -and (Test-Path (Join-Path $env:DSH_ROOT "package.json"))) {
+        $HarnessRoot = $env:DSH_ROOT
+    } else {
+        $HarnessRoot = "$HarnessRoot"
+    }
+}
+$log = "$HarnessRoot\dsh-watchdog.log"
+$runner = "$HarnessRoot\run-dsh-web.ps1"
+$heartbeat = "$HarnessRoot\dsh-watchdog.heartbeat"
 $probe = "http://127.0.0.1:3080"
 $probeTimeoutSec = 3
 $webPort = 3080
