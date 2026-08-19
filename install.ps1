@@ -28,6 +28,9 @@
     How to apply the web profile. Junction is deprecated and no longer supported;
     this parameter exists only for compatibility and must be 'Copy'.
 
+.PARAMETER SkipPnpmInstall
+    Do not run `pnpm install` in the web profile even when it is a fresh profile.
+
 .EXAMPLE
     .\install.ps1 -DryRun
     .\install.ps1 -Force
@@ -39,6 +42,7 @@ param(
     [switch]$Force,
     [switch]$NoSystem,
     [switch]$SkipSubmodules,
+    [switch]$SkipPnpmInstall,
     [ValidateSet('Copy')]
     [string]$ProfileMode = 'Copy'
 )
@@ -244,6 +248,16 @@ if (Test-Path $profileSrc) {
             }
         }
         Write-Host "    note: existing package.json/pnpm-lock.yaml not overwritten; new profile gets generated package.json; node_modules kept in $profileDst"
+        $nodeModules = Join-Path $profileDst "node_modules"
+        if (-not $SkipPnpmInstall -and -not (Test-Path $nodeModules)) {
+            Write-Host "    running pnpm install in $profileDst ..."
+            Push-Location $profileDst
+            try {
+                pnpm install --no-frozen-lockfile
+            } finally {
+                Pop-Location
+            }
+        }
     }
 } else {
     Write-Warning "config/profiles/web not found; skip"
