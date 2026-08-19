@@ -231,11 +231,12 @@ dsh-local/
 
 ### Phase 3：安装器完善
 
-- [ ] 实现 `install.ps1` 的 profile junction/复制逻辑。
-- [ ] 实现技能 junction、环境变量、计划任务、服务启动。
-- [ ] 实现 `-Bootstrap` 新机器依赖安装。
-- [ ] 加 `-DryRun` 与健康检查。
-- [ ] 编写冒烟测试（在临时 `DSH_HOME` 下演练）。
+- [x] 实现 `install.ps1` 的 profile junction/复制逻辑（隔离演练通过）。
+- [x] 实现技能 junction（递归查找 SKILL.md，39 个成功）。
+- [ ] 实现环境变量、计划任务、服务启动（仍 TODO）。
+- [ ] 实现 `-Bootstrap` 新机器依赖安装（仍 TODO）。
+- [x] 加 `-DryRun` 与健康检查（DryRun 已有；健康检查 TODO）。
+- [x] 编写冒烟测试（在临时 `DSH_HOME` 下演练通过）。
 
 ### Phase 4：切换运行区
 

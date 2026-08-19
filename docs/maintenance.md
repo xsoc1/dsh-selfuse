@@ -75,3 +75,14 @@ git commit -m "chore: bump deepseek-harness fork"
 - `git submodule update --init --recursive` 尝试克隆 `vendor/awesome-dsh-plugin` 时长时间无进度，已终止；未产生残留。
 - 结论：GitHub REST/API 与 `git ls-remote` 正常；大仓库 clone 与 npm 部分二进制包下载在当前网络/代理下不稳定。后续可在网络恢复或换镜像/代理后重试。
 - 补充：改用 `--registry=https://registry.npmmirror.com` 后依赖下载成功，进入 install 脚本阶段；`cpu-features` 按已知情况失败（可选），`sharp`/`tesseract.js` 完成，但 `cloudflared` postinstall 卡在 GitHub 下载最新二进制，已终止。核心依赖已基本可装，仅剩 cloudflared 等 GitHub 下载项受网络影响。
+
+### 2026-08-19 Phase 3：install.ps1 完善 + 隔离 DSH_HOME 演练
+
+- `install.ps1` 新增 `-NoSystem`（跳过环境变量/计划任务/服务/健康检查）与 `-SkipSubmodules`（跳过 submodule clone），便于隔离演练与避免网络卡死。
+- 修复技能链接：改为递归查找含 `SKILL.md` 的目录，mattpocock 的分层技能（engineering/productivity/misc/in-progress）现在能正确建 junction。
+- 隔离演练（`DSH_HOME=F:\tools\dsh-local\.test-dsh-home`，`-Force -NoSystem -SkipSubmodules`）通过：
+  - settings.yaml 复制成功；
+  - agent-presets router-standard/router-spec junction 成功；
+  - profiles/web junction 成功；
+  - 39 个技能 junction 成功（35 mattpocock + 4 math-research）。
+- `.gitignore` 增加 `.test-dsh-home/`，演练后已清理临时目录。

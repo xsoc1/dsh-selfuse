@@ -17,6 +17,13 @@
 .PARAMETER Force
     Replace existing non-junction targets (backup first).
 
+.PARAMETER NoSystem
+    Skip environment variables, scheduled tasks, services and health check.
+    Useful for isolated DSH_HOME rehearsals.
+
+.PARAMETER SkipSubmodules
+    Do not run `git submodule update --init --recursive`.
+
 .EXAMPLE
     .\install.ps1 -DryRun
     .\install.ps1 -Force
@@ -25,7 +32,9 @@
 param(
     [switch]$Bootstrap,
     [switch]$DryRun,
-    [switch]$Force
+    [switch]$Force,
+    [switch]$NoSystem,
+    [switch]$SkipSubmodules
 )
 
 $ErrorActionPreference = "Stop"
@@ -79,8 +88,12 @@ if ($missing.Count -gt 0) {
 
 # --- 1. Submodules ----------------------------------------------------------
 if (Test-Path (Join-Path $RepoRoot ".gitmodules")) {
-    Invoke-Step "Update git submodules" {
-        git -C $RepoRoot submodule update --init --recursive
+    if ($SkipSubmodules) {
+        Write-Step "Skip submodule update (-SkipSubmodules)"
+    } else {
+        Invoke-Step "Update git submodules" {
+            git -C $RepoRoot submodule update --init --recursive
+        }
     }
 } else {
     Write-Step "No .gitmodules yet; submodule setup is a Phase 2 task"
@@ -174,11 +187,10 @@ foreach ($group in $skillSources) {
     if (Test-Path $group.Source) {
         Invoke-Step "Link skills from $($group.Name)" {
             New-Item -ItemType Directory -Force -Path $skillsRoot | Out-Null
-            Get-ChildItem $group.Source -Directory | ForEach-Object {
+            Get-ChildItem $group.Source -Directory -Recurse | Where-Object { Test-Path (Join-Path $_.FullName "SKILL.md") } | ForEach-Object {
                 $skill = $_.Name
                 $src = $_.FullName
                 $dst = Join-Path $skillsRoot $skill
-                if (-not (Test-Path (Join-Path $src "SKILL.md"))) { return }
                 if (Test-Path $dst) {
                     $item = Get-Item $dst -Force
                     if ($item.LinkType) { return }
@@ -203,22 +215,34 @@ foreach ($group in $skillSources) {
 }
 
 # --- 6. environment variables (TODO) ----------------------------------------
-Invoke-Step "Set environment variables (DSH_ROOT / OLLAMA_MODELS / HF_HOME)" {
-    # TODO: setx / [Environment]::SetEnvironmentVariable for user scope
-    Write-Host "    TODO: DSH_ROOT=$RepoRoot\vendor\deepseek-harness"
-    Write-Host "    TODO: OLLAMA_MODELS=... / HF_HOME=..."
+if (-not $NoSystem) {
+    Invoke-Step "Set environment variables (DSH_ROOT / OLLAMA_MODELS / HF_HOME)" {
+        # TODO: setx / [Environment]::SetEnvironmentVariable for user scope
+        Write-Host "    TODO: DSH_ROOT=$RepoRoot\vendor\deepseek-harness"
+        Write-Host "    TODO: OLLAMA_MODELS=... / HF_HOME=..."
+    }
+} else {
+    Write-Step "Skip environment variables (-NoSystem)"
 }
 
 # --- 7. scheduled tasks & services (TODO) -----------------------------------
-Invoke-Step "Register watchdog scheduled tasks / start services" {
-    # TODO: use scripts/ensure-dsh-watchdog.ps1 and dsh-control.ps1
-    Write-Host "    TODO: scheduled tasks and service startup"
+if (-not $NoSystem) {
+    Invoke-Step "Register watchdog scheduled tasks / start services" {
+        # TODO: use scripts/ensure-dsh-watchdog.ps1 and dsh-control.ps1
+        Write-Host "    TODO: scheduled tasks and service startup"
+    }
+} else {
+    Write-Step "Skip scheduled tasks / services (-NoSystem)"
 }
 
 # --- 8. health check (TODO) -------------------------------------------------
-Invoke-Step "Health check" {
-    # TODO: probe 3080 / 11810 / 17821
-    Write-Host "    TODO: check dsh web, Ollama, image-gen"
+if (-not $NoSystem) {
+    Invoke-Step "Health check" {
+        # TODO: probe 3080 / 11810 / 17821
+        Write-Host "    TODO: check dsh web, Ollama, image-gen"
+    }
+} else {
+    Write-Step "Skip health check (-NoSystem)"
 }
 
 Write-Host ""

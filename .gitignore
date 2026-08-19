@@ -34,3 +34,4 @@ Desktop.ini
 # temporary
 tmp/
 *.tmp
+.test-dsh-home/
