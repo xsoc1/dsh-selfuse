@@ -1,0 +1,37 @@
+# dependencies / build outputs
+node_modules/
+**/node_modules/
+lib/
+dist/
+*.tsbuildinfo
+
+# local services
+services/image-gen/venv/
+services/image-gen/hf/
+services/ollama/models/
+**/models/
+
+# user data / secrets
+.credentials.yaml
+*.secret
+*.token
+.env
+.env.*
+!*.example
+**/.dsh-market/
+**/.DS_Store
+
+# logs and runtime state
+*.log
+*.heartbeat
+%TEMP%/
+
+# OS / editor
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+
+# temporary
+tmp/
+*.tmp

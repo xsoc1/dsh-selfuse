@@ -1,0 +1,14 @@
+{
+  "ollamaVersion": "0.32.9",
+  "port": 11810,
+  "models": [
+    {
+      "name": "qwen3-vl:4b",
+      "size": "~3.07GB",
+      "purpose": "本地 VLM 识图（view_image）",
+      "source": "ollama pull qwen3-vl:4b",
+      "importHint": "若已有本地缓存，可设置 OLLAMA_MODELS 指向缓存目录后执行 ollama list 确认"
+    }
+  ],
+  "notes": "模型二进制不入库；本清单仅记录应安装的模型与来源。"
+}

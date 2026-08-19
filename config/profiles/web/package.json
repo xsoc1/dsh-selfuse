@@ -1,0 +1,39 @@
+{
+  "name": "dsh-profile-web",
+  "private": true,
+  "dependencies": {
+    "@dsh-external/dsh-image-bridge": "link:../../../plugins/dsh-image-bridge",
+    "@dsh-external/dsh-super-injector": "link:../../../plugins/dsh-routing-suite/injector-release",
+    "@dsh-external/dsh-vision": "git+https://github.com/william-jin-cmu/dsh-vision.git",
+    "@huanlin/dsh-plugin-mineru": "^0.2.2",
+    "@linxin666/dsh-web-ui-all": "^0.1.17",
+    "dsh-backup": "link:../../../community-plugins/dsh-backup",
+    "dsh-better-sidebar": "link:../../../community-plugins/DSH-better-sidebar",
+    "dsh-file-upload": "^0.4.2",
+    "dsh-plugin-git-workflow": "link:../../../community-plugins/dsh-plugin-git-workflow",
+    "dsh-undo-savepoint": "link:../../../community-plugins/dsh-undo-plugin-fixed",
+    "dshmarket": "^1.9.0",
+    "dsh-memory-panel": "link:../../../plugins/dsh-memory-panel",
+    "dsh-wsl-workspace": "link:../../../community-plugins/dsh-wsl-workspace",
+    "@dsh-external/dsh-skill-router": "link:../../../plugins/dsh-skill-router"
+  },
+  "dsh": {
+    "profile": {
+      "bundles": [
+        "@deepseek-ai/dsh-base",
+        "@deepseek-ai/dsh-web-app",
+        "@huanlin/dsh-plugin-mineru",
+        "dshmarket",
+        "@dsh-external/dsh-super-injector",
+        "dsh-better-sidebar",
+        "dsh-plugin-git-workflow",
+        "dsh-undo-savepoint",
+        "dsh-backup",
+        "@linxin666/dsh-web-ui-all",
+        "dsh-file-upload",
+        "dsh-memory-panel",
+        "dsh-wsl-workspace"
+      ]
+    }
+  }
+}
