@@ -6,5 +6,7 @@
 - `cordis.patch.yml`：patch 装配层（dsh-vision、image-bridge、skill-router、EAC 配套等）。
 - `pnpm-workspace.yaml`：pnpm 工作区与 allowBuilds 配置。
 - `pnpm-lock.yaml`：锁文件，保证可复现安装。
+  > 当前是从线上 profile 复制而来，仍含旧绝对 `link:F:/...` 路径；待插件迁入本仓后
+  > 需在 `config/profiles/web` 下重新执行 `pnpm install` 生成与相对 link 匹配的 lockfile。
 
 安装器推荐把 `~/.dsh/profiles/web` 建为指向本目录的 junction，实现“profile as code”。
