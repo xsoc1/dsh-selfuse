@@ -166,7 +166,6 @@ if (Test-Path $profileSrc) {
 
 # --- 5. skills --------------------------------------------------------------
 $skillsRoot = Join-Path $DshHome "skills"
-New-Item -ItemType Directory -Force -Path $skillsRoot | Out-Null
 $skillSources = @(
     @{ Name = "mattpocock"; Source = Join-Path $RepoRoot "vendor/mattpocock-skills/skills" },
     @{ Name = "math-research"; Source = Join-Path $RepoRoot "vendor/math-research-dsh/skills" }
@@ -174,6 +173,7 @@ $skillSources = @(
 foreach ($group in $skillSources) {
     if (Test-Path $group.Source) {
         Invoke-Step "Link skills from $($group.Name)" {
+            New-Item -ItemType Directory -Force -Path $skillsRoot | Out-Null
             Get-ChildItem $group.Source -Directory | ForEach-Object {
                 $skill = $_.Name
                 $src = $_.FullName
