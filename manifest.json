@@ -51,10 +51,10 @@
       "upstream": "https://github.com/mattpocock/skills.git",
       "localPath": "F:/tools/mattpocock-skills",
       "targetPath": "skills/mattpocock-skills",
-      "action": "submodule-or-vendor",
+      "action": "copy-to-repo",
       "branch": "main",
       "status": "copied-to-repo",
-      "notes": "vendored copy in skills/; local commit removes disable-model-invocation; can switch to submodule xsoc1/skills later"
+      "notes": "vendored copy; installed to ~/.dsh/skills as real directory (no junction)"
     },
     {
       "id": "math-research-dsh",
@@ -64,10 +64,10 @@
       "upstream": null,
       "localPath": "C:/Users/HuangZY/.dsh/math-research-dsh",
       "targetPath": "skills/math-research-dsh",
-      "action": "submodule-or-vendor",
+      "action": "copy-to-repo",
       "branch": "main",
       "status": "copied-to-repo",
-      "notes": "vendored copy in skills/; also published at xsoc1/math-research-dsh; can switch to submodule later"
+      "notes": "vendored copy; installed to ~/.dsh/skills as real directory (no junction)"
     },
     {
       "id": "dsh-image-bridge",
@@ -217,9 +217,9 @@
       "repo": null,
       "localPath": "C:/Users/HuangZY/.dsh/profiles/web",
       "targetPath": "config/profiles/web",
-      "action": "junction-or-copy",
-      "status": "snapshot-copied",
-      "notes": "package.json links normalized to relative"
+      "action": "copy-to-repo",
+      "status": "copy-mode",
+      "notes": "Copy mode only; package.json uses absolute links; no junction"
     },
     {
       "id": "agent-presets",
@@ -229,8 +229,8 @@
       "localPath": "C:/Users/HuangZY/.dsh/.agent-presets",
       "targetPath": "config/agent-presets",
       "action": "copy-to-repo",
-      "status": "partial-copied",
-      "notes": "router-standard and router-spec copied; wsl variants TBD"
+      "status": "copy-mode",
+      "notes": "real directories; no junction (Dirent.isDirectory issue)"
     },
     {
       "id": "image-gen",

@@ -79,8 +79,26 @@ function Install-MissingPrerequisite {
         }
         Write-Host "    $action"
         if (-not $DryRun) {
-            # TODO: execute the installer for real. Requires admin/network and is
-            # intentionally left as a no-op until tested on a fresh machine.
+            switch ($cmd) {
+                'git' {
+                    if (Get-Command winget -ErrorAction SilentlyContinue) {
+                        winget install --id Git.Git -e --silent --accept-package-agreements --accept-source-agreements
+                    } else {
+                        Write-Warning "    winget not available; install git manually"
+                    }
+                }
+                'node' {
+                    if (Get-Command winget -ErrorAction SilentlyContinue) {
+                        winget install --id OpenJS.NodeJS.LTS -e --silent --accept-package-agreements --accept-source-agreements
+                    } else {
+                        Write-Warning "    winget not available; install node manually"
+                    }
+                }
+                'pnpm' {
+                    corepack enable
+                    npm install -g pnpm
+                }
+            }
         }
     }
 }
@@ -97,7 +115,7 @@ function Set-UserEnvironmentVariable {
 }
 
 Write-Host ""
-Write-Host "dsh-local installer (skeleton)" -ForegroundColor Green
+Write-Host "dsh-local installer" -ForegroundColor Green
 Write-Host "RepoRoot: $RepoRoot"
 Write-Host "DSH_HOME: $DshHome"
 if ($DryRun) { Write-Host "Mode: DRY RUN" -ForegroundColor Yellow }
@@ -123,8 +141,12 @@ if ($missing.Count -gt 0) {
 
 # --- 1. Submodules ----------------------------------------------------------
 if (Test-Path (Join-Path $RepoRoot ".gitmodules")) {
+    $harnessSub = Join-Path $RepoRoot "vendor\deepseek-harness"
     if ($SkipSubmodules) {
         Write-Step "Skip submodule update (-SkipSubmodules)"
+        if (-not (Test-Path (Join-Path $harnessSub "package.json"))) {
+            Write-Warning "vendor/deepseek-harness not populated; DSH_ROOT will fall back to F:\tools\deepseek-harness on this machine"
+        }
     } else {
         Invoke-Step "Update git submodules" {
             git -C $RepoRoot submodule update --init --recursive
@@ -358,7 +380,7 @@ if (-not $NoSystem) {
 }
 
 Write-Host ""
-Write-Host "Done (skeleton). Next steps:" -ForegroundColor Green
+Write-Host "Done. Next steps:" -ForegroundColor Green
 Write-Host "  1. Review docs/PLAN.md"
 Write-Host "  2. Run .\install.ps1 -DryRun to preview"
 Write-Host "  3. After migration, run .\install.ps1 -Force to apply"
