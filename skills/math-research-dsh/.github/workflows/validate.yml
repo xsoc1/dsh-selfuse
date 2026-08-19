@@ -1,0 +1,60 @@
+name: validate
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install PyYAML
+        run: pip install pyyaml
+      - name: Repository validation
+        run: python scripts/validate_all.py .
+      - name: Bundle packaging check
+        run: python scripts/dsh-check-bundle.py
+      - name: Smoke tests
+        run: |
+          cd tests
+          for t in smoke_*.py; do
+            echo "== $t =="
+            python "$t" || exit 1
+          done
+
+  version-bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Determine base ref
+        id: base
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "base=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.before }}" = "0000000000000000000000000000000000000000" ]; then
+            echo "base=HEAD^" >> "$GITHUB_OUTPUT"
+          else
+            echo "base=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Check version bump
+        run: python scripts/check_version_bump.py --base "${{ steps.base.outputs.base }}"
+
+  sync-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: xsoc1/rigorous-open-math-research
+          path: _upstream
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Parent drift check
+        run: python scripts/sync-from-parent.py --upstream _upstream --check

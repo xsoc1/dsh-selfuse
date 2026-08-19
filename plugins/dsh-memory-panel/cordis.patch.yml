@@ -1,0 +1,5 @@
+# dsh bundle patch: inserts this plugin into a profile's layer stack.
+# 同时声明 dsh.client（见 package.json），Web 浏览器半边在 /plugins/dsh-memory-panel/client.js 提供。
+- insert:
+    - id: dsh-memory-panel
+      name: 'dsh-memory-panel'

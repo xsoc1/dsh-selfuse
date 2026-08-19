@@ -214,8 +214,9 @@ dsh-local/
 
 ### Phase 1：仓库整理
 
-- [ ] 把自研插件源码复制/移动到 `plugins/`，保留构建产物策略（lib 不提交）。
-- [ ] 整理 `community-plugins/`：记录每个插件上游 repo、版本、本地 patch。
+- [x] 把自研插件源码复制到 `plugins/`（保留 lib 构建产物，直接可 link）。
+- [x] 把第三方补丁插件复制到 `community-plugins/`（vendored 副本）。
+- [ ] 整理 `community-plugins/`：记录每个插件上游 repo、版本、本地 patch（manifest 已初步记录）。
 - [ ] 整理 `skills/`：决定 submodule 或 vendored，并写安装/更新脚本。
 - [ ] 完善 `manifest.json` 字段（source、target、action、repo、version、notes）。
 - [ ] 把管理脚本从 `deepseek-harness/` 运行目录“规范化”到 `scripts/`，并让安装器负责同步。

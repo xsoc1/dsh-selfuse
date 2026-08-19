@@ -1,0 +1,37 @@
+{
+  "name": "dsh-plugin-git-workflow",
+  "version": "0.1.1",
+  "description": "DeepSeek Harness plugin: first-class Git workflow tools for the model — repo status, diffs, commit creation with validated messages, recent history, and branches. No bare-shell git calls; every invocation is a shell-free execFile with path and message validation.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/truelove-dreamer/dsh-plugin-git-workflow.git"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "files": [
+    "lib",
+    "cordis.patch.yml"
+  ],
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "git",
+    "workflow",
+    "commit",
+    "diff",
+    "version-control"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -167,8 +167,8 @@ if (Test-Path $profileSrc) {
 # --- 5. skills --------------------------------------------------------------
 $skillsRoot = Join-Path $DshHome "skills"
 $skillSources = @(
-    @{ Name = "mattpocock"; Source = Join-Path $RepoRoot "vendor/mattpocock-skills/skills" },
-    @{ Name = "math-research"; Source = Join-Path $RepoRoot "vendor/math-research-dsh/skills" }
+    @{ Name = "mattpocock"; Source = Join-Path $RepoRoot "skills/mattpocock-skills/skills" },
+    @{ Name = "math-research"; Source = Join-Path $RepoRoot "skills/math-research-dsh/skills" }
 )
 foreach ($group in $skillSources) {
     if (Test-Path $group.Source) {

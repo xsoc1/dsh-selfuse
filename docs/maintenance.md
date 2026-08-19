@@ -42,3 +42,13 @@ git commit -m "chore: bump deepseek-harness fork"
 - 本地 `git init` 并提交骨架（`85fcf65`），后续 dry-run 修复提交 `f0765b9`。
 - `install.ps1 -DryRun` 已验证可运行且无副作用。
 - 尚未创建 GitHub 仓库、尚未迁移运行区。
+
+### 2026-08-19 Phase 1a/1b：复制插件源码进 dsh-local
+
+- 将自研插件复制到 `plugins/`：dsh-image-bridge、dsh-memory-panel、dsh-skill-router、dsh-image-vision、dsh-routing-suite。
+- 将第三方补丁插件复制到 `community-plugins/`：dsh-backup、DSH-better-sidebar、dsh-plugin-git-workflow、dsh-undo-plugin-fixed、dsh-wsl-workspace。
+- 复制方式为 **rsync 排除 .git/node_modules**，保留 lib 构建产物；未移动原目录，线上 dsh 不受影响。
+- 移除 dsh-routing-suite 副本中的 `.gitmodules`（改作 vendored 目录）。
+- `.gitignore` 不再全局忽略 `lib/`，因为 dsh-memory-panel 等插件的源码/运行产物就在 lib 中；插件包需要直接可 link。
+- 更新 `manifest.json` 对应组件状态为 `copied-to-repo`。
+- 将技能集合复制到 `skills/`：mattpocock-skills、math-research-dsh（排除 .git），并更新 manifest 类型/路径/状态。
