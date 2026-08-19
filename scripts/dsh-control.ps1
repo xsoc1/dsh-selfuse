@@ -28,7 +28,8 @@ $WebUrl       = 'http://127.0.0.1:3080'
 $WebPort      = 3080
 $OllamaPort   = 11810
 $OllamaUrl    = "http://127.0.0.1:$OllamaPort"
-$OllamaExe    = 'F:\tools\ollama\ollama.exe'
+$OllamaCmd    = Get-Command ollama.exe -ErrorAction SilentlyContinue
+$OllamaExe    = if ($OllamaCmd) { $OllamaCmd.Source } else { 'F:\tools\ollama\ollama.exe' }
 
 # 附加启动项: 每次"启动/重启"时顺带检查并拉起。
 #   Enabled - $false 时临时停用
