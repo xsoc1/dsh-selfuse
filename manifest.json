@@ -14,8 +14,8 @@
       "targetPath": "vendor/deepseek-harness",
       "action": "submodule",
       "branch": "local/image-admission",
-      "status": "pending-fork",
-      "notes": "fork upstream; keep master in sync; carry local/image-admission patch"
+      "status": "fork-created-submodule-added",
+      "notes": "fork xsoc1/deepseek-harness created; local/image-admission pushed; submodule gitlink added (not cloned locally)"
     },
     {
       "id": "deepseek-harness-eac",
@@ -27,8 +27,8 @@
       "targetPath": "vendor/deepseek-harness-eac",
       "action": "submodule",
       "branch": "main",
-      "status": "pending",
-      "notes": "optional fork to xsoc1/Deepseek-Harness-EAC"
+      "status": "skipped-by-user",
+      "notes": "user confirmed not used; not forked"
     },
     {
       "id": "awesome-dsh-plugin",
@@ -40,8 +40,8 @@
       "targetPath": "vendor/awesome-dsh-plugin",
       "action": "submodule",
       "branch": "main",
-      "status": "existing-fork",
-      "notes": "maintain PR #731 etc."
+      "status": "submodule-added",
+      "notes": "existing fork; submodule gitlink added"
     },
     {
       "id": "mattpocock-skills",

@@ -223,11 +223,11 @@ dsh-local/
 
 ### Phase 2：GitHub 建仓
 
-- [ ] 用 GitHub REST API fork `deepseek-ai/deepseek-harness` → `xsoc1/deepseek-harness`。
-- [ ] 推送本地分支 `local/image-admission` 到 fork。
-- [ ] 创建 `xsoc1/dsh-local` 仓库（private 或 public，待用户决定）。
-- [ ] 配置 submodule 指向 fork 与外部仓库。
-- [ ] 首次推送并验证 clone 后能 `install.ps1`。
+- [x] 用 GitHub REST API fork `deepseek-ai/deepseek-harness` → `xsoc1/deepseek-harness`。
+- [x] 推送本地分支 `local/image-admission` 到 fork。
+- [x] 创建 `xsoc1/dsh-local` 仓库（private）。
+- [x] 配置 submodule gitlink：`vendor/deepseek-harness`、`vendor/awesome-dsh-plugin`（未实际 clone）。
+- [ ] 首次推送并验证 clone 后能 `install.ps1`（待网络恢复后执行）。
 
 ### Phase 3：安装器完善
 

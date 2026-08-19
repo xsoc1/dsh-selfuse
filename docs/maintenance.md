@@ -55,3 +55,16 @@ git commit -m "chore: bump deepseek-harness fork"
 - 尝试在仓库内独立 `pnpm install` 验证 profile；因 npm registry 网络错误（error 23）未完整跑完，已终止。
   - pnpm 已把 `config/profiles/web/pnpm-lock.yaml` 更新为相对 link，并补上 dsh-skill-router / dsh-memory-panel / dsh-wsl-workspace 依赖项；保留该 lockfile 更新。
   - 相对 link 与插件 main 入口已用脚本验证全部存在；完整安装待网络恢复后重试。
+
+### 2026-08-19 Phase 2：GitHub fork / 仓库创建
+
+- 用 GitHub REST API + 凭据管理器 token：
+  - fork `deepseek-ai/deepseek-harness` → `xsoc1/deepseek-harness`（public fork）。
+  - 创建 `xsoc1/dsh-local`（private，无 auto_init）。
+- 推送：
+  - `dsh-local` main 已推送到 GitHub（`git push` 用 token URL，随后已把 upstream 改回干净的 `origin`）。
+  - `deepseek-harness` 的 `local/image-admission` 已推送到 fork；`master` 因 fork 已含更新的上游提交而拒绝推送（正常，fork 自带 master）。
+- 在 dsh-local 登记 submodule（gitlink 方式，未实际 clone）：
+  - `vendor/deepseek-harness` → `xsoc1/deepseek-harness` @ `8f4aff2`（local/image-admission）
+  - `vendor/awesome-dsh-plugin` → `xsoc1/awesome-dsh-plugin` @ `a225e67`
+- 用户确认：Deepseek-Harness-EAC 不使用，不 fork。

@@ -1,0 +1,9 @@
+[submodule "vendor/deepseek-harness"]
+	path = vendor/deepseek-harness
+	url = https://github.com/xsoc1/deepseek-harness.git
+	branch = local/image-admission
+
+[submodule "vendor/awesome-dsh-plugin"]
+	path = vendor/awesome-dsh-plugin
+	url = https://github.com/xsoc1/awesome-dsh-plugin.git
+	branch = main
