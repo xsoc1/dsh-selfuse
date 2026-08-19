@@ -173,3 +173,12 @@ git commit -m "chore: bump deepseek-harness fork"
   - `-ProfileMode` 仅允许 `Copy`，移除 Junction 分支。
   - 技能同步从 `New-Item -ItemType Junction` 改为 `Copy-Item -Recurse`，遇到旧链接先删链接再复制。
 - 文档同步：`AGENTS.md`、`README.md`、`PLAN.md`、`troubleshooting.md` 均注明全面弃用 junction。
+
+### 2026-08-20 隔离全新安装演练通过 + package.json BOM 修复
+
+- 在临时 `DSH_HOME` 执行完整 `install.ps1 -Force -NoSystem -SkipSubmodules -ProfileMode Copy`（含 pnpm install）：
+  - 生成 `package.json`（repo-root 绝对 link）成功；
+  - `pnpm install` 完成（2m53s，ssh2 可选 crypto 构建失败但非阻塞）；
+  - agent-presets 真实复制、39 个技能真实复制、node_modules 正常、顶层无 junction。
+- 发现并修复：`Set-Content -Encoding UTF8` 会给生成的 `package.json` 加 BOM，pnpm 报 `Invalid package.json`；改为 `UTF8Encoding($false)` 无 BOM 写入后通过。
+- 推送：`211c50a`（含 `e6ea742` gitignore）。
