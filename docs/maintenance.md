@@ -39,4 +39,6 @@ git commit -m "chore: bump deepseek-harness fork"
 - 复制管理脚本（control/gui/run-dsh-web/watchdog/ensure/make-icon）到 `scripts/`。
 - 复制 `image-gen/server.py` 与 `start-image-gen.ps1` 到 `services/image-gen/`。
 - 将 profile `package.json` 的绝对 link 改为相对 `link:../../../...`。
+- 本地 `git init` 并提交骨架（`85fcf65`），后续 dry-run 修复提交 `f0765b9`。
+- `install.ps1 -DryRun` 已验证可运行且无副作用。
 - 尚未创建 GitHub 仓库、尚未迁移运行区。
