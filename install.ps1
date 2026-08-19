@@ -88,6 +88,11 @@ function Install-MissingPrerequisite {
 
 function Set-UserEnvironmentVariable {
     param([string]$Name, [string]$Value)
+    $current = [Environment]::GetEnvironmentVariable($Name, 'User')
+    if ($current -and $current -ne $Value -and -not $Force) {
+        Write-Host "    skip $Name (already '$current'); use -Force to override"
+        return
+    }
     [Environment]::SetEnvironmentVariable($Name, $Value, 'User')
     Write-Host "    set $Name=$Value"
 }
