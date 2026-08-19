@@ -178,10 +178,10 @@ dsh-local/
 3. **配置 `~/.dsh`**
    - 把 `config/settings.yaml` 写入 `~/.dsh/settings.yaml`（保留机器差异 overlay，如 Tailscale URL、端口）。
    - 把 `config/agent-presets/*` 同步到 `~/.dsh/.agent-presets/`（junction 或复制）。
-   - **web profile 两种策略（推荐 junction）**：
-     - 若 `~/.dsh/profiles/web` 不存在或是 junction → 直接建 junction 指向 `$RepoRoot\config\profiles\web`。
-     - 若已是实体目录 → 先备份，再迁移为 junction（或复制 + 路径替换）。
-   - 在 profile 内执行 `pnpm install`（依赖为相对 `link:`，可移植）。
+   - **web profile 两种策略（默认 Copy，Junction 仅限新机器/验证后）**：
+     - Copy：只同步 `cordis.patch.yml` / `pnpm-workspace.yaml` / `settings.yaml`，不覆盖 package.json/lock，最安全。
+     - Junction：把 `~/.dsh/profiles/web` 指向 `$RepoRoot\config\profiles\web`；**注意**：本地插件 link 必须用绝对路径，否则通过 junction 解析会失败（本机已踩坑回滚）。
+   - 在 profile 内执行 `pnpm install`（依赖为绝对 `link:`，本机已确认；新机器需按实际路径生成）。
 4. **技能链接**
    - 对每个技能源（mattpocock / math-research），在 `~/.dsh/skills/<name>` 建 junction。
    - 若目标已存在非 junction，先备份再用 `-Force` 替换。

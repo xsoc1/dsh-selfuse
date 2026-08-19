@@ -9,13 +9,13 @@ importers:
   .:
     dependencies:
       '@dsh-external/dsh-image-bridge':
-        specifier: link:../../../plugins/dsh-image-bridge
+        specifier: link:F:/tools/dsh-local/plugins/dsh-image-bridge
         version: link:../../../plugins/dsh-image-bridge
       '@dsh-external/dsh-skill-router':
-        specifier: link:../../../plugins/dsh-skill-router
+        specifier: link:F:/tools/dsh-local/plugins/dsh-skill-router
         version: link:../../../plugins/dsh-skill-router
       '@dsh-external/dsh-super-injector':
-        specifier: link:../../../plugins/dsh-routing-suite/injector-release
+        specifier: link:F:/tools/dsh-local/plugins/dsh-routing-suite/injector-release
         version: link:../../../plugins/dsh-routing-suite/injector-release
       '@dsh-external/dsh-vision':
         specifier: git+https://github.com/william-jin-cmu/dsh-vision.git
@@ -27,25 +27,25 @@ importers:
         specifier: ^0.1.17
         version: 0.1.17
       dsh-backup:
-        specifier: link:../../../community-plugins/dsh-backup
+        specifier: link:F:/tools/dsh-local/community-plugins/dsh-backup
         version: link:../../../community-plugins/dsh-backup
       dsh-better-sidebar:
-        specifier: link:../../../community-plugins/DSH-better-sidebar
+        specifier: link:F:/tools/dsh-local/community-plugins/DSH-better-sidebar
         version: link:../../../community-plugins/DSH-better-sidebar
       dsh-file-upload:
         specifier: ^0.4.2
         version: 0.4.2(unzipper@0.12.5)
       dsh-memory-panel:
-        specifier: link:../../../plugins/dsh-memory-panel
+        specifier: link:F:/tools/dsh-local/plugins/dsh-memory-panel
         version: link:../../../plugins/dsh-memory-panel
       dsh-plugin-git-workflow:
-        specifier: link:../../../community-plugins/dsh-plugin-git-workflow
+        specifier: link:F:/tools/dsh-local/community-plugins/dsh-plugin-git-workflow
         version: link:../../../community-plugins/dsh-plugin-git-workflow
       dsh-undo-savepoint:
-        specifier: link:../../../community-plugins/dsh-undo-plugin-fixed
+        specifier: link:F:/tools/dsh-local/community-plugins/dsh-undo-plugin-fixed
         version: link:../../../community-plugins/dsh-undo-plugin-fixed
       dsh-wsl-workspace:
-        specifier: link:../../../community-plugins/dsh-wsl-workspace
+        specifier: link:F:/tools/dsh-local/community-plugins/dsh-wsl-workspace
         version: link:../../../community-plugins/dsh-wsl-workspace
       dshmarket:
         specifier: ^1.9.0

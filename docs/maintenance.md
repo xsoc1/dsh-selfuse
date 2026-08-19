@@ -109,3 +109,20 @@ git commit -m "chore: bump deepseek-harness fork"
   - 再次备份 `~/.dsh`：`C:/Users/HuangZY/Desktop/dsh-backups/dsh-20260819-215715900.tar.gz`。
   - 原 `~/.dsh/profiles/web` 改名为 `web.bak-20260819-215736`，新建 junction 指向 `F:\tools\dsh-local\config\profiles\web`。
   - 当前运行中的 dsh 仍用旧已加载模块，dsh web 仍 200；**重启后才会真正加载 repo profile**。
+
+### 2026-08-19 junction 相对链接故障（线上回滚 + 链接加固）
+
+- 现象：切换 junction 后重启 dsh，web.log 报 `cannot resolve profile bundle "@dsh-external/dsh-super-injector"`，3080 无法访问。
+- 根因：repo profile 的本地插件 link 为相对路径（如 `..\..\..\..\..\plugins\...`）。在物理路径下能解析，但通过 `~/.dsh/profiles/web` junction 访问时，相对路径按 junction 可见路径解析到不存在的 `C:\Users\HuangZY\plugins\...` / `C:\Users\HuangZY\community-plugins\...`。
+- 线上修复：停 watchdog；坏 junction 改名为 `~/.dsh/profiles/web.junction-broken-20260819-221500`；恢复 `web.bak-20260819-215736` 为真实 `profiles\web`；`dsh-control.ps1 start` 后 HTTP 200，watchdog 记录 server ready after 68.6 s；Ollama/image-gen 未动。
+- 仓库加固：`config/profiles/web/package.json` 的本地依赖改为绝对 `link:F:/tools/dsh-local/...`；`node_modules` 内 9 个本地插件链接改为绝对 junction（旧相对链接已清理）；临时 junction 解析测试通过后已清理。
+- 经验：pnpm v11 会把绝对 `link:` 在 `pnpm-lock.yaml` 的 `version` 字段归一化为相对路径；重跑 `pnpm install` 可能再次生成相对符号链接。任何 profile 切换前，必须用临时 junction 做一次 bundle 解析测试，不能只看物理路径下的 `node_modules`。
+
+### 2026-08-19 修复 dsh 卡顿：终止 runaway lake build 会话
+
+- 现象：dsh 极卡，日志/进程显示多个 `lake build` 子进程反复 clone/fetch mathlib4。
+- 定位：通过 staging 工具访问 `ctx.get('sessions').list()` / `ctx.get('agents')`，发现 `session-35623230-9cbd-4218-83b5-08bcc4171b37`（Riemann Conjecture 工作区）事件 61.9 万、状态 running，日志含 1008 次 `lake build`。
+- 处理：调用 agent `cancel()` 将该会话置为 idle；临时禁用 `lake.exe` 防止重生成，随后恢复 `lake.exe`；确认无 `lake/git` 子进程残留。
+- 附带：`settings.yaml` 增加 `dsh-better-sidebar.bottomPanelAutoTerminal: false`，减少 node-pty `AttachConsole failed` 错误。
+- 结果：node CPU 从 ~5s/8s 降到 ~1.9s/8s，web 200；runaway 会话已 idle。
+- `install.ps1` 新增 `-ProfileMode Copy|Junction`，默认 `Copy`（只同步 `cordis.patch.yml` / `pnpm-workspace.yaml` / `settings.yaml`，不覆盖 package.json/lock），避免再次因 junction 相对链接问题破坏线上。

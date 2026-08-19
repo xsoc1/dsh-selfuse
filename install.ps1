@@ -24,6 +24,11 @@
 .PARAMETER SkipSubmodules
     Do not run `git submodule update --init --recursive`.
 
+.PARAMETER ProfileMode
+    How to apply the web profile: Copy (default, safe: copies config files into
+    the existing profile and keeps its node_modules) or Junction (replaces the
+    profile directory with a junction to the repo).
+
 .EXAMPLE
     .\install.ps1 -DryRun
     .\install.ps1 -Force
@@ -34,7 +39,9 @@ param(
     [switch]$DryRun,
     [switch]$Force,
     [switch]$NoSystem,
-    [switch]$SkipSubmodules
+    [switch]$SkipSubmodules,
+    [ValidateSet('Copy', 'Junction')]
+    [string]$ProfileMode = 'Copy'
 )
 
 $ErrorActionPreference = "Stop"
@@ -175,27 +182,48 @@ if (Test-Path $presetSrc) {
 $profileSrc = Join-Path $RepoRoot "config/profiles/web"
 $profileDst = Join-Path $DshHome "profiles/web"
 if (Test-Path $profileSrc) {
-    Invoke-Step "Sync web profile -> $profileDst" {
-        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $profileDst) | Out-Null
-        if (Test-Path $profileDst) {
-            $item = Get-Item $profileDst -Force
-            if (-not $item.LinkType) {
-                if ($Force) {
-                    $backup = "$profileDst.bak-$(Get-Date -Format yyyyMMdd-HHmmss)"
-                    Rename-Item $profileDst $backup
-                    Write-Host "    backup: $backup"
-                } else {
-                    Write-Warning "    $profileDst exists and is not a junction; use -Force to replace"
-                    return
+    if ($ProfileMode -eq 'Junction') {
+        Invoke-Step "Sync web profile via Junction -> $profileDst" {
+            New-Item -ItemType Directory -Force -Path (Split-Path -Parent $profileDst) | Out-Null
+            if (Test-Path $profileDst) {
+                $item = Get-Item $profileDst -Force
+                if (-not $item.LinkType) {
+                    if ($Force) {
+                        $backup = "$profileDst.bak-$(Get-Date -Format yyyyMMdd-HHmmss)"
+                        Rename-Item $profileDst $backup
+                        Write-Host "    backup: $backup"
+                    } else {
+                        Write-Warning "    $profileDst exists and is not a junction; use -Force to replace"
+                        return
+                    }
                 }
             }
+            if (-not (Test-Path $profileDst)) {
+                New-Item -ItemType Junction -Path $profileDst -Target $profileSrc | Out-Null
+                Write-Host "    junction: $profileDst -> $profileSrc"
+            }
+            Write-Host "    TODO: run 'pnpm install' in $profileDst"
         }
-        if (-not (Test-Path $profileDst)) {
-            New-Item -ItemType Junction -Path $profileDst -Target $profileSrc | Out-Null
-            Write-Host "    junction: $profileDst -> $profileSrc"
+    } else {
+        Invoke-Step "Sync web profile via Copy -> $profileDst" {
+            New-Item -ItemType Directory -Force -Path $profileDst | Out-Null
+            # Copy mode intentionally does NOT overwrite package.json/pnpm-lock.yaml:
+            # those encode link paths and would break an existing profile's node_modules.
+            foreach ($file in @('cordis.patch.yml', 'pnpm-workspace.yaml')) {
+                $srcFile = Join-Path $profileSrc $file
+                $dstFile = Join-Path $profileDst $file
+                if (Test-Path $srcFile) {
+                    if (Test-Path $dstFile) {
+                        $backup = "$dstFile.bak-$(Get-Date -Format yyyyMMdd-HHmmss)"
+                        Copy-Item $dstFile $backup -Force
+                        Write-Host "    backup: $backup"
+                    }
+                    Copy-Item $srcFile $dstFile -Force
+                    Write-Host "    copy: $file"
+                }
+            }
+            Write-Host "    note: package.json/pnpm-lock.yaml not overwritten (safe copy); node_modules kept in $profileDst"
         }
-        # TODO: run pnpm install inside profile after junction is in place
-        Write-Host "    TODO: run 'pnpm install' in $profileDst"
     }
 } else {
     Write-Warning "config/profiles/web not found; skip"

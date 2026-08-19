@@ -40,6 +40,7 @@ pet:
   petId: whale-girl
 dsh-better-sidebar:
   openByDefault: false
+  bottomPanelAutoTerminal: false
 remote-web-ui:
   autoTunnel: false
   publicBaseUrl: 'https://xsoc.tail6cf486.ts.net'

@@ -63,17 +63,16 @@
 
 原硬阻塞（repo profile 依赖未完整）已通过 `--ignore-scripts` 解决；`node_modules` 已完整。
 
-### 已执行（2026-08-19，只切文件不重启）
+### 已执行（2026-08-19，junction 方案已回滚）
 
 - 再次备份：`C:/Users/HuangZY/Desktop/dsh-backups/dsh-20260819-215715900.tar.gz`
-- 原 `~/.dsh/profiles/web` → `web.bak-20260819-215736`
-- 新建 junction：`~/.dsh/profiles/web` → `F:\tools\dsh-local\config\profiles\web`
-- 当前 dsh web 仍 200（未重启，运行中进程仍用旧加载模块）
+- 曾新建 junction，但因相对 link 通过 junction 解析失败导致重启问题；已回滚：
+  - 恢复原 `~/.dsh/profiles/web` 实体目录
+  - 清理坏 junction（`web.junction-broken-...`）
+- 当前 dsh web 200；线上 profile 为原始实体目录，未使用 repo junction。
 
-### 待办
+### 当前结论
 
-- 用户手动重启 dsh 后，才会真正加载 repo profile；重启后需验证插件/技能/服务。
-- 剩余注意点：
-  - submodule 未在 dsh-local 内 clone（重启后如需要，可 `-SkipSubmodules`）。
-  - cloudflared 二进制可能缺失（远程隧道需单独补装）。
-  - 系统级动作（env/schtasks/services）尚未执行。
+- 本机**不再使用 Junction 模式**，`install.ps1` 默认 `-ProfileMode Copy`。
+- Copy 模式只同步 `settings.yaml` / `cordis.patch.yml` / `pnpm-workspace.yaml`，不覆盖 `package.json` / `pnpm-lock.yaml`，避免破坏现有 node_modules。
+- 系统级动作（env/schtasks/services）仍未执行；如需执行，应先 `-DryRun` 确认。
