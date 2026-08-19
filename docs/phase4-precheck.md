@@ -34,11 +34,11 @@
 
 ## 4. 发现的风险 / 阻塞项
 
-### 4.1 【阻塞】repo profile 的 node_modules 尚未完整安装
+### 4.1 【已解决】repo profile 的 node_modules 现已完整安装
 
-- `config/profiles/web/node_modules` 来自之前未跑完的 `pnpm install`，不完整。
-- 若现在把 `~/.dsh/profiles/web` 直接 junction 到 `config/profiles/web`，dsh 启动可能因缺依赖失败。
-- **必须先**完成 repo profile 的依赖安装，或改用“复制配置到现有 profile、不 junction”的安全模式。
+- 已用 `pnpm install --registry=https://registry.npmmirror.com --ignore-scripts` 完成安装（233 包，6.6s）。
+- `node_modules` 大小 253MB，相对 link 插件均正确链接。
+- 注意：`--ignore-scripts` 跳过了 cloudflared postinstall，remote-web-ui 公网隧道如需使用，需后续单独补装 cloudflared 二进制；不影响 dsh 核心启动。
 
 ### 4.2 submodule 尚未在 dsh-local 内实际 clone
 
@@ -61,5 +61,10 @@
 
 ## 6. 结论
 
-当前**不建议立即执行切换**，因为 repo profile 依赖未完整安装是硬阻塞。
-建议先解决依赖安装问题，或选择“只同步配置、不 junction profile”的低风险方案。
+原硬阻塞（repo profile 依赖未完整）已通过 `--ignore-scripts` 解决；`node_modules` 已完整。
+剩余注意点：
+- submodule 未在 dsh-local 内 clone（实际切换建议 `-SkipSubmodules`）。
+- cloudflared 二进制可能缺失（远程隧道需单独补装）。
+- 系统级动作（env/schtasks/services）尚未在真实机器执行。
+
+若你批准，可以按第 5 节步骤开始实际切换；仍建议先只切 profile + 重启验证，再逐步启用系统级动作。

@@ -103,3 +103,5 @@ git commit -m "chore: bump deepseek-harness fork"
 - 完整 `install.ps1 -DryRun` 预览已执行，动作清单见 `docs/phase4-precheck.md`。
 - 发现硬阻塞：repo profile 的 `node_modules` 未完整安装，直接 junction 会破坏线上 dsh；submodule 也未实际 clone。
 - 结论：暂不切换；建议先完成 repo profile 依赖安装，或采用“只同步配置不 junction”的低风险方案。
+- 后续：用 `pnpm install --registry=https://registry.npmmirror.com --ignore-scripts` 已成功完成 repo profile 安装（233 包，6.6s）。`node_modules` 现为 253MB，相对 link 插件均正确链接。
+  - 注意：`--ignore-scripts` 跳过了 cloudflared 等 postinstall，因此 `cloudflared` 二进制可能缺失；remote-web-ui 公网隧道若需要，需后续单独补装。
