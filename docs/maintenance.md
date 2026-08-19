@@ -74,3 +74,4 @@ git commit -m "chore: bump deepseek-harness fork"
 - `pnpm install` 在仓库 profile 内重试：锁文件通过、233 个包已装入本地 store，但 `pdfjs-dist` / `@napi-rs/canvas-win32-x64-msvc` / `tesseract.js-core` 三个 tarball 反复 `error(23)`，最终 `TimeoutError` 退出（curl 单独下载 pdfjs 正常，疑似 pnpm 下载器/代理问题）。
 - `git submodule update --init --recursive` 尝试克隆 `vendor/awesome-dsh-plugin` 时长时间无进度，已终止；未产生残留。
 - 结论：GitHub REST/API 与 `git ls-remote` 正常；大仓库 clone 与 npm 部分二进制包下载在当前网络/代理下不稳定。后续可在网络恢复或换镜像/代理后重试。
+- 补充：改用 `--registry=https://registry.npmmirror.com` 后依赖下载成功，进入 install 脚本阶段；`cpu-features` 按已知情况失败（可选），`sharp`/`tesseract.js` 完成，但 `cloudflared` postinstall 卡在 GitHub 下载最新二进制，已终止。核心依赖已基本可装，仅剩 cloudflared 等 GitHub 下载项受网络影响。
