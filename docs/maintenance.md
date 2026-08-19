@@ -86,3 +86,12 @@ git commit -m "chore: bump deepseek-harness fork"
   - profiles/web junction 成功；
   - 39 个技能 junction 成功（35 mattpocock + 4 math-research）。
 - `.gitignore` 增加 `.test-dsh-home/`，演练后已清理临时目录。
+
+### 2026-08-19 Phase 3b：install.ps1 系统级能力实现（DryRun 验证）
+
+- 环境变量：实现 `DSH_ROOT` / `OLLAMA_MODELS` / `HF_HOME` 写入 User 作用域（`-NoSystem` 跳过）。
+- 计划任务：实现用 `schtasks.exe` 注册 `dsh-watchdog`（ONLOGON）与 `dsh-watchdog-ensure`（每 5 分钟）。
+- 服务启动：实现 Ollama（11810）与 image-gen（17821）的检测/启动逻辑（未找到时告警）。
+- 健康检查：实现 `Invoke-WebRequest` 探测 3080 / 11810 / 17821。
+- Bootstrap：缺失 git/node/pnpm 时打印 winget/corepack 安装命令（真正执行仍为 TODO，避免未测试就在真实机器安装）。
+- 验证：PowerShell Parser 0 错误；`-DryRun -NoSystem` 与 `-DryRun` 均正常；隔离演练仍通过。

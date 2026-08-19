@@ -233,9 +233,9 @@ dsh-local/
 
 - [x] 实现 `install.ps1` 的 profile junction/复制逻辑（隔离演练通过）。
 - [x] 实现技能 junction（递归查找 SKILL.md，39 个成功）。
-- [ ] 实现环境变量、计划任务、服务启动（仍 TODO）。
-- [ ] 实现 `-Bootstrap` 新机器依赖安装（仍 TODO）。
-- [x] 加 `-DryRun` 与健康检查（DryRun 已有；健康检查 TODO）。
+- [x] 实现环境变量、计划任务、服务启动（已实现，DryRun 验证；未在真实机器执行）。
+- [ ] 实现 `-Bootstrap` 新机器依赖安装（当前仅打印安装命令，真正执行为 TODO）。
+- [x] 加 `-DryRun` 与健康检查（均已实现）。
 - [x] 编写冒烟测试（在临时 `DSH_HOME` 下演练通过）。
 
 ### Phase 4：切换运行区

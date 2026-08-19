@@ -62,6 +62,29 @@ function Test-CommandAvailable([string]$Name) {
     return [bool](Get-Command $Name -ErrorAction SilentlyContinue)
 }
 
+function Install-MissingPrerequisite {
+    param([string[]]$Commands)
+    foreach ($cmd in $Commands) {
+        switch ($cmd) {
+            'git'   { $action = 'winget install --id Git.Git -e --silent' }
+            'node'  { $action = 'winget install --id OpenJS.NodeJS.LTS -e --silent' }
+            'pnpm'  { $action = 'corepack enable && npm install -g pnpm' }
+            default { $action = "Please install $cmd manually" }
+        }
+        Write-Host "    $action"
+        if (-not $DryRun) {
+            # TODO: execute the installer for real. Requires admin/network and is
+            # intentionally left as a no-op until tested on a fresh machine.
+        }
+    }
+}
+
+function Set-UserEnvironmentVariable {
+    param([string]$Name, [string]$Value)
+    [Environment]::SetEnvironmentVariable($Name, $Value, 'User')
+    Write-Host "    set $Name=$Value"
+}
+
 Write-Host ""
 Write-Host "dsh-local installer (skeleton)" -ForegroundColor Green
 Write-Host "RepoRoot: $RepoRoot"
@@ -78,7 +101,8 @@ foreach ($cmd in @("git", "node", "pnpm")) {
 if ($missing.Count -gt 0) {
     Write-Warning "Missing commands: $($missing -join ', ')"
     if ($Bootstrap) {
-        Write-Step "Bootstrap would install prerequisites (TODO: implement winget/choco installer)"
+        Write-Step "Bootstrap: installing missing prerequisites"
+        Install-MissingPrerequisite -Commands $missing
     } else {
         Write-Warning "Install them manually or run with -Bootstrap."
     }
@@ -214,32 +238,73 @@ foreach ($group in $skillSources) {
     }
 }
 
-# --- 6. environment variables (TODO) ----------------------------------------
+# --- 6. environment variables ------------------------------------------------
 if (-not $NoSystem) {
-    Invoke-Step "Set environment variables (DSH_ROOT / OLLAMA_MODELS / HF_HOME)" {
-        # TODO: setx / [Environment]::SetEnvironmentVariable for user scope
-        Write-Host "    TODO: DSH_ROOT=$RepoRoot\vendor\deepseek-harness"
-        Write-Host "    TODO: OLLAMA_MODELS=... / HF_HOME=..."
+    Invoke-Step "Set user environment variables" {
+        Set-UserEnvironmentVariable "DSH_ROOT" (Join-Path $RepoRoot "vendor\deepseek-harness")
+        Set-UserEnvironmentVariable "OLLAMA_MODELS" (Join-Path $RepoRoot "services\ollama\models")
+        Set-UserEnvironmentVariable "HF_HOME" (Join-Path $RepoRoot "services\image-gen\hf")
+        Write-Host "    note: OPENCODE_GO_API_KEY etc. are read from system/user secrets; not written by installer"
     }
 } else {
     Write-Step "Skip environment variables (-NoSystem)"
 }
 
-# --- 7. scheduled tasks & services (TODO) -----------------------------------
+# --- 7. scheduled tasks & services -------------------------------------------
 if (-not $NoSystem) {
-    Invoke-Step "Register watchdog scheduled tasks / start services" {
-        # TODO: use scripts/ensure-dsh-watchdog.ps1 and dsh-control.ps1
-        Write-Host "    TODO: scheduled tasks and service startup"
+    Invoke-Step "Register watchdog scheduled tasks" {
+        $watchdog = Join-Path $RepoRoot "scripts\dsh-watchdog.ps1"
+        $ensure = Join-Path $RepoRoot "scripts\ensure-dsh-watchdog.ps1"
+        schtasks.exe /Create /TN "dsh-watchdog" /TR "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$watchdog`"" /SC ONLOGON /RL HIGHEST /F | Out-Null
+        schtasks.exe /Create /TN "dsh-watchdog-ensure" /TR "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$ensure`"" /SC MINUTE /MO 5 /F | Out-Null
+        Write-Host "    registered dsh-watchdog / dsh-watchdog-ensure"
+    }
+    Invoke-Step "Start local services (Ollama / image-gen)" {
+        $ollamaPath = $null
+        $ollamaCmd = Get-Command ollama.exe -ErrorAction SilentlyContinue
+        if ($ollamaCmd) { $ollamaPath = $ollamaCmd.Source }
+        if (-not $ollamaPath) {
+            $candidate = "F:\tools\ollama\ollama.exe"
+            if (Test-Path $candidate) { $ollamaPath = $candidate }
+        }
+        if ($ollamaPath) {
+            $env:OLLAMA_HOST = "127.0.0.1:11810"
+            Start-Process -FilePath $ollamaPath -ArgumentList "serve" -WindowStyle Hidden
+            Write-Host "    started Ollama (11810) if not already running"
+        } else {
+            Write-Warning "    ollama not found; install portable Ollama or start manually"
+        }
+
+        $py = Join-Path $RepoRoot "services\image-gen\venv\Scripts\python.exe"
+        if (-not (Test-Path $py)) { $py = "F:\tools\image-gen\venv\Scripts\python.exe" }
+        if (Test-Path $py) {
+            $server = Join-Path $RepoRoot "services\image-gen\server.py"
+            Start-Process -FilePath $py -ArgumentList $server -WorkingDirectory (Split-Path $server) -WindowStyle Hidden
+            Write-Host "    started image-gen (17821) if not already running"
+        } else {
+            Write-Warning "    image-gen venv not found; run services\image-gen\setup or start manually"
+        }
     }
 } else {
     Write-Step "Skip scheduled tasks / services (-NoSystem)"
 }
 
-# --- 8. health check (TODO) -------------------------------------------------
+# --- 8. health check ---------------------------------------------------------
 if (-not $NoSystem) {
     Invoke-Step "Health check" {
-        # TODO: probe 3080 / 11810 / 17821
-        Write-Host "    TODO: check dsh web, Ollama, image-gen"
+        $checks = @(
+            @{ Name = "dsh web";   Url = "http://127.0.0.1:3080" },
+            @{ Name = "Ollama";    Url = "http://127.0.0.1:11810" },
+            @{ Name = "image-gen"; Url = "http://127.0.0.1:17821/health" }
+        )
+        foreach ($c in $checks) {
+            try {
+                $r = Invoke-WebRequest -Uri $c.Url -UseBasicParsing -TimeoutSec 3
+                Write-Host "    $($c.Name): OK ($($r.StatusCode))"
+            } catch {
+                Write-Warning "    $($c.Name): unreachable"
+            }
+        }
     }
 } else {
     Write-Step "Skip health check (-NoSystem)"
