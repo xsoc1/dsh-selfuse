@@ -182,3 +182,11 @@ git commit -m "chore: bump deepseek-harness fork"
   - agent-presets 真实复制、39 个技能真实复制、node_modules 正常、顶层无 junction。
 - 发现并修复：`Set-Content -Encoding UTF8` 会给生成的 `package.json` 加 BOM，pnpm 报 `Invalid package.json`；改为 `UTF8Encoding($false)` 无 BOM 写入后通过。
 - 推送：`211c50a`（含 `e6ea742` gitignore）。
+
+### 2026-08-20 node-pty AttachConsole 本地补丁
+
+- 检查 npm：node-pty 最新版本仍为 `1.1.0`，无法通过升级解决。
+- 本地 patch `node-pty@1.1.0` 的 `conpty_console_list_agent`（src + lib）：
+  - `AttachConsole` 失败时返回空列表而不是抛错，避免 dsh-web.log 刷 `AttachConsole failed`。
+- 新增幂等补丁脚本：`scripts/patch-node-pty.ps1`。
+- 验证：补丁后 60 秒内日志 `AttachConsole failed` 计数未增加（42 → 42）。

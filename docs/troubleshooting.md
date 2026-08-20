@@ -47,7 +47,10 @@ ctx.get('agents').get('<sessionId>').cancel()
 
 **缓解**：
 - `settings.yaml` 设置 `dsh-better-sidebar.bottomPanelAutoTerminal: false`。
-- 如仍出现，可关闭已打开的终端标签页；若影响使用，考虑禁用 better-sidebar 的终端功能或升级 node-pty。
+- 已本地 patch node-pty 1.1.0：`conpty_console_list_agent` 在 `AttachConsole` 失败时返回空列表而不是抛错。
+  - 补丁脚本：`scripts/patch-node-pty.ps1`（幂等，可重复执行）。
+  - 注意：node-pty 最新 npm 版本仍是 1.1.0，因此采用本地补丁而非升级。
+- 如仍出现，可关闭已打开的终端标签页；若影响使用，考虑禁用 better-sidebar 的终端功能。
 
 ## 4. pnpm 安装卡在 `cloudflared` / 个别 tarball
 
