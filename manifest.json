@@ -1,7 +1,7 @@
 {
   "$schema": "./docs/manifest.schema.json",
-  "name": "dsh-local",
-  "description": "Local DeepSeek Harness self-use management repository",
+  "name": "dsh-selfuse",
+  "description": "Local DeepSeek Harness self-use management repository (dsh-selfuse)",
   "version": "0.1.0",
   "components": [
     {
