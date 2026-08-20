@@ -240,8 +240,8 @@
       "localPath": "F:/tools/image-gen",
       "targetPath": "services/image-gen",
       "action": "copy-to-repo",
-      "status": "snapshot-copied",
-      "notes": "SDXL-Turbo server; venv/hf ignored"
+      "status": "fixed-offline-local-snapshot",
+      "notes": "server.py loads local snapshot offline; start script BOM fixed"
     },
     {
       "id": "ollama",
