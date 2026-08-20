@@ -38,16 +38,25 @@ dsh-local/
 └─ docs/                     # 方案、架构、维护手册、ADR
 ```
 
-## 快速开始（当前骨架阶段）
+## 快速开始
+
+### 新机器部署
 
 ```powershell
-# 查看方案
-notepad .\docs\PLAN.md
-
-# 初始化本地 git（可选）
-git init
-git add .
-git commit -m "chore: dsh-local skeleton"
+git clone --recurse-submodules https://github.com/xsoc1/dsh-local.git
+cd dsh-local
+.\install.ps1 -Bootstrap -Force
 ```
 
-完整安装器尚未实现；见 `docs/PLAN.md` 的迁移步骤。
+### 当前机器同步配置（安全 Copy 模式，不使用 junction）
+
+```powershell
+.\install.ps1 -DryRun                 # 预览
+.\install.ps1 -Force -SkipSubmodules  # 应用（不会覆盖已有 package.json/lock）
+```
+
+### 排障与文档
+
+- 方案：`docs/PLAN.md`
+- 维护记录：`docs/maintenance.md`
+- 排障手册：`docs/troubleshooting.md`
