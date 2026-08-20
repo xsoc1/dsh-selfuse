@@ -208,16 +208,16 @@ dsh-local/
 - [x] 创建 `F:\tools\dsh-local` 骨架目录。
 - [x] 复制 settings / profile / agent-presets / scripts / image-gen 代码。
 - [x] 编写 README、AGENTS、PLAN、manifest 草案。
-- [ ] 初始化本地 git 并提交骨架。
+- [x] 初始化本地 git 并提交骨架。
 
 ### Phase 1：仓库整理
 
 - [x] 把自研插件源码复制到 `plugins/`（保留 lib 构建产物，直接可 link）。
 - [x] 把第三方补丁插件复制到 `community-plugins/`（vendored 副本）。
-- [ ] 整理 `community-plugins/`：记录每个插件上游 repo、版本、本地 patch（manifest 已初步记录）。
-- [ ] 整理 `skills/`：决定 submodule 或 vendored，并写安装/更新脚本。
-- [ ] 完善 `manifest.json` 字段（source、target、action、repo、version、notes）。
-- [ ] 把管理脚本从 `deepseek-harness/` 运行目录“规范化”到 `scripts/`，并让安装器负责同步。
+- [x] 整理 `community-plugins/`：记录每个插件上游 repo、版本、本地 patch（README 表格 + manifest）。
+- [x] 整理 `skills/`：决定 vendored，并写安装/更新脚本（`scripts/sync-skills.ps1`）。
+- [x] 完善 `manifest.json` 字段（source、target、action、repo、version、notes）。
+- [x] 把管理脚本从 `deepseek-harness/` 运行目录“规范化”到 `scripts/`，并让安装器负责同步。
 
 ### Phase 2：GitHub 建仓
 
@@ -225,24 +225,24 @@ dsh-local/
 - [x] 推送本地分支 `local/image-admission` 到 fork。
 - [x] 创建 `xsoc1/dsh-selfuse` 仓库（private）。
 - [x] 配置 submodule gitlink：`vendor/deepseek-harness`、`vendor/awesome-dsh-plugin`（未实际 clone）。
-- [ ] 首次推送并验证 clone 后能 `install.ps1`（待网络恢复后执行）。
+- [x] 首次推送并验证 clone 后能 `install.ps1`（已从 GitHub 克隆 `dsh-selfuse` 验证）。
 
 ### Phase 3：安装器完善
 
 - [x] 实现 `install.ps1` 的 profile 复制逻辑（Copy 模式，禁用 junction）。
 - [x] 实现技能复制（递归查找 SKILL.md，真实复制，39 个成功）。
 - [x] 实现环境变量、计划任务、服务启动（已实现，DryRun 验证；未在真实机器执行）。
-- [ ] 实现 `-Bootstrap` 新机器依赖安装（当前仅打印安装命令，真正执行为 TODO）。
+- [x] 实现 `-Bootstrap` 新机器依赖安装（git/node 用 winget，pnpm 用 corepack）。
 - [x] 加 `-DryRun` 与健康检查（均已实现）。
 - [x] 编写冒烟测试（在临时 `DSH_HOME` 下演练通过）。
 
 ### Phase 4：切换运行区
 
-- [ ] 确认安装器在当前机器 dry-run 通过。
-- [ ] 备份当前 `~/.dsh` 与 `F:\tools` 关键目录。
-- [ ] 执行安装器，把线上 profile 同步到 repo（Copy 模式）。
-- [ ] 重启 dsh，验证插件/技能/服务全部正常。
-- [ ] 更新 `F:\tools\AGENTS.md` 维护记录，指向 dsh-local。
+- [x] 确认安装器在当前机器 dry-run 通过。
+- [x] 备份当前 `~/.dsh` 与 `F:\tools` 关键目录（多次 backup_dsh）。
+- [x] 执行安装器，把线上 profile 同步到 repo（Copy 模式）。
+- [x] 重启 dsh，验证插件/技能/服务全部正常（web/Ollama/image-gen 均 200）。
+- [x] 更新 `F:\tools\AGENTS.md` 维护记录，指向 dsh-selfuse。
 
 ## 8. 风险与缓解
 
@@ -257,11 +257,11 @@ dsh-local/
 
 ## 9. 待确认事项
 
-- [ ] `dsh-local` 仓库可见性：private / public？
-- [ ] 自研插件是否各自独立 GitHub 仓，还是统一放在 dsh-local 内？
-- [ ] `Deepseek-Harness-EAC` 是否也需要 fork 到 `xsoc1`？
-- [ ] 新机器是否要自动安装 Node/pnpm/Ollama/Python，还是只做“检测+提示”？
-- [ ] 是否保留 `F:\tools` 现有目录作为“运行区”，还是后续完全迁入 `dsh-local`？
+- [x] `dsh-selfuse` 仓库可见性：public。
+- [x] 自研插件是否各自独立 GitHub 仓，还是统一放在 dsh-local 内？统一放在 dsh-selfuse 内（dsh-image-vision 另有独立仓但也在仓库内保留副本）。
+- [x] `Deepseek-Harness-EAC` 是否也需要 fork 到 `xsoc1`？不 fork（用户确认不使用）。
+- [x] 新机器是否要自动安装 Node/pnpm/Ollama/Python？git/node/pnpm 自动；Ollama/Python 检测+提示/脚本。
+- [x] 是否保留 `F:\tools` 现有目录作为“运行区”？保留为运行区。
 
 ## 10. 附录：当前已复制进骨架的文件
 

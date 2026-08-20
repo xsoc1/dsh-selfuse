@@ -130,13 +130,14 @@
       "id": "dsh-backup",
       "type": "community-plugin",
       "name": "dsh-backup",
-      "repo": "https://github.com/.../dsh-backup.git",
+      "repo": "https://github.com/xiaoyuyu6420/dsh-backup.git",
       "upstream": "https://github.com/.../dsh-backup.git",
       "localPath": "F:/tools/community-plugins/dsh-backup",
       "targetPath": "community-plugins/dsh-backup",
       "action": "vendor-or-copy",
       "status": "copied-to-repo",
-      "notes": "vendored copy; local fix: backupPanel/remove -> deleteBackup"
+      "notes": "vendored copy; local fix: backupPanel/remove -> deleteBackup",
+      "version": "0.5.0"
     },
     {
       "id": "dsh-better-sidebar",
@@ -149,7 +150,8 @@
       "action": "submodule-or-copy",
       "branch": "main",
       "status": "copied-to-repo",
-      "notes": "openByDefault false via settings"
+      "notes": "openByDefault false via settings",
+      "version": "0.12.2"
     },
     {
       "id": "dsh-plugin-git-workflow",
@@ -162,7 +164,8 @@
       "action": "submodule-or-copy",
       "branch": "main",
       "status": "copied-to-repo",
-      "notes": ""
+      "notes": "",
+      "version": "0.1.1"
     },
     {
       "id": "dsh-undo-plugin-fixed",
@@ -174,7 +177,8 @@
       "targetPath": "community-plugins/dsh-undo-plugin-fixed",
       "action": "copy-to-repo",
       "status": "copied-to-repo",
-      "notes": "vendored local fixed copy: main lib/index2.js"
+      "notes": "vendored local fixed copy: main lib/index2.js",
+      "version": "0.3.3"
     },
     {
       "id": "dsh-wsl-workspace",
@@ -186,7 +190,8 @@
       "targetPath": "community-plugins/dsh-wsl-workspace",
       "action": "submodule-or-copy",
       "status": "copied-to-repo",
-      "notes": ""
+      "notes": "",
+      "version": "0.2.3"
     },
     {
       "id": "dsh-control-scripts",
