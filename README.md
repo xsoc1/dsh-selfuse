@@ -43,7 +43,7 @@ dsh-local/
 ### 新机器部署
 
 ```powershell
-git clone --recurse-submodules https://github.com/xsoc1/dsh-local.git
+git clone --recurse-submodules https://github.com/xsoc1/dsh-selfuse.git
 cd dsh-local
 .\install.ps1 -Bootstrap -Force
 ```

@@ -35,7 +35,7 @@
 2. 人类与 agent 都能通过统一的 `manifest.json` + 文档 + 目录结构维护。
 3. 在 GitHub 上：
    - fork `deepseek-ai/deepseek-harness` → `xsoc1/deepseek-harness`（源码仓）
-   - 新建 `xsoc1/dsh-local`（管理仓，聚合个人内容）
+   - 新建 `xsoc1/dsh-selfuse`（管理仓，聚合个人内容）
 4. 提供 `install.ps1`：
    - 当前机器：重建/修复 profile、技能复制、脚本、服务、计划任务。
    - 新机器：安装依赖（Node/pnpm/Ollama/Python/服务）并部署完整环境。
@@ -48,7 +48,7 @@ GitHub
 │   ├─ master                    # 与上游同步
 │   └─ local/image-admission     # 本地源码补丁分支（可 cherry-pick/rebase）
 │
-└─ xsoc1/dsh-local               # 自用管理仓（本骨架）
+└─ xsoc1/dsh-selfuse               # 自用管理仓（本骨架）
     ├─ vendor/deepseek-harness -> submodule: xsoc1/deepseek-harness
     ├─ vendor/deepseek-harness-eac -> submodule: xsoc1/Deepseek-Harness-EAC（可选 fork）
     ├─ vendor/mattpocock-skills -> submodule: xsoc1/skills（fork 后含本地修改）或上游+patch
@@ -223,7 +223,7 @@ dsh-local/
 
 - [x] 用 GitHub REST API fork `deepseek-ai/deepseek-harness` → `xsoc1/deepseek-harness`。
 - [x] 推送本地分支 `local/image-admission` 到 fork。
-- [x] 创建 `xsoc1/dsh-local` 仓库（private）。
+- [x] 创建 `xsoc1/dsh-selfuse` 仓库（private）。
 - [x] 配置 submodule gitlink：`vendor/deepseek-harness`、`vendor/awesome-dsh-plugin`（未实际 clone）。
 - [ ] 首次推送并验证 clone 后能 `install.ps1`（待网络恢复后执行）。
 

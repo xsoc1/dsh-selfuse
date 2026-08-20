@@ -23,7 +23,7 @@ Windows 主机
 ```text
 GitHub
 ├─ xsoc1/deepseek-harness   (fork, 源码)
-└─ xsoc1/dsh-local          (管理仓, 本仓库)
+└─ xsoc1/dsh-selfuse          (管理仓, 本仓库)
 
 本地
 ├─ F:\tools\dsh-local               # clone 管理仓

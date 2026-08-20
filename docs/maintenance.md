@@ -60,7 +60,7 @@ git commit -m "chore: bump deepseek-harness fork"
 
 - 用 GitHub REST API + 凭据管理器 token：
   - fork `deepseek-ai/deepseek-harness` → `xsoc1/deepseek-harness`（public fork）。
-  - 创建 `xsoc1/dsh-local`（private，无 auto_init）。
+  - 创建 `xsoc1/dsh-selfuse`（private，无 auto_init）。
 - 推送：
   - `dsh-local` main 已推送到 GitHub（`git push` 用 token URL，随后已把 upstream 改回干净的 `origin`）。
   - `deepseek-harness` 的 `local/image-admission` 已推送到 fork；`master` 因 fork 已含更新的上游提交而拒绝推送（正常，fork 自带 master）。
