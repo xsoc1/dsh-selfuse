@@ -1,4 +1,4 @@
-# 启动本地生图服务（SDXL-Turbo / diffusers）供 dsh generate_image 工具使用。
+﻿# 启动本地生图服务（SDXL-Turbo / diffusers）供 dsh generate_image 工具使用。
 # 用法：  powershell -ExecutionPolicy Bypass -File start-image-gen.ps1
 # 端口：17821（可改）。模型已缓存到 F:\tools\image-gen\hf，无需重复下载。
 $ErrorActionPreference = "Stop"

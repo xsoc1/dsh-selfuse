@@ -23,15 +23,29 @@ args = parser.parse_args()
 os.environ.setdefault("HF_HUB_ENABLE_HF_TRANSFER", "0")
 # Pin the HF cache so the 3GB model is reused no matter how the server starts.
 os.environ.setdefault("HF_HOME", "F:/tools/image-gen/hf")
+# Force offline so the 3GB cached model is used even when the Hub is unreachable.
+os.environ.setdefault("HF_HUB_OFFLINE", "1")
 
 from diffusers import AutoPipelineForText2Image
 
+# Resolve the local snapshot directory directly so an incomplete metadata
+# snapshot (missing README/LICENSE etc.) does not block loading.
+from pathlib import Path
+_hf_home = Path(os.environ.get("HF_HOME", "F:/tools/image-gen/hf"))
+_repo_dir = _hf_home / "hub" / ("models--" + args.model.replace("/", "--"))
+_ref_file = _repo_dir / "refs" / "main"
+if _ref_file.exists():
+    _rev = _ref_file.read_text().strip()
+    _model_path = _repo_dir / "snapshots" / _rev
+    if _model_path.exists():
+        args.model = str(_model_path)
 print(f"[image-gen] loading {args.model} on {args.device} ...", flush=True)
 t0 = time.time()
 pipe = AutoPipelineForText2Image.from_pretrained(
     args.model,
     torch_dtype=torch.float16,
     variant="fp16",
+    local_files_only=True,
 ).to(args.device)
 print(f"[image-gen] model loaded in {time.time()-t0:.1f}s", flush=True)
 

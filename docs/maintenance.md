@@ -190,3 +190,11 @@ git commit -m "chore: bump deepseek-harness fork"
   - `AttachConsole` 失败时返回空列表而不是抛错，避免 dsh-web.log 刷 `AttachConsole failed`。
 - 新增幂等补丁脚本：`scripts/patch-node-pty.ps1`。
 - 验证：补丁后 60 秒内日志 `AttachConsole failed` 计数未增加（42 → 42）。
+
+### 2026-08-20 image-gen 服务修复（离线加载本地快照）
+
+- 现象：image-gen 服务无法启动，`from_pretrained` 因网络/Hub 不可达失败；缓存快照被判定 incomplete（缺 README/LICENSE 等非关键文件）。
+- 修复：
+  - `server.py` 增加 `HF_HUB_OFFLINE=1`，并直接解析本地 snapshot 目录传给 `from_pretrained(local_files_only=True)`，绕过 snapshot 完整性检查。
+  - `start-image-gen.ps1` 恢复 UTF-8 BOM，避免 Windows PowerShell 解析失败。
+- 验证：`/health` 返回 200，`model` 指向本地 snapshot，`device=cuda:0`。
