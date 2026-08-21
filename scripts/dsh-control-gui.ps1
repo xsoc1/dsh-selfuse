@@ -1,5 +1,5 @@
 ﻿# dsh 图形控制台 (dsh-control-gui.ps1)
-# WinForms 简单界面: 实时状态 + 启动/重启/停止 + Web UI/日志/Ollama/WSL。
+# WinForms 简单界面: 实时状态 + 启动/重启/停止 + Web UI/日志/WSL。
 # 非管理员运行时自动提权重启 (会弹 UAC)。附加 -SmokeTest 参数用于自检 (3 秒后自动关闭)。
 
 $ErrorActionPreference = 'Stop'
@@ -20,9 +20,6 @@ $WebLog       = Join-Path $HarnessRoot 'dsh-web.log'
 $IconFile     = Join-Path $HarnessRoot 'dsh.ico'
 $WebUrl       = 'http://127.0.0.1:3080'
 $WebPort      = 3080
-$OllamaPort   = 11810
-$OllamaCmd    = Get-Command ollama.exe -ErrorAction SilentlyContinue
-$OllamaExe    = if ($OllamaCmd) { $OllamaCmd.Source } else { 'F:\tools\ollama\ollama.exe' }
 $ImageFile    = 'C:\Users\HuangZY\Pictures\IMG_1891.PNG'
 $DshHome      = Join-Path $env:USERPROFILE '.dsh'
 $DshProfile   = Join-Path $DshHome 'profiles\web'
@@ -46,8 +43,6 @@ param(
     [string]$ActivityFile,
     [string]$WebUrl,
     [int]$WebPort,
-    [int]$OllamaPort,
-    [string]$OllamaExe,
     [string]$DshHome,
     [string]$DshProfile,
     [string]$WatchdogFile,
@@ -139,15 +134,6 @@ function Get-WslState {
     }
 }
 
-function Get-OllamaModels {
-    try {
-        $r = Invoke-RestMethod -Uri "http://127.0.0.1:$OllamaPort/api/tags" -TimeoutSec 1
-        return (@($r.models | ForEach-Object { $_.name }) -join ', ')
-    } catch {
-        return ''
-    }
-}
-
 function Get-HttpStatus {
     try {
         $r = Invoke-WebRequest -Uri $WebUrl -UseBasicParsing -TimeoutSec 1
@@ -220,68 +206,6 @@ function Stop-DshAllAction {
     }
     Write-Activity "dsh 已停止 (端口 $WebPort 已释放)"
     return 'dsh stopped'
-}
-
-function Start-OllamaAction {
-    if (Get-PortOpen $OllamaPort) {
-        Write-Activity "Ollama 已在运行 (端口 $OllamaPort)"
-        return 'Ollama already running'
-    }
-    $ollamaCmd = $null
-    $g = Get-Command ollama -ErrorAction SilentlyContinue
-    if ($g) { $ollamaCmd = $g.Source }
-    elseif (Test-Path $OllamaExe) { $ollamaCmd = $OllamaExe }
-    if ($ollamaCmd) {
-        Write-Activity "启动 Ollama: $ollamaCmd serve (OLLAMA_HOST=127.0.0.1:$OllamaPort)"
-        $env:OLLAMA_HOST = "127.0.0.1:$OllamaPort"
-        Start-Process -FilePath $ollamaCmd -ArgumentList 'serve' -WindowStyle Hidden
-        Remove-Item Env:OLLAMA_HOST -ErrorAction SilentlyContinue
-        Write-Activity "Ollama 启动命令已发出 (端口 $OllamaPort)"
-        return "Ollama start command sent ($ollamaCmd) on port $OllamaPort"
-    }
-    Write-Activity '未找到 ollama，请手动安装 (https://ollama.com)'
-    return 'ollama not found, install from https://ollama.com'
-}
-
-function Get-ImageGenInfo {
-    $port = 17821
-    if (-not (Get-PortOpen $port)) {
-        return @{ status = '未运行'; model = '' }
-    }
-    $model = ''
-    try {
-        $h = Invoke-RestMethod -Uri "http://127.0.0.1:$port/health" -TimeoutSec 2
-        if ($h -and $h.ok) { $model = $h.model }
-    } catch {}
-    return @{ status = '运行中'; model = $model }
-}
-
-function Start-ImageGenAction {
-    $ig = Get-ImageGenInfo
-    if ($ig.status -eq '运行中') {
-        Write-Activity "生图服务已在运行 ($($ig.model))"
-        return "image-gen running ($($ig.model))"
-    }
-    $py = 'F:\tools\image-gen\venv\Scripts\python.exe'
-    $server = 'F:\tools\image-gen\server.py'
-    if (-not (Test-Path $py) -or -not (Test-Path $server)) {
-        Write-Activity '生图服务未安装（缺少 F:\tools\image-gen）'
-        return 'image-gen not installed'
-    }
-    Write-Activity '启动生图服务 (17821, SDXL-Turbo) ... 首次加载模型约 10-30s'
-    Start-Process -FilePath $py -ArgumentList @($server, '--port', '17821') -WindowStyle Hidden
-    $deadline = (Get-Date).AddSeconds(150)
-    do {
-        Start-Sleep -Milliseconds 1500
-        $h = $null
-        try { $h = Invoke-RestMethod -Uri "http://127.0.0.1:17821/health" -TimeoutSec 2 } catch {}
-        if ($h -and $h.ok) {
-            Write-Activity "生图服务就绪: $($h.model)"
-            return "image-gen ready ($($h.model))"
-        }
-    } while ((Get-Date) -lt $deadline)
-    Write-Activity '生图服务启动超时（查看 F:\tools\image-gen 是否完整）'
-    return 'image-gen start timeout'
 }
 
 function Get-TailscaleInfo {
@@ -368,17 +292,15 @@ while ($true) {
                         Start-Sleep -Seconds 1
                         $lines += Start-WatchdogAction
                     }
-                    'ollama' { $lines += Start-OllamaAction }
                     'wsl' {
                         $out = wsl --shutdown 2>&1 | Out-String
                         if ($out.Trim()) { $lines += $out.Trim() }
                         $lines += 'WSL shut down; it will restart on next wsl_bash call'
                     }
                     'tailscale' { $lines += Repair-TailscaleAction }
-                    'imagegen'  { $lines += Start-ImageGenAction }
                     default { $lines += "unknown command: $($cmd.action)" }
                 }
-                if ($cmd.action -eq 'ollama' -or $cmd.action -eq 'wsl' -or $cmd.action -eq 'tailscale' -or $cmd.action -eq 'imagegen') { $script:activeAction = $null }
+                if ($cmd.action -eq 'wsl' -or $cmd.action -eq 'tailscale') { $script:activeAction = $null }
             }
             $resultFile = $ResultPrefix + $cmd.id + '.json'
             $tmpResult = $resultFile + '.tmp'
@@ -395,13 +317,6 @@ while ($true) {
     }
     $watchdogPids = Get-WatchdogPids
     $wsl = Get-WslState
-    $ollamaUp = Get-PortOpen $OllamaPort
-    $ollamaPid = $null
-    $models = ''
-    if ($ollamaUp) {
-        $ollamaPid = Get-PortPid $OllamaPort
-        $models = Get-OllamaModels
-    }
     $webTail = @(Get-Content -LiteralPath $WebLog -Tail 12 -Encoding UTF8 -ErrorAction SilentlyContinue | ForEach-Object { [string]$_ })
     $webNew = @()
     foreach ($ln in $webTail) {
@@ -448,7 +363,6 @@ while ($true) {
         }
     }
     $tsInfo = Get-TailscaleInfo
-    $igInfo = Get-ImageGenInfo
     $snap = [ordered]@{
         time = Get-Date -Format 'HH:mm:ss'
         webUp = $webUp
@@ -456,16 +370,11 @@ while ($true) {
         webPid = $webPid
         watchdogPids = ($watchdogPids -join ',')
         wsl = $wsl
-        ollamaUp = $ollamaUp
-        ollamaPid = $ollamaPid
-        models = $models
         dshHome = Test-Path $DshHome
         dshProfile = Test-Path $DshProfile
         tailscale = $tsInfo.status
         tailscaleIp = $tsInfo.ip
         tailscaleServe = $tsInfo.serve
-        imagegen = $igInfo.status
-        imagegenModel = $igInfo.model
         webLogTail = @($webNew)
         watchdogLogTail = @($watchdogNew)
         activityLogTail = @($activityNew)
@@ -533,16 +442,16 @@ $statusGroup.BackColor = [System.Drawing.Color]::FromArgb(32, 38, 52)
 $tbl = New-Object System.Windows.Forms.TableLayoutPanel
 $tbl.Dock = 'Fill'
 $tbl.ColumnCount = 2
-$tbl.RowCount = 6
+$tbl.RowCount = 5
 $tbl.BackColor = [System.Drawing.Color]::FromArgb(32, 38, 52)
 $tbl.ColumnStyles.Add((New-Object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Absolute, 90))) | Out-Null
 $tbl.ColumnStyles.Add((New-Object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent, 100))) | Out-Null
-for ($i = 0; $i -lt 7; $i++) { $tbl.RowStyles.Add((New-Object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 14.28))) | Out-Null }
+for ($i = 0; $i -lt 5; $i++) { $tbl.RowStyles.Add((New-Object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null }
 $statusGroup.Controls.Add($tbl)
 
 $nameFont = New-Object System.Drawing.Font('Microsoft YaHei UI', 9.5, [System.Drawing.FontStyle]::Bold)
 $valFont  = New-Object System.Drawing.Font('Microsoft YaHei UI', 9.5)
-$names = @('web', 'watchdog', 'WSL', 'ollama', 'dsh home', 'Tailscale', '生图')
+$names = @('web', 'watchdog', 'WSL', 'dsh home', 'Tailscale')
 for ($i = 0; $i -lt $names.Count; $i++) {
     $lbl = New-Object System.Windows.Forms.Label
     $lbl.Text = $names[$i]
@@ -612,13 +521,6 @@ function Update-Status {
         if ($snap.wsl -eq 'Running') { Set-StatusText 'WSL' 'Running (虚拟 linux)' ([System.Drawing.Color]::ForestGreen) }
         else                          { Set-StatusText 'WSL' "$($snap.wsl) (虚拟 linux)" ([System.Drawing.Color]::DarkOrange) }
 
-        if ($snap.ollamaUp) {
-            if ($snap.models) { Set-StatusText 'ollama' "运行中 (模型: $($snap.models))" ([System.Drawing.Color]::ForestGreen) }
-            else               { Set-StatusText 'ollama' '运行中 (dsh-vision 可用)' ([System.Drawing.Color]::ForestGreen) }
-        } else {
-            Set-StatusText 'ollama' '未运行 (dsh-vision 不可用)' ([System.Drawing.Color]::DarkOrange)
-        }
-
         if ($snap.dshHome) {
             if ($snap.dshProfile) { Set-StatusText 'dsh home' "$DshHome (web profile 已配置)" ([System.Drawing.Color]::ForestGreen) }
             else                   { Set-StatusText 'dsh home' "$DshHome (web profile 缺失)" ([System.Drawing.Color]::DarkOrange) }
@@ -642,16 +544,7 @@ function Update-Status {
             Set-StatusText 'Tailscale' '未知' ([System.Drawing.Color]::DarkOrange)
         }
 
-        if ($snap.imagegen -eq '运行中') {
-            if ($snap.imagegenModel) { Set-StatusText '生图' "运行中 (模型: $($snap.imagegenModel))" ([System.Drawing.Color]::ForestGreen) }
-            else                     { Set-StatusText '生图' '运行中' ([System.Drawing.Color]::ForestGreen) }
-        } elseif ($snap.imagegen) {
-            Set-StatusText '生图' "$($snap.imagegen) (generate_image 不可用)" ([System.Drawing.Color]::DarkOrange)
-        } else {
-            Set-StatusText '生图' '未知' ([System.Drawing.Color]::DarkOrange)
-        }
-
-        $refreshLabel.Text = "最后刷新: $($snap.time) | ${WebPort}: $($snap.webPid) | ${OllamaPort}: $($snap.ollamaPid)"
+        $refreshLabel.Text = "最后刷新: $($snap.time) | ${WebPort}: $($snap.webPid)"
     } catch {
         $refreshLabel.Text = "状态读取失败: $($_.Exception.Message)"
     }
@@ -675,8 +568,6 @@ function Start-StatusPoller {
         '-ActivityFile', "`"$ActivityFile`"",
         '-WebUrl', "`"$WebUrl`"",
         '-WebPort', "$WebPort",
-        '-OllamaPort', "$OllamaPort",
-        '-OllamaExe', "`"$OllamaExe`"",
         '-DshHome', "`"$DshHome`"",
         '-DshProfile', "`"$DshProfile`"",
         '-WatchdogFile', "`"$WatchdogFile`"",
@@ -788,10 +679,6 @@ New-ActionButton 'Tailscale修复' 96 {
     Send-Action 'tailscale' 'Tailscale 修复'
 } '检查/修复 Tailscale Serve：自动执行 serve --bg 3080，并显示状态' | Out-Null
 
-New-ActionButton '生图服务' 84 {
-    Send-Action 'imagegen' '生图服务'
-} '启动/检测本地生图服务 (SDXL-Turbo, 17821)，供 generate_image 工具使用；首次加载模型约 10-30s' | Out-Null
-
 New-ActionButton '停止' 76 {
     Send-Action 'stop' '停止 dsh'
 } '停止 dsh 及 watchdog' | Out-Null
@@ -812,10 +699,6 @@ New-ActionButton '查看日志' 84 {
     $logBox.SelectionStart = $logBox.TextLength
     $logBox.ScrollToCaret()
 } '显示 watchdog 与 dsh-web 最近 8 行' | Out-Null
-
-New-ActionButton 'Ollama' 76 {
-    Send-Action 'ollama' 'Ollama'
-} '以 OLLAMA_HOST=127.0.0.1:11810 启动，PATH 优先，回退便携版' | Out-Null
 
 New-ActionButton '重启 WSL' 84 {
     $ans = [System.Windows.Forms.MessageBox]::Show('确认重启 WSL (虚拟 linux)? 运行中的 Linux 进程会被终止。', '重启 WSL', 'YesNo', 'Warning')
@@ -849,7 +732,6 @@ New-ActionButton '复制诊断' 84 {
         "web: $($statusLabels['web'].Text)",
         "watchdog: $($statusLabels['watchdog'].Text)",
         "WSL: $($statusLabels['WSL'].Text)",
-        "ollama: $($statusLabels['ollama'].Text)",
         "dsh home: $($statusLabels['dsh home'].Text)",
         "web: $WebUrl | log: $WebLog",
         "watchdog log: $WatchdogLog",

@@ -10,24 +10,6 @@ llm-pi-ai:
   providers:
     opencode-go:
       apiKeyEnv: OPENCODE_GO_API_KEY
-      defaultInput: [ 'text', 'image' ]
-      modelOverrides:
-        deepseek-v4-flash:
-          input: [ 'text', 'image' ]
-        deepseek-v4-pro:
-          input: [ 'text', 'image' ]
-        qwen3.7-max:
-          input: [ 'text', 'image' ]
-        glm-5.1:
-          input: [ 'text', 'image' ]
-        glm-5.2:
-          input: [ 'text', 'image' ]
-        hy3:
-          input: [ 'text', 'image' ]
-        mimo-v2.5-pro:
-          input: [ 'text', 'image' ]
-        minimax-m2.7:
-          input: [ 'text', 'image' ]
 agent-default-model:
   provider: deepseek-official
   model: deepseek-v4-flash-vision-exp

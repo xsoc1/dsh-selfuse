@@ -1,0 +1,77 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@deepseek-ai/cordis':
+        specifier: link:F:/tools/deepseek-harness/vendor/cordis
+        version: link:../deepseek-harness/vendor/cordis
+      '@deepseek-ai/dsh-client-ui-primitives':
+        specifier: link:F:/tools/deepseek-harness/packages/client/ui-primitives
+        version: link:../deepseek-harness/packages/client/ui-primitives
+      '@deepseek-ai/dsh-client-ui-slots':
+        specifier: link:F:/tools/deepseek-harness/packages/client/ui-slots
+        version: link:../deepseek-harness/packages/client/ui-slots
+      '@deepseek-ai/dsh-credentials':
+        specifier: link:F:/tools/deepseek-harness/packages/credentials/credentials
+        version: link:../deepseek-harness/packages/credentials/credentials
+      '@deepseek-ai/dsh-fs':
+        specifier: link:F:/tools/deepseek-harness/packages/fs/fs
+        version: link:../deepseek-harness/packages/fs/fs
+      '@deepseek-ai/dsh-fs-local':
+        specifier: link:F:/tools/deepseek-harness/packages/fs/fs-local
+        version: link:../deepseek-harness/packages/fs/fs-local
+      '@deepseek-ai/dsh-llm':
+        specifier: link:F:/tools/deepseek-harness/packages/llm/llm
+        version: link:../deepseek-harness/packages/llm/llm
+      '@deepseek-ai/dsh-settings':
+        specifier: link:F:/tools/deepseek-harness/packages/settings/settings
+        version: link:../deepseek-harness/packages/settings/settings
+      '@deepseek-ai/dsh-shell':
+        specifier: link:F:/tools/deepseek-harness/packages/shell/shell
+        version: link:../deepseek-harness/packages/shell/shell
+      '@deepseek-ai/dsh-storage-domain':
+        specifier: link:F:/tools/deepseek-harness/packages/storage/storage-domain
+        version: link:../deepseek-harness/packages/storage/storage-domain
+      '@deepseek-ai/dsh-timeout':
+        specifier: link:F:/tools/deepseek-harness/packages/util/timeout
+        version: link:../deepseek-harness/packages/util/timeout
+      '@deepseek-ai/dsh-tools':
+        specifier: link:F:/tools/deepseek-harness/packages/core/tools
+        version: link:../deepseek-harness/packages/core/tools
+      '@deepseek-ai/dsh-typert-protocol':
+        specifier: link:F:/tools/deepseek-harness/packages/typert/protocol
+        version: link:../deepseek-harness/packages/typert/protocol
+      '@deepseek-ai/schemastery':
+        specifier: link:F:/tools/deepseek-harness/vendor/schemastery
+        version: link:../deepseek-harness/vendor/schemastery
+      schemastery:
+        specifier: 3.18.0
+        version: 3.18.0
+
+packages:
+
+  '@standard-schema/spec@1.1.0':
+    resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
+
+  cosmokit@1.8.1:
+    resolution: {integrity: sha512-PDBv4l90xZKrUsZ0vtoycgZpO/j4iFsqJXrAxsyBDsnQRI7ZMJXIjgDJsKNjd5L8jnVnnlrDCdhkFbTncgCVjQ==}
+
+  schemastery@3.18.0:
+    resolution: {integrity: sha512-Jw2uxjoyyqc/yeurmChUEc/jbi8GsrdXV/KmqRUDZXJAXAmrJiPsz8vKa17l/VckyzljHZ9oGaul443CQiXxtA==}
+
+snapshots:
+
+  '@standard-schema/spec@1.1.0': {}
+
+  cosmokit@1.8.1: {}
+
+  schemastery@3.18.0:
+    dependencies:
+      '@standard-schema/spec': 1.1.0
+      cosmokit: 1.8.1

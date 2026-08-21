@@ -15,6 +15,23 @@ $stamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 $line = "==== dsh web start $stamp ===="
 Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value $line -Encoding UTF8
 
+$clientBundles = @(
+    'packages/client/ui-reference/lib/client.js',
+    'packages/client/ui-renderer/lib/client.js',
+    'packages/client/ui-attachment/lib/client.js',
+    'packages/client/ui-brand-official/lib/client.js',
+    'apps/web/dist/index.html'
+)
+$missingBundles = @($clientBundles | Where-Object { -not (Test-Path (Join-Path $HarnessRoot $_)) })
+if ($missingBundles.Count -gt 0) {
+    Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value "preflight: missing client bundles ($($missingBundles -join ', ')); rebuilding" -Encoding UTF8
+    $pnpm = Join-Path $HarnessRoot 'node_modules\.bin\pnpm.cmd'
+    & $pnpm run build:lib:client
+    if ($LASTEXITCODE -ne 0) { throw "preflight build:lib:client failed (exit $LASTEXITCODE)" }
+    & $pnpm run build:web
+    if ($LASTEXITCODE -ne 0) { throw "preflight build:web failed (exit $LASTEXITCODE)" }
+}
+
 function Test-TcpPort([string]$HostName, [int]$Port) {
     try {
         $client = New-Object System.Net.Sockets.TcpClient

@@ -1,9 +1,0 @@
-# SDXL-Turbo local image generation service
-# Python 3.10.11 venv recommended.
-# PyTorch must be installed with CUDA support, e.g.:
-#   pip install torch==2.6.0+cu124 --index-url https://download.pytorch.org/whl/cu124
-fastapi>=0.115
-uvicorn>=0.30
-diffusers>=0.30
-transformers>=4.44
-accelerate>=0.34

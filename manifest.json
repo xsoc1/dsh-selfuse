@@ -72,17 +72,6 @@
       "notes": "vendored copy; installed to ~/.dsh/skills as real directory (no junction)"
     },
     {
-      "id": "dsh-image-bridge",
-      "type": "plugin",
-      "name": "@dsh-external/dsh-image-bridge",
-      "repo": null,
-      "localPath": "F:/tools/dsh-image-bridge",
-      "targetPath": "plugins/dsh-image-bridge",
-      "action": "copy-to-repo",
-      "status": "copied-to-repo",
-      "notes": "self-developed; chat image bridge + generate_image"
-    },
-    {
       "id": "dsh-memory-panel",
       "type": "plugin",
       "name": "dsh-memory-panel",
@@ -103,19 +92,6 @@
       "action": "copy-to-repo",
       "status": "copied-to-repo",
       "notes": "systemPrompt skill routing section"
-    },
-    {
-      "id": "dsh-image-vision",
-      "type": "plugin",
-      "name": "@dsh-external/dsh-image-vision",
-      "repo": "https://github.com/xsoc1/dsh-image-vision.git",
-      "upstream": null,
-      "localPath": "F:/tools/dsh-image-vision",
-      "targetPath": "plugins/dsh-image-vision",
-      "action": "submodule-or-copy",
-      "branch": "master",
-      "status": "copied-to-repo",
-      "notes": "copied into repo; also published at xsoc1/dsh-image-vision; can switch to submodule later"
     },
     {
       "id": "dsh-routing-suite",
@@ -238,28 +214,6 @@
       "action": "copy-to-repo",
       "status": "copy-mode",
       "notes": "real directories; no junction (Dirent.isDirectory issue)"
-    },
-    {
-      "id": "image-gen",
-      "type": "service",
-      "name": "image-gen",
-      "repo": null,
-      "localPath": "F:/tools/image-gen",
-      "targetPath": "services/image-gen",
-      "action": "copy-to-repo",
-      "status": "fixed-offline-local-snapshot",
-      "notes": "server.py loads local snapshot offline; start script BOM fixed"
-    },
-    {
-      "id": "ollama",
-      "type": "service",
-      "name": "ollama",
-      "repo": null,
-      "localPath": "F:/tools/ollama",
-      "targetPath": "services/ollama",
-      "action": "manifest-only",
-      "status": "pending",
-      "notes": "models qwen3-vl:4b; port 11810; binaries not committed"
     }
   ]
 }

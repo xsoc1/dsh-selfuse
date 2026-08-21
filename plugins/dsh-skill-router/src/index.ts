@@ -5,7 +5,7 @@
  * 流程铁律），让 35 个 mattpocock 技能 + 4 个数学技能在日常中文对话中被正确触发，
  * 大任务自动走 grill → spec/tickets → implement → review 主流程。
  *
- * 机制：ctx.systemPrompt.section（与 dsh-image-bridge order 117 同机制）。
+ * 机制：ctx.systemPrompt.section 注入提示段。
  * 零工具、零依赖；纯提示段，卸载即净。
  */
 import type { Context } from 'cordis'

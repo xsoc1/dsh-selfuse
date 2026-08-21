@@ -26,19 +26,6 @@ $WatchdogLog  = Join-Path $HarnessRoot 'dsh-watchdog.log'
 $WebLog       = Join-Path $HarnessRoot 'dsh-web.log'
 $WebUrl       = 'http://127.0.0.1:3080'
 $WebPort      = 3080
-$OllamaPort   = 11810
-$OllamaUrl    = "http://127.0.0.1:$OllamaPort"
-$OllamaCmd    = Get-Command ollama.exe -ErrorAction SilentlyContinue
-$OllamaExe    = if ($OllamaCmd) { $OllamaCmd.Source } else { 'F:\tools\ollama\ollama.exe' }
-
-# 附加启动项: 每次"启动/重启"时顺带检查并拉起。
-#   Enabled - $false 时临时停用
-#   Port    - 探活端口; 0 表示不探活
-#   StartCmd- 未运行时执行的启动命令; '' 表示仅提示不自动启动
-#   Note    - 展示用备注
-$Extras = @(
-    @{ Name = 'Ollama (dsh-vision 视觉依赖)'; Enabled = $true; Port = $OllamaPort; StartCmd = 'ollama serve'; Note = $OllamaUrl }
-)
 # ============ 配置区结束 ============
 
 function Test-Admin {
@@ -66,13 +53,6 @@ function Test-PortOpen([int]$Port) {
     } catch {
         return $false
     }
-}
-
-function Get-OllamaCommand {
-    $cmd = Get-Command ollama -ErrorAction SilentlyContinue
-    if ($cmd) { return $cmd.Source }
-    if (Test-Path $OllamaExe) { return $OllamaExe }
-    return $null
 }
 
 function Get-WatchdogProcess {
@@ -138,34 +118,6 @@ function Stop-DshAll {
     }
 }
 
-function Start-Extras {
-    foreach ($e in $Extras) {
-        if (-not $e.Enabled) { continue }
-        if ($e.Port -gt 0 -and (Test-PortOpen $e.Port)) {
-            Write-Ok "$($e.Name) 已在运行 ($($e.Note))"
-            continue
-        }
-        if ($e.StartCmd) {
-            $parts = $e.StartCmd -split ' '
-            $exe = $parts[0]
-            if ($exe -eq 'ollama') { $exe = Get-OllamaCommand }
-            $extraArgs = @($parts | Select-Object -Skip 1)
-            if (Get-Command $exe -ErrorAction SilentlyContinue) {
-                Write-Info "启动 $($e.Name) ..."
-                $oldOllamaHost = $env:OLLAMA_HOST
-                if ($exe -like '*ollama*') { $env:OLLAMA_HOST = "127.0.0.1:$OllamaPort" }
-                Start-Process -FilePath $exe -ArgumentList $extraArgs -WindowStyle Hidden
-                if ($null -eq $oldOllamaHost) { Remove-Item Env:OLLAMA_HOST -ErrorAction SilentlyContinue } else { $env:OLLAMA_HOST = $oldOllamaHost }
-                Write-Ok "$($e.Name) 启动命令已发出"
-            } else {
-                Write-Warn "$($e.Name): 未找到命令 '$exe'，请手动安装/启动"
-            }
-        } else {
-            Write-Warn "$($e.Name) 未运行 (仅提示)"
-        }
-    }
-}
-
 function Show-Status {
     Write-Host ''
     Write-Host '---- dsh 状态 ----' -ForegroundColor Cyan
@@ -192,11 +144,6 @@ function Show-Status {
     elseif ($wslText -match 'Stopped') { $wslState = 'Stopped' }
     else { $wslState = '未知' }
     Write-Host ("  WSL     : $wslState (虚拟 linux)")
-    if (Test-PortOpen $OllamaPort) {
-        Write-Host '  ollama  : 运行中'
-    } else {
-        Write-Host '  ollama  : 未运行 (dsh-vision 视觉功能不可用)' -ForegroundColor Yellow
-    }
     Write-Host ''
 }
 
@@ -215,7 +162,6 @@ function Action-Start {
     } else {
         Write-Warn 'web 未在预期时间内就绪，watchdog 会在后台继续处理'
     }
-    Start-Extras
 }
 
 function Action-Restart {
@@ -227,7 +173,6 @@ function Action-Restart {
     } else {
         Write-Warn 'web 未在预期时间内就绪，watchdog 会在后台继续处理'
     }
-    Start-Extras
 }
 
 function Action-Wsl {
@@ -251,32 +196,10 @@ function Show-Menu {
     Write-Host '==================================================' -ForegroundColor DarkGray
     Show-Status
     Write-Host '--------------------------------------------------' -ForegroundColor DarkGray
-    Write-Host '  1) 启动 dsh        4) 打开 Web UI     7) Ollama 检查/启动'
-    Write-Host '  2) 重启 dsh        5) 查看状态        8) WSL 检查/重启'
+    Write-Host '  1) 启动 dsh        4) 打开 Web UI'
+    Write-Host '  2) 重启 dsh        5) 查看状态        7) WSL 检查/重启'
     Write-Host '  3) 停止 dsh        6) 查看最近日志     0) 退出'
     Write-Host '--------------------------------------------------' -ForegroundColor DarkGray
-}
-
-function Action-Ollama {
-    Write-Host '---- Ollama (dsh-vision 依赖) ----' -ForegroundColor Cyan
-    if (Test-PortOpen $OllamaPort) {
-        Write-Ok "Ollama 运行中: $OllamaUrl"
-    } else {
-        Write-Warn 'Ollama 未运行'
-        $r = Read-Host '  尝试启动 ollama serve? (y/N)'
-        if ($r -match '^[yY]') {
-            $ollama = Get-OllamaCommand
-            if ($ollama) {
-                $oldOllamaHost = $env:OLLAMA_HOST
-                $env:OLLAMA_HOST = "127.0.0.1:$OllamaPort"
-                Start-Process -FilePath $ollama -ArgumentList 'serve' -WindowStyle Hidden
-                if ($null -eq $oldOllamaHost) { Remove-Item Env:OLLAMA_HOST -ErrorAction SilentlyContinue } else { $env:OLLAMA_HOST = $oldOllamaHost }
-                Write-Ok 'ollama serve 启动命令已发出'
-            } else {
-                Write-Err "未找到 'ollama'，请先安装 (https://ollama.com)"
-            }
-        }
-    }
 }
 
 # ---- 自提权: 非管理员时用 RunAs 重新启动自己 ----
@@ -329,8 +252,7 @@ switch ($mode) {
                 '4' { Start-Process $WebUrl; Write-Ok "已打开 $WebUrl"; Read-Host '按回车返回菜单' }
                 '5' { Show-Status; Read-Host '按回车返回菜单' }
                 '6' { Show-Logs; Read-Host '按回车返回菜单' }
-                '7' { Action-Ollama; Read-Host '按回车返回菜单' }
-                '8' { Action-Wsl; Read-Host '按回车返回菜单' }
+                '7' { Action-Wsl; Read-Host '按回车返回菜单' }
                 '0' { exit }
                 default { Write-Warn '无效选择' }
             }

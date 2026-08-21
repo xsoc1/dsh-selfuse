@@ -34,7 +34,7 @@ dsh-local/
 ├─ community-plugins/        # 第三方插件（含本地补丁）
 ├─ skills/                   # 技能集合（submodule 或 vendored）
 ├─ vendor/                   # 外部源码仓库 submodule（deepseek-harness fork、EAC、awesome 等）
-├─ services/                 # 本地服务（image-gen、ollama 编排）
+├─ services/                 # 本地服务（已随识图/生图/Ollama 退役，暂留空目录）
 └─ docs/                     # 方案、架构、维护手册、ADR
 ```
 

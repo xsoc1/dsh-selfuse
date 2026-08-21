@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     dsh-local one-click install / configure / repair.
 
@@ -315,16 +315,7 @@ if (-not $NoSystem) {
         if (-not (Test-Path $dshRoot)) {
             if (Test-Path "F:\tools\deepseek-harness") { $dshRoot = "F:\tools\deepseek-harness" }
         }
-        $ollamaModels = Join-Path $RepoRoot "services\ollama\models"
-        if (Test-Path "F:\tools\ollama\models") { $ollamaModels = "F:\tools\ollama\models" }
-        $hfHome = Join-Path $RepoRoot "services\image-gen\hf"
-        if (Test-Path "F:\tools\image-gen\hf") { $hfHome = "F:\tools\image-gen\hf" }
-        foreach ($dir in @($ollamaModels, $hfHome)) {
-            New-Item -ItemType Directory -Force -Path $dir | Out-Null
-        }
         Set-UserEnvironmentVariable "DSH_ROOT" $dshRoot
-        Set-UserEnvironmentVariable "OLLAMA_MODELS" $ollamaModels
-        Set-UserEnvironmentVariable "HF_HOME" $hfHome
         Write-Host "    note: OPENCODE_GO_API_KEY etc. are read from system/user secrets; not written by installer"
     }
 } else {
@@ -340,50 +331,7 @@ if (-not $NoSystem) {
         schtasks.exe /Create /TN "dsh-watchdog-ensure" /TR "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$ensure`"" /SC MINUTE /MO 5 /RL HIGHEST /F | Out-Null
         Write-Host "    registered dsh-watchdog / dsh-watchdog-ensure"
     }
-    Invoke-Step "Start local services (Ollama / image-gen)" {
-        $ollamaPath = $null
-        $ollamaCmd = Get-Command ollama.exe -ErrorAction SilentlyContinue
-        if ($ollamaCmd) { $ollamaPath = $ollamaCmd.Source }
-        if (-not $ollamaPath) {
-            $candidate = "F:\tools\ollama\ollama.exe"
-            if (Test-Path $candidate) { $ollamaPath = $candidate }
-        }
-        $ollamaRunning = $false
-        try {
-            $r = Invoke-WebRequest -Uri "http://127.0.0.1:11810/" -UseBasicParsing -TimeoutSec 2
-            $ollamaRunning = $true
-        } catch { $ollamaRunning = $false }
-        if ($ollamaRunning) {
-            Write-Host "    Ollama already running on 11810"
-        } elseif ($ollamaPath) {
-            $env:OLLAMA_HOST = "127.0.0.1:11810"
-            Start-Process -FilePath $ollamaPath -ArgumentList "serve" -WindowStyle Hidden
-            Write-Host "    started Ollama (11810)"
-        } else {
-            Write-Warning "    ollama not found; install portable Ollama or start manually"
-        }
 
-        $py = Join-Path $RepoRoot "services\image-gen\venv\Scripts\python.exe"
-        if (-not (Test-Path $py)) { $py = "F:\tools\image-gen\venv\Scripts\python.exe" }
-        $imageGenRunning = $false
-        try {
-            $r = Invoke-WebRequest -Uri "http://127.0.0.1:17821/health" -UseBasicParsing -TimeoutSec 2
-            $imageGenRunning = $true
-        } catch { $imageGenRunning = $false }
-        if ($imageGenRunning) {
-            Write-Host "    image-gen already running on 17821"
-        } elseif (Test-Path $py) {
-            if ($py -like "F:\tools\image-gen*") {
-                $server = "F:\tools\image-gen\server.py"
-            } else {
-                $server = Join-Path $RepoRoot "services\image-gen\server.py"
-            }
-            Start-Process -FilePath $py -ArgumentList $server -WorkingDirectory (Split-Path $server) -WindowStyle Hidden
-            Write-Host "    started image-gen (17821)"
-        } else {
-            Write-Warning "    image-gen venv not found; run services\image-gen\setup or start manually"
-        }
-    }
 } else {
     Write-Step "Skip scheduled tasks / services (-NoSystem)"
 }
@@ -392,9 +340,7 @@ if (-not $NoSystem) {
 if (-not $NoSystem) {
     Invoke-Step "Health check" {
         $checks = @(
-            @{ Name = "dsh web";   Url = "http://127.0.0.1:3080" },
-            @{ Name = "Ollama";    Url = "http://127.0.0.1:11810" },
-            @{ Name = "image-gen"; Url = "http://127.0.0.1:17821/health" }
+            @{ Name = "dsh web";   Url = "http://127.0.0.1:3080" }
         )
         foreach ($c in $checks) {
             try {

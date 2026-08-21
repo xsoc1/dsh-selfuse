@@ -1,7 +1,0 @@
-# dsh-image-vision profile patch layer — insert one loader entry for the
-# plugin package. A normal cordis loader entry (id + package name); the plugin
-# registers the view_image tool, the image-attachment bridge, and its system
-# prompt sections itself.
-- insert:
-    - id: dsh-image-vision
-      name: '@dsh-external/dsh-image-vision'

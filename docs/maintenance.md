@@ -219,3 +219,49 @@ git commit -m "chore: bump deepseek-harness fork"
   - `packages/subprocess/subprocess-local/lib/index.js` 含 `windowsHide: true`
 - fork `xsoc1/deepseek-harness` 已更新：master `528c682e06`，local/image-admission `a436d48b41`。
 - dsh-selfuse 本地提交 `d082ebe`（推送因网络暂未完成，待重试）。
+
+### 2026-08-21 dsh 0.1.1-rc.1 崩溃抢救 + 共享依赖根 + Ollama 重建
+
+- dsh 0.1.1-rc.1 更新后崩溃，抢救恢复：
+  - client bundle 缺失（`MissingClientBundleError`）：`pnpm run build:lib:client` + `pnpm run build:web` 成功。
+  - out-of-tree 插件依赖解析失败（`Cannot find package`）：新增共享依赖根 `F:\tools\dsh-local\package.json` 与 `F:\tools\community-plugins\package.json`，含 14 个 `@deepseek-ai/*` link 依赖 + `schemastery 3.18.0`；两个根 `pnpm install` 成功。
+  - 删除抢救期临时 junction：dsh-image-bridge / dsh-vision / dsh-wsl-workspace / DSH-better-sidebar 下的 `node_modules\@deepseek-ai` 均已清理；Node `createRequire` 对全部插件解析通过。
+- `scripts/run-dsh-web.ps1` 增加 client/web 构建产物 preflight，缺失时自动构建。
+- 新增 `services/ollama/setup-ollama.ps1`：下载/解压便携版、设置 `OLLAMA_HOST=127.0.0.1:11810` + `OLLAMA_MODELS=F:\tools\ollama\models`、启动 serve、拉 `qwen3-vl:4b`、验证 API。
+- 新增 `scripts/repair-dsh.ps1`：一键自检 client 构建、共享依赖、Ollama。
+- `scripts/dsh-watchdog.ps1` 与 `deepseek-harness\dsh-watchdog.ps1` 同步新增 Ollama 自愈：每 30 秒检查 11810，未开且便携版存在时自动后台启动 serve。
+- `F:\tools\ollama\` 此前整个丢失，已重下 `ollama-windows-amd64.zip` v0.32.9 并解压；`qwen3-vl:4b` 正在重新拉取。
+- 验证：dsh web HTTP 200，watchdog 重启后 `server already alive`，Ollama 11810 `/api/tags` 含 `qwen3-vl:4b`，chat 推理实测可加载；实测杀掉 Ollama 后约 30 秒 watchdog 自动拉起并恢复 API；8 个 PowerShell 脚本 Parser 0 错误。
+- 待办：`F:\tools\image-gen\` 目录也缺失，生图服务 17821 待用户确认是否重建。
+
+### 2026-08-21 dsh-web-ui-all 0.2.7 升级（settings.plugin.item keyed slot 报错修复）
+
+- 现象：dsh 升级到 0.1.1-rc.1 后浏览器报 `Failed to load plugins @linxin666/dsh-client-ui-web-ui-settings ... settings.plugin.item requires options.key`。
+- 根因：官方 `settings.plugin.item` 变为 keyed slot（要求 `options.key`）；`dsh-web-ui-all@0.1.17` 的 settings 插件仍注册旧 slot 且不带 key，加载即抛错。
+- 修复：`@linxin666/dsh-web-ui-all` 0.1.17 → 0.2.7（上游已改为 `settings.section` + `web-ui.plugin.item`）；`~/.dsh/profiles/web` 与 `F:\tools\dsh-local\config\profiles\web` 的 package.json 同步升级，`cordis.patch.yml` 禁用项改为新聚合包 id（`web-ui-pet` / `web-ui-describe-image` / `web-ui-dsh-aionui-panel` / `web-ui-better-sidebar`），保留本地 better-sidebar 0.12.2。
+- `pnpm-workspace.yaml` 将 `node-pty` allowBuilds 置为 true，pnpm install 成功且 prebuild 就位。
+- 验证：`dsh-control.ps1 restart` 后 web HTTP 200、watchdog/WSL/Ollama 正常；headless Chrome 抓控制台无插件加载错误（仅 iframe sandbox warning 与 better-sidebar 无工作区时的既有 `/sidebar/api/fs.tree` 400）；临时文件与测试 Chrome 进程已清理。
+
+### 2026-08-21 退役识图/生图/Ollama 本地链路
+
+- 用户确认原生多模态已可用，删除本地识图/生图/Ollama 链路：
+  - 删除运行区插件 `dsh-vision`、`dsh-image-bridge`、`dsh-image-vision`（profile package.json 依赖、cordis.patch.yml insert、node_modules junction 均已清除）。
+  - 删除 `F:\tools\ollama`、`F:\tools\image-gen`、`F:\tools\dsh-image-bridge`、`F:\tools\dsh-image-vision`、`~/.dsh/vision-bridge`、`~/.dsh/image-gen` 及 User 环境变量 `OLLAMA_MODELS`。
+  - 回退 `settings.yaml` 的 opencode-go `defaultInput`/`modelOverrides`，并回退 `llm-deepseek` adapter/lib 的 `inputModalities` 为纯文本（`deepseek-v4-flash-vision-exp` 原生多模态模型保留）。
+  - 图形控制台（运行区 + dsh-local 规范源）移除「生图」状态/按钮与 image-gen 启动逻辑；Ollama 管理保留但移除 dsh-vision 文案。
+- dsh-local 规范源同步清理：
+  - `plugins/` 删除 dsh-image-bridge、dsh-image-vision；`services/` 删除 image-gen、ollama。
+  - `manifest.json` 移除对应条目；`config/profiles/web` 的 package.json/template/cordis.patch.yml 移除相关依赖与装配。
+  - `install.ps1` 移除 OLLAMA_MODELS/HF_HOME 环境变量、Ollama/image-gen 服务启动与健康检查。
+  - 更新 README/AGENTS/PLAN/architecture/troubleshooting/plugins/services 等文档。
+- 保留：GitHub 仓库/PR/分支（用户未选择删除）、原生多模态模型、Ollama 管理脚本（供未来重装）。
+
+### 2026-08-21 删除 Ollama 控制入口
+
+- 用户确认暂不保留 Ollama，删除所有 Ollama 管理入口：
+  - `scripts/dsh-control.ps1`：移除 Ollama 配置、Extras、状态行、菜单项、Action-Ollama、启动逻辑。
+  - `scripts/dsh-control-gui.ps1`：移除 Ollama 状态行、按钮、轮询状态/PID/模型检测、poll 参数与诊断文案。
+  - `scripts/dsh-watchdog.ps1`：移除 Ollama 自愈（Ensure-Ollama、端口/模型变量、循环调用）。
+  - `scripts/repair-dsh.ps1`：移除 Ollama 检查/启动段与 `-SkipOllama` 参数。
+- 运行区脚本与 dsh-local 规范源同步清理，均恢复 UTF-8 BOM 且 Parser 0 错误。
+- `F:\tools\ollama` 目录与 `OLLAMA_MODELS` 环境变量仍保持已删除状态。

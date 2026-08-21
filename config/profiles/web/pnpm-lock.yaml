@@ -8,18 +8,12 @@ importers:
 
   .:
     dependencies:
-      '@dsh-external/dsh-image-bridge':
-        specifier: link:F:/tools/dsh-local/plugins/dsh-image-bridge
-        version: link:../../../plugins/dsh-image-bridge
       '@dsh-external/dsh-skill-router':
         specifier: link:F:/tools/dsh-local/plugins/dsh-skill-router
         version: link:../../../plugins/dsh-skill-router
       '@dsh-external/dsh-super-injector':
         specifier: link:F:/tools/dsh-local/plugins/dsh-routing-suite/injector-release
         version: link:../../../plugins/dsh-routing-suite/injector-release
-      '@dsh-external/dsh-vision':
-        specifier: git+https://github.com/william-jin-cmu/dsh-vision.git
-        version: git+https://github.com/william-jin-cmu/dsh-vision.git#72978aa176df8e01a685bf270a1b1d016660c492
       '@huanlin/dsh-plugin-mineru':
         specifier: ^0.2.2
         version: 0.2.2
@@ -100,15 +94,6 @@ packages:
   '@csstools/css-tokenizer@4.0.0':
     resolution: {integrity: sha512-QxULHAm7cNu72w97JUNCBFODFaXpbDg+dP8b/oWFAZ2MTRppA3U00Y2L1HqaS4J6yBqxwa/Y3nMBaxVKbB/NsA==}
     engines: {node: '>=20.19.0'}
-
-  '@dsh-external/dsh-vision@git+https://github.com/william-jin-cmu/dsh-vision.git#72978aa176df8e01a685bf270a1b1d016660c492':
-    resolution: {commit: 72978aa176df8e01a685bf270a1b1d016660c492, repo: https://github.com/william-jin-cmu/dsh-vision.git, type: git}
-    version: 0.1.0
-    engines: {dsh: '>=0.0.1'}
-    peerDependencies:
-      '@deepseek-ai/cordis': ^4.0.1-rc.1
-      '@deepseek-ai/dsh-system-prompt': ^0.0.1
-      '@deepseek-ai/dsh-tools': ^0.0.1
 
   '@emnapi/runtime@1.11.3':
     resolution: {integrity: sha512-Xz4Tpyki7XyrpbUK1jR1AhdAdaXyhhY4lZ3neLodmhpuWfy2PAQN5B46sAiU4liOXGLkHypn/qU+jvfWSCYYLA==}
@@ -1231,10 +1216,6 @@ snapshots:
       css-tree: 3.2.1
 
   '@csstools/css-tokenizer@4.0.0': {}
-
-  '@dsh-external/dsh-vision@git+https://github.com/william-jin-cmu/dsh-vision.git#72978aa176df8e01a685bf270a1b1d016660c492':
-    dependencies:
-      schemastery: 3.18.0
 
   '@emnapi/runtime@1.11.3':
     dependencies:

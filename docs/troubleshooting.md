@@ -60,18 +60,8 @@ ctx.get('agents').get('<sessionId>').cancel()
 - 使用国内镜像：`--registry=https://registry.npmmirror.com`
 - 跳过 scripts：`--ignore-scripts`（会跳过 cloudflared 二进制下载；远程隧道需单独补装）
 
-## 5. image-gen 无法启动（Hub 不可达 / snapshot incomplete）
+## 5. 环境变量 / 计划任务 / 服务
 
-**现象**：`start-image-gen.ps1` 启动后一直“服务未就绪”；`server.py` 报 `IncompleteSnapshotError` 或连接 Hub 失败。
-
-**处理**：
-- `server.py` 已设置 `HF_HUB_OFFLINE=1`，并直接解析本地 snapshot 目录传给 `from_pretrained(local_files_only=True)`，不依赖 Hub 完整性检查。
-- 若仍失败，检查 `F:\tools\image-gen\hf\hub\models--stabilityai--sdxl-turbo\snapshots\*\` 是否存在 `model_index.json` 与各子模型 safetensors。
-- 也可手动运行 `F:\tools\image-gen\venv\Scripts\python.exe F:\tools\image-gen\server.py --port 17821` 查看报错。
-
-## 6. 环境变量 / 计划任务 / 服务
-
-- 用户环境变量：`DSH_ROOT`、`OLLAMA_MODELS`、`HF_HOME`。
+- 用户环境变量：`DSH_ROOT`。
 - 计划任务：`dsh-watchdog`、`dsh-watchdog-ensure`。
-- 服务：Ollama `127.0.0.1:11810`、image-gen `127.0.0.1:17821`。
 - 检查：`install.ps1 -DryRun` 预览，`dsh-control.ps1 status` 查看。

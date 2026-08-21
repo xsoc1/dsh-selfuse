@@ -1,0 +1,22 @@
+{
+  "name": "dsh-local-shared-deps",
+  "private": true,
+  "description": "Shared dependency root for out-of-tree dsh-local plugins (pnpm-managed, no manual junctions)",
+  "dependencies": {
+    "@deepseek-ai/cordis": "link:F:/tools/deepseek-harness/vendor/cordis",
+    "@deepseek-ai/dsh-client-ui-primitives": "link:F:/tools/deepseek-harness/packages/client/ui-primitives",
+    "@deepseek-ai/dsh-client-ui-slots": "link:F:/tools/deepseek-harness/packages/client/ui-slots",
+    "@deepseek-ai/dsh-credentials": "link:F:/tools/deepseek-harness/packages/credentials/credentials",
+    "@deepseek-ai/dsh-fs": "link:F:/tools/deepseek-harness/packages/fs/fs",
+    "@deepseek-ai/dsh-fs-local": "link:F:/tools/deepseek-harness/packages/fs/fs-local",
+    "@deepseek-ai/dsh-llm": "link:F:/tools/deepseek-harness/packages/llm/llm",
+    "@deepseek-ai/dsh-settings": "link:F:/tools/deepseek-harness/packages/settings/settings",
+    "@deepseek-ai/dsh-shell": "link:F:/tools/deepseek-harness/packages/shell/shell",
+    "@deepseek-ai/dsh-storage-domain": "link:F:/tools/deepseek-harness/packages/storage/storage-domain",
+    "@deepseek-ai/dsh-timeout": "link:F:/tools/deepseek-harness/packages/util/timeout",
+    "@deepseek-ai/dsh-tools": "link:F:/tools/deepseek-harness/packages/core/tools",
+    "@deepseek-ai/dsh-typert-protocol": "link:F:/tools/deepseek-harness/packages/typert/protocol",
+    "@deepseek-ai/schemastery": "link:F:/tools/deepseek-harness/vendor/schemastery",
+    "schemastery": "3.18.0"
+  }
+}

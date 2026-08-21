@@ -6,8 +6,6 @@
 Windows 主机
 ├─ F:\tools\deepseek-harness        # dsh 源码运行区（pnpm dsh web）
 ├─ F:\tools\Deepseek-Harness-EAC    # EAC 桌面封装源码
-├─ F:\tools\ollama                  # 便携 Ollama，qwen3-vl:4b，端口 11810
-├─ F:\tools\image-gen               # SDXL-Turbo 生图服务，端口 17821
 ├─ F:\tools\community-plugins\*     # 第三方插件（部分被 profile link）
 ├─ F:\tools\plugins?                # 自研插件（当前散在 F:\tools 根）
 └─ %USERPROFILE%\.dsh

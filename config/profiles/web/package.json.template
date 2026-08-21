@@ -2,9 +2,7 @@
   "name": "dsh-profile-web",
   "private": true,
   "dependencies": {
-    "@dsh-external/dsh-image-bridge": "link:__REPO_ROOT__/plugins/dsh-image-bridge",
     "@dsh-external/dsh-super-injector": "link:__REPO_ROOT__/plugins/dsh-routing-suite/injector-release",
-    "@dsh-external/dsh-vision": "git+https://github.com/william-jin-cmu/dsh-vision.git",
     "@huanlin/dsh-plugin-mineru": "^0.2.2",
     "@linxin666/dsh-web-ui-all": "^0.1.17",
     "dsh-backup": "link:__REPO_ROOT__/community-plugins/dsh-backup",

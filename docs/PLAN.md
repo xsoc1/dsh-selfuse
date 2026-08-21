@@ -16,11 +16,10 @@
 
 - dsh 源码：`deepseek-harness/`（`deepseek-ai/deepseek-harness` 克隆，带本地分支 `local/image-admission`）
 - 桌面封装：`Deepseek-Harness-EAC/`
-- 自研插件：`dsh-image-bridge/`、`dsh-image-vision/`、`dsh-memory-panel/`、`dsh-skill-router/`、`dsh-routing-suite/`
+- 自研插件：`dsh-memory-panel/`、`dsh-skill-router/`、`dsh-routing-suite/`
 - 第三方补丁插件：`community-plugins/`（backup、better-sidebar、git-workflow、undo-fixed、wsl-workspace 等）
 - 技能：`mattpocock-skills/` + `math-research-dsh/`（真实复制到 `~/.dsh/skills`）
 - 图形控制台与看门狗：`deepseek-harness/` 根下的 PowerShell 脚本
-- 本地小模型服务：`ollama/`（qwen3-vl:4b）、`image-gen/`（SDXL-Turbo）
 - 用户配置：`~/.dsh/`（settings.yaml、profiles/web、agent-presets、memory、skills 等）
 
 **痛点**：
@@ -38,7 +37,7 @@
    - 新建 `xsoc1/dsh-selfuse`（管理仓，聚合个人内容）
 4. 提供 `install.ps1`：
    - 当前机器：重建/修复 profile、技能复制、脚本、服务、计划任务。
-   - 新机器：安装依赖（Node/pnpm/Ollama/Python/服务）并部署完整环境。
+   - 新机器：安装依赖（Node/pnpm）并部署完整环境。
 
 ## 3. 总体架构（双仓）
 
@@ -121,13 +120,6 @@ dsh-local/
 │  ├─ awesome-dsh-plugin/      # submodule
 │  └─ README.md
 ├─ services/
-│  ├─ image-gen/
-│  │  ├─ server.py
-│  │  ├─ requirements.txt
-│  │  └─ start-image-gen.ps1
-│  ├─ ollama/
-│  │  ├─ models.manifest.json
-│  │  └─ setup-ollama.ps1
 │  └─ README.md
 └─ docs/
    ├─ PLAN.md
@@ -146,15 +138,11 @@ dsh-local/
 | `F:\tools\awesome-dsh-plugin` | `vendor/awesome-dsh-plugin` | 已是 `xsoc1/awesome-dsh-plugin` fork，submodule |
 | `F:\tools\mattpocock-skills` | `vendor/mattpocock-skills` | fork 到 `xsoc1/skills`（含本地去 disable-model-invocation 修改）或 vendored |
 | `~/.dsh/math-research-dsh` | `vendor/math-research-dsh` | 已是 `xsoc1/math-research-dsh`，submodule |
-| `F:\tools\dsh-image-bridge` | `plugins/dsh-image-bridge` | 直接入库（当前无 git） |
 | `F:\tools\dsh-memory-panel` | `plugins/dsh-memory-panel` | 直接入库（当前无 git） |
 | `F:\tools\dsh-skill-router` | `plugins/dsh-skill-router` | 直接入库（当前无 git） |
-| `F:\tools\dsh-image-vision` | `plugins/dsh-image-vision` | 已是独立 GitHub 仓，可选 submodule 或入库 |
 | `F:\tools\dsh-routing-suite` | `plugins/dsh-routing-suite` | 整理后入库或 submodule（含 injector-release + preset） |
 | `F:\tools\community-plugins\*` | `community-plugins/*` | 有 git 的保留 origin，无 git 的入库；本地补丁记录为 patch |
 | `F:\tools\deepseek-harness\*.ps1` | `scripts/` | 从运行目录复制为规范源；安装器负责同步到运行目录 |
-| `F:\tools\image-gen` | `services/image-gen` | 代码入库；venv/hf 模型不提交 |
-| `F:\tools\ollama` | `services/ollama` | 只存 manifest/脚本；模型二进制不提交 |
 | `~/.dsh/settings.yaml` | `config/settings.yaml` | 规范副本（已复制） |
 | `~/.dsh/profiles/web/*` | `config/profiles/web/*` | 规范副本（已复制，link 改为相对路径） |
 | `~/.dsh/.agent-presets/*` | `config/agent-presets/*` | 规范副本（router-standard/spec 已复制） |
@@ -185,14 +173,11 @@ dsh-local/
    - 若目标已存在链接或旧目录，先移除/备份再用 `-Force` 替换。
 5. **环境变量**
    - `DSH_ROOT` → `$RepoRoot\vendor\deepseek-harness`
-   - `OLLAMA_MODELS` → `$RepoRoot\services\ollama\models` 或本机模型缓存目录
-   - `HF_HOME` → `$RepoRoot\services\image-gen\hf`
    - `OPENCODE_GO_API_KEY` 等凭据只提示/从系统凭据读取，不写入仓库。
-6. **计划任务/服务**
+6. **计划任务**
    - 注册/更新 `dsh-watchdog`、`dsh-watchdog-ensure` 计划任务（隐藏窗口）。
-   - 可选启动 Ollama（11810）与 image-gen（17821）。
 7. **健康检查**
-   - 检查 `http://127.0.0.1:3080`、Ollama `/health`、image-gen `/health`。
+   - 检查 `http://127.0.0.1:3080`。
    - 输出状态汇总与下一步（重启 dsh 等）。
 
 ### 6.3 可移植性
@@ -206,7 +191,7 @@ dsh-local/
 ### Phase 0：本地骨架（当前）
 
 - [x] 创建 `F:\tools\dsh-local` 骨架目录。
-- [x] 复制 settings / profile / agent-presets / scripts / image-gen 代码。
+- [x] 复制 settings / profile / agent-presets / scripts。
 - [x] 编写 README、AGENTS、PLAN、manifest 草案。
 - [x] 初始化本地 git 并提交骨架。
 
@@ -231,7 +216,7 @@ dsh-local/
 
 - [x] 实现 `install.ps1` 的 profile 复制逻辑（Copy 模式，禁用 junction）。
 - [x] 实现技能复制（递归查找 SKILL.md，真实复制，39 个成功）。
-- [x] 实现环境变量、计划任务、服务启动（已实现，DryRun 验证；未在真实机器执行）。
+- [x] 实现环境变量、计划任务（已实现，DryRun 验证；未在真实机器执行；Ollama/image-gen 服务已退役移除）。
 - [x] 实现 `-Bootstrap` 新机器依赖安装（git/node 用 winget，pnpm 用 corepack）。
 - [x] 加 `-DryRun` 与健康检查（均已实现）。
 - [x] 编写冒烟测试（在临时 `DSH_HOME` 下演练通过）。
@@ -241,7 +226,7 @@ dsh-local/
 - [x] 确认安装器在当前机器 dry-run 通过。
 - [x] 备份当前 `~/.dsh` 与 `F:\tools` 关键目录（多次 backup_dsh）。
 - [x] 执行安装器，把线上 profile 同步到 repo（Copy 模式）。
-- [x] 重启 dsh，验证插件/技能/服务全部正常（web/Ollama/image-gen 均 200）。
+- [x] 重启 dsh，验证插件/技能/web 正常。
 - [x] 更新 `F:\tools\AGENTS.md` 维护记录，指向 dsh-selfuse。
 
 ## 8. 风险与缓解
@@ -251,16 +236,16 @@ dsh-local/
 | profile 目录迁移破坏当前运行环境 | 先备份；只用 Copy 模式，不 junction；可随时回退 |
 | submodule 指向 fork，上游同步复杂 | fork 只保留本地补丁分支，master 保持与上游同步；补丁用 cherry-pick |
 | 插件源码直接入库后与线上副本漂移 | 以 dsh-local 为规范源，安装器负责同步；旧目录逐步退役 |
-| 模型/缓存体积大、不适合 Git | 只存 manifest 和导入脚本；新机器从官方源或本地缓存导入 |
+| 体积大的二进制/缓存不适合 Git | 只存 manifest 和导入脚本；新机器从官方源或本地缓存导入 |
 | 凭据泄露 | `.gitignore` 排除 credentials/secret；安装器从 Windows 凭据管理器读取 |
 | pnpm lock 中 link 路径失效 | 使用绝对 link；安装器在 profile 内重新 `pnpm install` |
 
 ## 9. 待确认事项
 
 - [x] `dsh-selfuse` 仓库可见性：public。
-- [x] 自研插件是否各自独立 GitHub 仓，还是统一放在 dsh-local 内？统一放在 dsh-selfuse 内（dsh-image-vision 另有独立仓但也在仓库内保留副本）。
+- [x] 自研插件是否各自独立 GitHub 仓，还是统一放在 dsh-local 内？统一放在 dsh-selfuse 内。
 - [x] `Deepseek-Harness-EAC` 是否也需要 fork 到 `xsoc1`？不 fork（用户确认不使用）。
-- [x] 新机器是否要自动安装 Node/pnpm/Ollama/Python？git/node/pnpm 自动；Ollama/Python 检测+提示/脚本。
+- [x] 新机器是否要自动安装 Node/pnpm？git/node/pnpm 自动；Python/Ollama 已随本地服务退役不再默认安装。
 - [x] 是否保留 `F:\tools` 现有目录作为“运行区”？保留为运行区。
 
 ## 10. 附录：当前已复制进骨架的文件
@@ -273,4 +258,3 @@ dsh-local/
 - `config/agent-presets/router-standard/`
 - `config/agent-presets/router-spec/`
 - `scripts/dsh-control.ps1`、`dsh-control-gui.ps1`、`run-dsh-web.ps1`、`dsh-watchdog.ps1`、`ensure-dsh-watchdog.ps1`、`make-dsh-icon.ps1`
-- `services/image-gen/server.py`、`start-image-gen.ps1`

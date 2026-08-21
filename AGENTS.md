@@ -31,12 +31,12 @@
 | 类型 | 目录 | 说明 |
 |---|---|---|
 | 外部源码 | `vendor/` | submodule：deepseek-harness fork、EAC、awesome 等 |
-| 自研插件 | `plugins/` | dsh-image-bridge、dsh-memory-panel、dsh-skill-router、dsh-image-vision、dsh-routing-suite |
+| 自研插件 | `plugins/` | dsh-memory-panel、dsh-skill-router、dsh-routing-suite |
 | 第三方补丁 | `community-plugins/` | dsh-backup、DSH-better-sidebar、git-workflow、undo-fixed、wsl-workspace |
 | 技能 | `skills/` | mattpocock skills、math-research-dsh skills（submodule 或 vendored） |
 | 配置 | `config/` | settings.yaml、agent-presets、profiles/web |
 | 脚本 | `scripts/` | 图形控制台、watchdog、run-dsh-web 等 |
-| 服务 | `services/` | image-gen、ollama 编排 |
+| 服务 | `services/` | 已随识图/生图/Ollama 退役，暂留空目录 |
 | 文档 | `docs/` | 方案、架构、维护手册、ADR |
 
 ## 待办（当前阶段）
