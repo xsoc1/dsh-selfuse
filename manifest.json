@@ -14,8 +14,10 @@
       "targetPath": "vendor/deepseek-harness",
       "action": "submodule",
       "branch": "local/image-admission",
-      "status": "fork-created-submodule-added",
-      "notes": "fork xsoc1/deepseek-harness created; local/image-admission pushed; submodule gitlink added (not cloned locally)"
+      "status": "upstream-updated",
+      "notes": "fork/master at upstream 0.1.1-rc.1; local/image-admission rebased with adapter + spawn windowsHide patches",
+      "version": "0.1.1-rc.1",
+      "upstreamCommit": "528c682e06"
     },
     {
       "id": "deepseek-harness-eac",

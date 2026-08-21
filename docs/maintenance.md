@@ -198,3 +198,13 @@ git commit -m "chore: bump deepseek-harness fork"
   - `server.py` 增加 `HF_HUB_OFFLINE=1`，并直接解析本地 snapshot 目录传给 `from_pretrained(local_files_only=True)`，绕过 snapshot 完整性检查。
   - `start-image-gen.ps1` 恢复 UTF-8 BOM，避免 Windows PowerShell 解析失败。
 - 验证：`/health` 返回 200，`model` 指向本地 snapshot，`device=cuda:0`。
+
+### 2026-08-21 上游 dsh 更新到 0.1.1-rc.1 并适配
+
+- `deepseek-harness` master 已 fast-forward 到上游 `528c682e06`（0.1.1-rc.1）。
+- 本地维护分支 `local/image-admission` 已 rebase 到新 master：
+  - adapter 补丁解决冲突后保留（image admission）。
+  - 新增 spawn `windowsHide` 补丁（`packages/subprocess/subprocess-local/src/spawn.ts` + lib）。
+- 补丁文件已入库：`patches/deepseek-harness/`（spawn-windows-hide.patch + README）。
+- `manifest.json` 已记录上游版本/commit。
+- 正在重新构建 host lib（`npm run build:lib:host`）以同步 lib 产物。
