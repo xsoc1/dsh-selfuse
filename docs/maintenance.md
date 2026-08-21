@@ -288,5 +288,5 @@ git commit -m "chore: bump deepseek-harness fork"
   - 从 `node_modules/@linxin666/dsh-web-ui-all/cordis.patch.yml` 移除对应 insert 行。
   - 删除上述 `node_modules/@linxin666/*` 目录（live + 管理仓副本）。
   - `cordis.patch.yml` 删除对应 disabled 项，仅保留 `web-ui-better-sidebar disabled`。
-- 新增 `scripts/prune-web-ui.ps1`：安装/升级后自动清理上述子插件，并在 `install.ps1` 中接入。
+- 新增 `scripts/prune-web-ui.ps1`：安装/升级后自动清理上述子插件；已在 `install.ps1` 中接入，并为 web profile 的 `package.json` / `package.json.template` 添加 `postinstall` 钩子（手动 `pnpm install` 后同样自动清理）。
 - 验证：prune 脚本 live/managed 均可运行，PowerShell Parser 0 错误；未重启 dsh（运行中的旧装配不受影响）。
