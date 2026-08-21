@@ -265,3 +265,12 @@ git commit -m "chore: bump deepseek-harness fork"
   - `scripts/repair-dsh.ps1`：移除 Ollama 检查/启动段与 `-SkipOllama` 参数。
 - 运行区脚本与 dsh-local 规范源同步清理，均恢复 UTF-8 BOM 且 Parser 0 错误。
 - `F:\tools\ollama` 目录与 `OLLAMA_MODELS` 环境变量仍保持已删除状态。
+
+### 2026-08-22 上游更新到 0.1.1-rc.2
+
+- 通过 GitHub IP 工作区（codeload/api 可达，github.com DNS IP 不通）fetch 上游 master → `b150a551b8`（0.1.1-rc.2）。
+- local/image-admission rebase 到新 master：
+  - 丢弃旧 adapter image-admission 补丁（上游原生多模态已支持，不再需要）。
+  - 保留 spawn windowsHide 补丁与测试。
+- 构建：`pnpm install` + `npm run build:lib:host` 成功（后台任务）。
+- dsh-selfuse 已推送最新 `fd7c97d`；manifest/README 已更新版本与补丁说明。
