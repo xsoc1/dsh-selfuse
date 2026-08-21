@@ -208,3 +208,14 @@ git commit -m "chore: bump deepseek-harness fork"
 - 补丁文件已入库：`patches/deepseek-harness/`（spawn-windows-hide.patch + README）。
 - `manifest.json` 已记录上游版本/commit。
 - 正在重新构建 host lib（`npm run build:lib:host`）以同步 lib 产物。
+
+### 2026-08-21 上游更新 lib 构建成功
+
+- `pnpm install` 在 deepseek-harness 完成（仅 14 个包增量）。
+- `npm run build:lib:host` 成功（修复本地 spawn-windows.spec.ts 的 vitest mock 类型后通过）。
+- 构建后验证：
+  - `dsh --version` → `0.1.1-rc.1`
+  - `packages/llm/llm-deepseek/lib/index.js` 含 `inputModalities: ["text","image"]`
+  - `packages/subprocess/subprocess-local/lib/index.js` 含 `windowsHide: true`
+- fork `xsoc1/deepseek-harness` 已更新：master `528c682e06`，local/image-admission `a436d48b41`。
+- dsh-selfuse 本地提交 `d082ebe`（推送因网络暂未完成，待重试）。
