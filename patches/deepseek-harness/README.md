@@ -17,6 +17,7 @@
 内容：`spawnSubprocess` 的 `spawn()` 增加 `windowsHide: true`，避免 dsh 在 Windows 上隐藏子进程时闪控制台窗口。
 
 > 同时需要同步修改 `packages/subprocess/subprocess-local/lib/index.js`（dsh 运行实际加载 lib）。
+> 配套测试：`packages/subprocess/subprocess-local/tests/spawn-windows.spec.ts`（本目录也有副本 `spawn-windows.spec.ts`）。
 
 ### 2. `local/image-admission` 分支补丁
 
