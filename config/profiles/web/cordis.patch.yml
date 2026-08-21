@@ -29,16 +29,10 @@
 - insert:
     - id: task-notify
       name: '@deepseek-ai/dsh-task-notify'
-# 2026-08-18 本地维护：已删除 dsh-web-ui-all 内不再使用的子插件（pet 宠物 /
-# describe-image 内置识图 / ui-dsh-aionui-panel 右侧面板）——对应装配行已从
+# 2026-08-22 本地维护：彻底删除 dsh-web-ui-all 内不用的子插件
+# （pet / describe-image / aionui-panel / liangshen / skill-explorer /
+# desktop-launcher / plugin-manager）——对应装配行已从
 # @linxin666/dsh-web-ui-all/cordis.patch.yml 移除，node_modules 包已删。
-# 2026-08-21 dsh-web-ui-all 升级 0.2.7：聚合 patch 的 id 改为 web-ui-* 前缀，
-# 继续禁用宠物 / 内置识图 / AionUI 右侧面板 / 自带 better-sidebar（保留本地 0.12.2）。
-- id: web-ui-pet
-  disabled: true
-- id: web-ui-describe-image
-  disabled: true
-- id: web-ui-dsh-aionui-panel
-  disabled: true
+# 聚合包自带的 dsh-better-sidebar 行仍保留禁用（本地 0.12.2 独立生效）。
 - id: web-ui-better-sidebar
   disabled: true

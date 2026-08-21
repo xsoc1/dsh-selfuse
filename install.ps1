@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     dsh-local one-click install / configure / repair.
 
@@ -259,6 +259,8 @@ if (Test-Path $profileSrc) {
                 Pop-Location
             }
         }
+        # Prune unused dsh-web-ui-all sub-plugins after profile sync/install.
+        & (Join-Path $RepoRoot "scripts\prune-web-ui.ps1") -ProfilePath $profileDst -DryRun:$DryRun
     }
 } else {
     Write-Warning "config/profiles/web not found; skip"

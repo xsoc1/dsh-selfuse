@@ -274,3 +274,19 @@ git commit -m "chore: bump deepseek-harness fork"
   - 保留 spawn windowsHide 补丁与测试。
 - 构建：`pnpm install` + `npm run build:lib:host` 成功（后台任务）。
 - dsh-selfuse 已推送最新 `fd7c97d`；manifest/README 已更新版本与补丁说明。
+
+### 2026-08-22 社区插件索引确认 + math-research-dsh 提交 + web-ui-all 精简
+
+- 识别截图中的「社区插件」页：不是 DeepSeek Harness 官方市场，而是 `@linxin666/dsh-web-ui-all` 全家桶自带的社区插件索引（`zhu1090093659/dsh-web-ui` 的 `community.json`，当前 36→38 条，只收录仓库链接不搬代码）。
+- 保留 `dshmarket`（用户确认不删）；将 `math-research-dsh` 登记到该社区索引：
+  - fork `zhu1090093659/dsh-web-ui` → `xsoc1/dsh-web-ui`，基于 `dev` 建分支 `add-math-research-dsh`。
+  - 在 `packages/dsh-community-plugins/community.json` 追加条目（id `math-research-dsh`、category `tools`、author `xsoc1`）。
+  - 用仓库自带 `node scripts/community-index` 重新生成 `src/client/generated/community.ts`（38 entries）。
+  - 创建 PR：https://github.com/zhu1090093659/dsh-web-ui/pull/929（base `dev`）。
+- 按用户选择精简 `@linxin666/dsh-web-ui-all`：保留 dshmarket 和社区索引/远程 UI 等，彻底删除 7 个子插件：
+  `dsh-pet`、`dsh-tool-describe-image`、`dsh-client-ui-aionui-panel`、`dsh-liangshen`、`dsh-client-ui-skill-explorer`、`dsh-desktop-launcher`、`dsh-client-ui-plugin-manager`。
+  - 从 `node_modules/@linxin666/dsh-web-ui-all/cordis.patch.yml` 移除对应 insert 行。
+  - 删除上述 `node_modules/@linxin666/*` 目录（live + 管理仓副本）。
+  - `cordis.patch.yml` 删除对应 disabled 项，仅保留 `web-ui-better-sidebar disabled`。
+- 新增 `scripts/prune-web-ui.ps1`：安装/升级后自动清理上述子插件，并在 `install.ps1` 中接入。
+- 验证：prune 脚本 live/managed 均可运行，PowerShell Parser 0 错误；未重启 dsh（运行中的旧装配不受影响）。
