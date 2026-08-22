@@ -7,6 +7,8 @@
 #   powershell -NoProfile -ExecutionPolicy Bypass -File dsh-control.ps1 status    查看状态
 #   powershell -NoProfile -ExecutionPolicy Bypass -File dsh-control.ps1 ui        打开 Web UI
 #   powershell -NoProfile -ExecutionPolicy Bypass -File dsh-control.ps1 logs      查看最近日志
+#   powershell -NoProfile -ExecutionPolicy Bypass -File dsh-control.ps1 check-update 检查 DSH 版本
+#   powershell -NoProfile -ExecutionPolicy Bypass -File dsh-control.ps1 update    更新 DSH 版本
 # 非管理员运行时自动提权重启 (会弹 UAC)。桌面快捷方式默认进入交互菜单。
 
 $ErrorActionPreference = 'Continue'
@@ -24,6 +26,7 @@ if (-not (Test-Path (Join-Path $HarnessRoot 'package.json'))) {
 $WatchdogFile = Join-Path $HarnessRoot 'dsh-watchdog.ps1'
 $WatchdogLog  = Join-Path $HarnessRoot 'dsh-watchdog.log'
 $WebLog       = Join-Path $HarnessRoot 'dsh-web.log'
+$UpdateScript = Join-Path $RepoRoot 'scripts\update-dsh.ps1'
 $WebUrl       = 'http://127.0.0.1:3080'
 $WebPort      = 3080
 # ============ 配置区结束 ============
@@ -189,6 +192,29 @@ function Action-Wsl {
     }
 }
 
+function Action-CheckUpdate {
+    Write-Host '---- 检查 DSH 版本 ----' -ForegroundColor Cyan
+    if (Test-Path $UpdateScript) {
+        & $UpdateScript -Check
+    } else {
+        Write-Err "未找到更新脚本: $UpdateScript"
+    }
+}
+
+function Action-Update {
+    Write-Host '---- 更新 DSH ----' -ForegroundColor Cyan
+    if (-not (Test-Path $UpdateScript)) {
+        Write-Err "未找到更新脚本: $UpdateScript"
+        return
+    }
+    $r = Read-Host '确认更新? 将拉取上游 master、rebase 本地分支并重新构建 (y/N)'
+    if ($r -match '^[yY]') {
+        & $UpdateScript -Apply
+    } else {
+        Write-Warn '已取消更新'
+    }
+}
+
 function Show-Menu {
     Clear-Host
     Write-Host '==================================================' -ForegroundColor DarkGray
@@ -196,9 +222,9 @@ function Show-Menu {
     Write-Host '==================================================' -ForegroundColor DarkGray
     Show-Status
     Write-Host '--------------------------------------------------' -ForegroundColor DarkGray
-    Write-Host '  1) 启动 dsh        4) 打开 Web UI'
-    Write-Host '  2) 重启 dsh        5) 查看状态        7) WSL 检查/重启'
-    Write-Host '  3) 停止 dsh        6) 查看最近日志     0) 退出'
+    Write-Host '  1) 启动 dsh        4) 打开 Web UI      7) WSL 检查/重启'
+    Write-Host '  2) 重启 dsh        5) 查看状态         8) 检查 DSH 版本'
+    Write-Host '  3) 停止 dsh        6) 查看最近日志     9) 更新 DSH       0) 退出'
     Write-Host '--------------------------------------------------' -ForegroundColor DarkGray
 }
 
@@ -241,6 +267,16 @@ switch ($mode) {
         Write-Host ''
         Read-Host '按回车退出'
     }
+    'check-update' {
+        Action-CheckUpdate
+        Write-Host ''
+        Read-Host '按回车退出'
+    }
+    'update' {
+        Action-Update
+        Write-Host ''
+        Read-Host '按回车退出'
+    }
     default {
         while ($true) {
             Show-Menu
@@ -253,6 +289,8 @@ switch ($mode) {
                 '5' { Show-Status; Read-Host '按回车返回菜单' }
                 '6' { Show-Logs; Read-Host '按回车返回菜单' }
                 '7' { Action-Wsl; Read-Host '按回车返回菜单' }
+                '8' { Action-CheckUpdate; Read-Host '按回车返回菜单' }
+                '9' { Action-Update; Read-Host '按回车返回菜单' }
                 '0' { exit }
                 default { Write-Warn '无效选择' }
             }

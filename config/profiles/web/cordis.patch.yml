@@ -29,10 +29,12 @@
 - insert:
     - id: task-notify
       name: '@deepseek-ai/dsh-task-notify'
-# 2026-08-22 本地维护：彻底删除 dsh-web-ui-all 内不用的子插件
+# 2026-08-22 本地维护：dsh-web-ui-all 内不用的子插件不进入装配
 # （pet / describe-image / aionui-panel / liangshen / skill-explorer /
 # desktop-launcher / plugin-manager）——对应装配行已从
-# @linxin666/dsh-web-ui-all/cordis.patch.yml 移除，node_modules 包已删。
+# @linxin666/dsh-web-ui-all/cordis.patch.yml 移除；包目录必须保留，
+# dsh 0.1.1 client-modules 按依赖路径加载 client.js，删目录会报
+# "bundle script ... failed to load"。
 # 聚合包自带的 dsh-better-sidebar 行仍保留禁用（本地 0.12.2 独立生效）。
 - id: web-ui-better-sidebar
   disabled: true

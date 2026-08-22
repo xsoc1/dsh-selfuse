@@ -290,3 +290,29 @@ git commit -m "chore: bump deepseek-harness fork"
   - `cordis.patch.yml` 删除对应 disabled 项，仅保留 `web-ui-better-sidebar disabled`。
 - 新增 `scripts/prune-web-ui.ps1`：安装/升级后自动清理上述子插件；已在 `install.ps1` 中接入，并为 web profile 的 `package.json` / `package.json.template` 添加 `postinstall` 钩子（手动 `pnpm install` 后同样自动清理）。
 - 验证：prune 脚本 live/managed 均可运行，PowerShell Parser 0 错误；未重启 dsh（运行中的旧装配不受影响）。
+
+### 2026-08-22 plugin-manager client bundle 加载错误修复 + web-ui-all 真精简
+
+- 现象：浏览器报 `Failed to load plugins ... @linxin666/dsh-client-ui-plugin-manager ... bundle script ... failed to load`，dsh-control 状态仍显示正常。
+- 根因：此前的精简直接删除了 `node_modules/@linxin666/*` 包目录；dsh 0.1.1 的 client-modules 按依赖路径加载每个 client.js，包目录缺失即报错（patch 层没有该行也一样）。
+- 修复：`prune-web-ui.ps1` 不再删除包目录；改用真正的依赖精简——本地 `file:` 包 `F:\tools\dsh-local\plugins\dsh-web-ui-all-slim`（dsh-web-ui-all 0.2.7 副本，package.json 移除 pet / describe-image / aionui-panel / liangshen / skill-explorer / desktop-launcher / plugin-manager 7 个依赖）。
+- profile 的 `package.json` 改为 `@linxin666/dsh-web-ui-all: file:F:/tools/dsh-local/plugins/dsh-web-ui-all-slim`；`pnpm install` 后 `@linxin666` 下只剩 10 个保留子包，7 个精简包彻底不在依赖树中（节省约 15.5MB）。
+- 验证：dsh 重启后 HTTP 200；headless Chrome 抓控制台无 `Failed to load plugins` / plugin-manager / bundle script 错误（仅既有 iframe sandbox warning 与 better-sidebar 无工作区时的 `/sidebar/api/fs.tree` 400）。
+- 经验：不要通过删 `node_modules` 包目录来“禁用”插件；Cordis 的 patch `disabled` 或本地 `file:` 精简包才是兼容方式。
+
+### 2026-08-22 控制台增加 DSH 版本检查/更新 + web-ui-all 加载目录修正
+
+- 新增 `scripts/update-dsh.ps1`：
+  - `-Check`：读取本地 `package.json`/commit，用 GitHub API/`ls-remote` 对比上游，只读。
+  - `-Apply`：拉取上游 master（含 github.com IP 兜底）、快进 master、rebase `local/image-admission`，然后 `pnpm install` + `npm run build:lib:host`。
+- CLI `dsh-control.ps1` 新增：`check-update`、`update` 子命令与菜单 8/9。
+- GUI `dsh-control-gui.ps1` 新增：
+  - 状态栏「DSH版本」行（由 poller 读取 `$HarnessRoot/package.json`）。
+  - 「检查更新」「更新 DSH」按钮（更新前弹确认；poller 异步执行 `update-dsh.ps1 -Check/-Apply`）。
+- 修正 web-ui-all 精简方式：**不再删除 `node_modules/@linxin666/*` 包目录**，只从聚合 patch 移除不需要的 insert 行；
+  否则 dsh 0.1.1 client-modules 按依赖路径加载 client.js 会因缺目录报 `bundle script ... failed to load`。
+- 本地新增 `plugins/dsh-web-ui-all-slim`：只保留需要子插件依赖的本地聚合包，作为 profile 的 `@linxin666/dsh-web-ui-all` 链接源；
+  所需 `@linxin666/dsh-*` 子包同时作为 profile 直接依赖安装，避免 link 依赖不展开的问题。
+- dshmarket 更新到 `1.17.1`（live profile + 管理仓 package.json/template/lock）。
+- 验证：`update-dsh.ps1 -Check` 可读；`dsh-control.ps1`/`dsh-control-gui.ps1` PowerShell Parser 0 错误。
+- 注意：dsh web 当前未在运行（之前删除目录/切换链路导致）；下次启动需确认 profile/依赖已就绪。

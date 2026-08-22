@@ -12,7 +12,7 @@ allowBuilds:
   ssh2: true
   tesseract.js: true
 minimumReleaseAgeExclude:
-  - dshmarket@1.3.0 || 1.9.0
+  - dshmarket@1.3.0 || 1.9.0 || 1.17.1
   - '@linxin666/dsh-client-ui-aionui-panel@0.1.17 || 0.2.7'
   - '@linxin666/dsh-client-ui-git-graph@0.1.17 || 0.2.7'
   - '@linxin666/dsh-client-ui-skin-center@0.1.17 || 0.2.7'

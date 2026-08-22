@@ -1,0 +1,46 @@
+{
+  "name": "@linxin666/dsh-web-ui-all",
+  "description": "DSH Web UI 全家桶聚合插件（本地精简版）：移除 pet / describe-image / aionui-panel / liangshen / skill-explorer / desktop-launcher / plugin-manager 依赖，保留社区索引、远程 UI、设置、任务板、Git 图、SSH、皮肤中心等。",
+  "version": "0.2.7",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [],
+      "platform": "web"
+    }
+  },
+  "license": "Apache-2.0",
+  "files": [
+    "lib",
+    "cordis.patch.yml"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zhu1090093659/dsh-web-ui.git"
+  },
+  "dependencies": {
+    "dsh-better-sidebar": "0.14.0",
+    "@linxin666/dsh-client-ui-community-plugins": "0.2.7",
+    "@linxin666/dsh-client-ui-task-board": "0.2.7",
+    "@linxin666/dsh-client-ui-git-graph": "0.2.7",
+    "@linxin666/dsh-remote-web-ui": "0.2.7",
+    "@linxin666/dsh-ssh": "0.2.7",
+    "@linxin666/dsh-chat-recovery": "0.2.7",
+    "@linxin666/dsh-client-ui-web-ui-settings": "0.2.7",
+    "@linxin666/dsh-skins": "0.2.7",
+    "@linxin666/dsh-client-ui-skin-center": "0.2.7"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "watch": "tsdown --watch"
+  }
+}

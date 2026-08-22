@@ -17,6 +17,7 @@ if (-not (Test-Path (Join-Path $HarnessRoot 'package.json'))) {
 $WatchdogFile = Join-Path $HarnessRoot 'dsh-watchdog.ps1'
 $WatchdogLog  = Join-Path $HarnessRoot 'dsh-watchdog.log'
 $WebLog       = Join-Path $HarnessRoot 'dsh-web.log'
+$UpdateScript = Join-Path $RepoRoot 'scripts\update-dsh.ps1'
 $IconFile     = Join-Path $HarnessRoot 'dsh.ico'
 $WebUrl       = 'http://127.0.0.1:3080'
 $WebPort      = 3080
@@ -48,6 +49,8 @@ param(
     [string]$WatchdogFile,
     [string]$WebLog,
     [string]$WatchdogLog,
+    [string]$UpdateScript,
+    [string]$HarnessRoot,
     [int]$Interval = 3
 )
 $ErrorActionPreference = 'SilentlyContinue'
@@ -132,6 +135,16 @@ function Get-WslState {
     } catch {
         return 'Unknown'
     }
+}
+
+function Get-DshVersion {
+    $pkg = Join-Path $HarnessRoot 'package.json'
+    if (Test-Path $pkg) {
+        try {
+            return ((Get-Content -LiteralPath $pkg -Raw -Encoding UTF8) | ConvertFrom-Json).version
+        } catch {}
+    }
+    return 'unknown'
 }
 
 function Get-HttpStatus {
@@ -298,6 +311,25 @@ while ($true) {
                         $lines += 'WSL shut down; it will restart on next wsl_bash call'
                     }
                     'tailscale' { $lines += Repair-TailscaleAction }
+                    'check-update' {
+                        if (Test-Path $UpdateScript) {
+                            $lines += '==== 检查 DSH 版本 ===='
+                            $out = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $UpdateScript -Check 2>&1 | Out-String
+                            $lines += @($out -split "`r?`n" | Where-Object { $_.Trim() })
+                        } else {
+                            $lines += "update script not found: $UpdateScript"
+                        }
+                    }
+                    'update-dsh' {
+                        if (Test-Path $UpdateScript) {
+                            $lines += '==== 开始更新 DSH ===='
+                            $out = & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $UpdateScript -Apply 2>&1 | Out-String
+                            $lines += @($out -split "`r?`n" | Where-Object { $_.Trim() })
+                            $lines += '==== 更新结束 ===='
+                        } else {
+                            $lines += "update script not found: $UpdateScript"
+                        }
+                    }
                     default { $lines += "unknown command: $($cmd.action)" }
                 }
                 if ($cmd.action -eq 'wsl' -or $cmd.action -eq 'tailscale') { $script:activeAction = $null }
@@ -372,6 +404,7 @@ while ($true) {
         wsl = $wsl
         dshHome = Test-Path $DshHome
         dshProfile = Test-Path $DshProfile
+        dshVersion = Get-DshVersion
         tailscale = $tsInfo.status
         tailscaleIp = $tsInfo.ip
         tailscaleServe = $tsInfo.serve
@@ -434,7 +467,7 @@ try {
 $statusGroup = New-Object System.Windows.Forms.GroupBox
 $statusGroup.Text = '状态'
 $statusGroup.Dock = 'Top'
-$statusGroup.Height = 190
+$statusGroup.Height = 220
 $statusGroup.Padding = New-Object System.Windows.Forms.Padding(8)
 $statusGroup.ForeColor = [System.Drawing.Color]::WhiteSmoke
 $statusGroup.BackColor = [System.Drawing.Color]::FromArgb(32, 38, 52)
@@ -442,16 +475,16 @@ $statusGroup.BackColor = [System.Drawing.Color]::FromArgb(32, 38, 52)
 $tbl = New-Object System.Windows.Forms.TableLayoutPanel
 $tbl.Dock = 'Fill'
 $tbl.ColumnCount = 2
-$tbl.RowCount = 5
+$tbl.RowCount = 6
 $tbl.BackColor = [System.Drawing.Color]::FromArgb(32, 38, 52)
 $tbl.ColumnStyles.Add((New-Object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Absolute, 90))) | Out-Null
 $tbl.ColumnStyles.Add((New-Object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent, 100))) | Out-Null
-for ($i = 0; $i -lt 5; $i++) { $tbl.RowStyles.Add((New-Object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null }
+for ($i = 0; $i -lt 6; $i++) { $tbl.RowStyles.Add((New-Object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 20))) | Out-Null }
 $statusGroup.Controls.Add($tbl)
 
 $nameFont = New-Object System.Drawing.Font('Microsoft YaHei UI', 9.5, [System.Drawing.FontStyle]::Bold)
 $valFont  = New-Object System.Drawing.Font('Microsoft YaHei UI', 9.5)
-$names = @('web', 'watchdog', 'WSL', 'dsh home', 'Tailscale')
+$names = @('web', 'watchdog', 'WSL', 'dsh home', 'Tailscale', 'DSH版本')
 for ($i = 0; $i -lt $names.Count; $i++) {
     $lbl = New-Object System.Windows.Forms.Label
     $lbl.Text = $names[$i]
@@ -528,6 +561,12 @@ function Update-Status {
             Set-StatusText 'dsh home' "$DshHome (缺失)" ([System.Drawing.Color]::Firebrick)
         }
 
+        if ($snap.dshVersion) {
+            Set-StatusText 'DSH版本' $snap.dshVersion ([System.Drawing.Color]::ForestGreen)
+        } else {
+            Set-StatusText 'DSH版本' 'unknown' ([System.Drawing.Color]::DarkOrange)
+        }
+
         if ($snap.tailscale) {
             if ($snap.tailscale -like '已连接*') {
                 $tsText = $snap.tailscale
@@ -573,6 +612,8 @@ function Start-StatusPoller {
         '-WatchdogFile', "`"$WatchdogFile`"",
         '-WebLog', "`"$WebLog`"",
         '-WatchdogLog', "`"$WatchdogLog`"",
+        '-UpdateScript', "`"$UpdateScript`"",
+        '-HarnessRoot', "`"$HarnessRoot`"",
         '-Interval', '3'
     )
     $script:pollerProcess = Start-Process -FilePath 'powershell.exe' -ArgumentList $argList -WindowStyle Hidden -PassThru
@@ -679,9 +720,17 @@ New-ActionButton 'Tailscale修复' 96 {
     Send-Action 'tailscale' 'Tailscale 修复'
 } '检查/修复 Tailscale Serve：自动执行 serve --bg 3080，并显示状态' | Out-Null
 
-New-ActionButton '停止' 76 {
-    Send-Action 'stop' '停止 dsh'
-} '停止 dsh 及 watchdog' | Out-Null
+New-ActionButton '检查更新' 80 {
+    Send-Action 'check-update' '检查 DSH 版本'
+} '只读检查本地与上游 DSH 版本是否一致' | Out-Null
+
+New-ActionButton '更新 DSH' 80 {
+    $ans = [System.Windows.Forms.MessageBox]::Show('确认更新 DeepSeek Harness? 会拉取上游、rebase 本地分支并重新构建。', '更新 DSH', 'YesNo', 'Warning')
+    if ($ans -eq 'Yes') {
+        Send-Action 'update-dsh' '更新 DSH'
+    }
+} '拉取上游最新版本、rebase 本地维护分支并重新构建' | Out-Null
+
 
 New-ActionButton '打开 Web UI' 104 {
     Start-Process $WebUrl

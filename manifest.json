@@ -214,6 +214,17 @@
       "action": "copy-to-repo",
       "status": "copy-mode",
       "notes": "real directories; no junction (Dirent.isDirectory issue)"
+    },
+    {
+      "id": "dsh-web-ui-all-slim",
+      "type": "plugin",
+      "name": "@linxin666/dsh-web-ui-all",
+      "repo": "https://github.com/zhu1090093659/dsh-web-ui",
+      "localPath": "F:/tools/dsh-local/plugins/dsh-web-ui-all-slim",
+      "targetPath": "plugins/dsh-web-ui-all-slim",
+      "action": "copied-to-repo",
+      "status": "copied-to-repo",
+      "notes": "local slim aggregate: keeps community/remote/settings/task/git/ssh/skins, drops unused subplugins"
     }
   ]
 }
