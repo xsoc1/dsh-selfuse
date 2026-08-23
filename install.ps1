@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     dsh-local one-click install / configure / repair.
 
@@ -270,7 +270,8 @@ if (Test-Path $profileSrc) {
 $skillsRoot = Join-Path $DshHome "skills"
 $skillSources = @(
     @{ Name = "mattpocock"; Source = Join-Path $RepoRoot "skills/mattpocock-skills/skills" },
-    @{ Name = "math-research"; Source = Join-Path $RepoRoot "skills/math-research-dsh/skills" }
+    @{ Name = "math-research"; Source = Join-Path $RepoRoot "skills/math-research-dsh/skills" },
+    @{ Name = "obsidian"; Source = Join-Path $RepoRoot "skills/obsidian-skills/skills" }
 )
 foreach ($group in $skillSources) {
     if (Test-Path $group.Source) {
@@ -327,10 +328,10 @@ if (-not $NoSystem) {
 # --- 7. scheduled tasks & services -------------------------------------------
 if (-not $NoSystem) {
     Invoke-Step "Register watchdog scheduled tasks" {
-        $watchdog = Join-Path $RepoRoot "scripts\dsh-watchdog.ps1"
-        $ensure = Join-Path $RepoRoot "scripts\ensure-dsh-watchdog.ps1"
-        schtasks.exe /Create /TN "dsh-watchdog" /TR "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$watchdog`"" /SC ONLOGON /RL HIGHEST /F | Out-Null
-        schtasks.exe /Create /TN "dsh-watchdog-ensure" /TR "powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$ensure`"" /SC MINUTE /MO 5 /RL HIGHEST /F | Out-Null
+        $watchdogVbs = Join-Path $RepoRoot "scripts\dsh-watchdog.vbs"
+        $ensureVbs = Join-Path $RepoRoot "scripts\ensure-dsh-watchdog.vbs"
+        schtasks.exe /Create /TN "dsh-watchdog" /TR "wscript.exe `"$watchdogVbs`"" /SC ONLOGON /RL HIGHEST /F | Out-Null
+        schtasks.exe /Create /TN "dsh-watchdog-ensure" /TR "wscript.exe `"$ensureVbs`"" /SC MINUTE /MO 5 /RL HIGHEST /F | Out-Null
         Write-Host "    registered dsh-watchdog / dsh-watchdog-ensure"
     }
 

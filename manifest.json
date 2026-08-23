@@ -225,6 +225,17 @@
       "action": "copied-to-repo",
       "status": "copied-to-repo",
       "notes": "local slim aggregate: keeps community/remote/settings/task/git/ssh/skins, drops unused subplugins"
+    },
+    {
+      "id": "obsidian-skills",
+      "type": "skill",
+      "name": "obsidian-skills",
+      "repo": "https://github.com/kepano/obsidian-skills.git",
+      "localPath": "/home/huangzy/tools/obsidian-skills",
+      "targetPath": "skills/obsidian-skills",
+      "action": "vendored-copy",
+      "status": "copied-to-repo",
+      "notes": "defuddle/json-canvas/obsidian-bases/obsidian-cli/obsidian-markdown skills from kepano/obsidian-skills"
     }
   ]
 }

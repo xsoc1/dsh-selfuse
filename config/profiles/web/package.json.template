@@ -4,7 +4,7 @@
   "dependencies": {
     "@dsh-external/dsh-super-injector": "link:__REPO_ROOT__/plugins/dsh-routing-suite/injector-release",
     "@huanlin/dsh-plugin-mineru": "^0.2.2",
-    "@linxin666/dsh-web-ui-all": "file:__REPO_ROOT__/plugins/dsh-web-ui-all-slim",
+    "@linxin666/dsh-web-ui-all": "link:__REPO_ROOT__/plugins/dsh-web-ui-all-slim",
     "dsh-backup": "link:__REPO_ROOT__/community-plugins/dsh-backup",
     "dsh-better-sidebar": "link:__REPO_ROOT__/community-plugins/DSH-better-sidebar",
     "dsh-file-upload": "^0.4.2",
@@ -44,6 +44,6 @@
     }
   },
   "scripts": {
-    "postinstall": "powershell -NoProfile -ExecutionPolicy Bypass -File \"__REPO_ROOT__\\scripts\\prune-web-ui.ps1\" -ProfilePath \"%CD%\""
+    "postinstall": "bash __REPO_ROOT__/scripts/prune-web-ui.sh \"$PWD\""
   }
 }

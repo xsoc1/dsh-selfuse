@@ -2,18 +2,18 @@
   "name": "dsh-profile-web",
   "private": true,
   "dependencies": {
-    "@dsh-external/dsh-super-injector": "link:F:/tools/dsh-local/plugins/dsh-routing-suite/injector-release",
+    "@dsh-external/dsh-super-injector": "link:/home/huangzy/tools/dsh-local/plugins/dsh-routing-suite/injector-release",
     "@huanlin/dsh-plugin-mineru": "^0.2.2",
-    "@linxin666/dsh-web-ui-all": "file:F:/tools/dsh-local/plugins/dsh-web-ui-all-slim",
-    "dsh-backup": "link:F:/tools/dsh-local/community-plugins/dsh-backup",
-    "dsh-better-sidebar": "link:F:/tools/dsh-local/community-plugins/DSH-better-sidebar",
+    "@linxin666/dsh-web-ui-all": "link:/home/huangzy/tools/dsh-local/plugins/dsh-web-ui-all-slim",
+    "dsh-backup": "link:/home/huangzy/tools/community-plugins/dsh-backup",
+    "dsh-better-sidebar": "link:/home/huangzy/tools/community-plugins/DSH-better-sidebar",
     "dsh-file-upload": "^0.4.2",
-    "dsh-plugin-git-workflow": "link:F:/tools/dsh-local/community-plugins/dsh-plugin-git-workflow",
-    "dsh-undo-savepoint": "link:F:/tools/dsh-local/community-plugins/dsh-undo-plugin-fixed",
+    "dsh-plugin-git-workflow": "link:/home/huangzy/tools/community-plugins/dsh-plugin-git-workflow",
+    "dsh-undo-savepoint": "link:/home/huangzy/tools/community-plugins/dsh-undo-plugin-fixed",
     "dshmarket": "^1.17.1",
-    "dsh-memory-panel": "link:F:/tools/dsh-local/plugins/dsh-memory-panel",
-    "dsh-wsl-workspace": "link:F:/tools/dsh-local/community-plugins/dsh-wsl-workspace",
-    "@dsh-external/dsh-skill-router": "link:F:/tools/dsh-local/plugins/dsh-skill-router",
+    "dsh-memory-panel": "link:/home/huangzy/tools/dsh-local/plugins/dsh-memory-panel",
+    "dsh-wsl-workspace": "link:/home/huangzy/tools/community-plugins/dsh-wsl-workspace",
+    "@dsh-external/dsh-skill-router": "link:/home/huangzy/tools/dsh-local/plugins/dsh-skill-router",
     "@linxin666/dsh-client-ui-web-ui-settings": "^0.2.7",
     "@linxin666/dsh-client-ui-community-plugins": "^0.2.7",
     "@linxin666/dsh-client-ui-task-board": "^0.2.7",
@@ -44,6 +44,6 @@
     }
   },
   "scripts": {
-    "postinstall": "powershell -NoProfile -ExecutionPolicy Bypass -File \"F:\\tools\\dsh-local\\scripts\\prune-web-ui.ps1\" -ProfilePath \"%CD%\""
+    "postinstall": "bash /home/huangzy/tools/dsh-local/scripts/prune-web-ui.sh \"$PWD\""
   }
 }
