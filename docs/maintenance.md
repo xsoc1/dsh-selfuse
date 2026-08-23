@@ -316,3 +316,19 @@ git commit -m "chore: bump deepseek-harness fork"
 - dshmarket 更新到 `1.17.1`（live profile + 管理仓 package.json/template/lock）。
 - 验证：`update-dsh.ps1 -Check` 可读；`dsh-control.ps1`/`dsh-control-gui.ps1` PowerShell Parser 0 错误。
 - 注意：dsh web 当前未在运行（之前删除目录/切换链路导致）；下次启动需确认 profile/依赖已就绪。
+
+### 2026-08-23 全面迁移到 WSL 原生文件系统 + 新 Obsidian skills + WSL 运行 dsh
+
+- 依据 Microsoft WSL 文件系统文档，将整个工具链从 `F:\tools`（Windows DrvFs）迁到 `/home/huangzy/tools`（WSL ext4）：
+  - `dsh-local`、`deepseek-harness`、`community-plugins`、`obsidian-skills`、`mattpocock-skills`、`docs`、`dsh-memory-panel`、`dsh-routing-suite`、`dsh-skill-router`、`awesome-dsh-plugin` 等已复制/同步到 WSL。
+- WSL 内安装 Node.js `v24.17.0` + pnpm；安装 `build-essential` 后成功编译 `node-pty` 等原生依赖。
+- `~/.dsh` 用户配置已复制到 WSL，并清理指向 `/mnt/c`、`/mnt/f` 的跨文件系统符号链接；`DSH_HOME=/home/huangzy/.dsh`。
+- 新增 skills：
+  - `skills/obsidian-skills/`（defuddle、json-canvas、obsidian-bases、obsidian-cli、obsidian-markdown，源 `kepano/obsidian-skills`）。
+  - 更新 `install.ps1` / `sync-skills.ps1` / manifest 收录。
+- 控制台/运行脚本已改为通过 `wsl.exe` 管理 WSL 内 dsh：
+  - `run-dsh-web.ps1` 实际在 WSL 内启动 `node ... apps/cli/src/bin.ts web`。
+  - `dsh-control.ps1` / `dsh-control-gui.ps1` 停止时调用 WSL `pkill` 清理 dsh 进程。
+  - VBS 调度入口改为 `\\wsl.localhost\Ubuntu\home\huangzy\tools\dsh-local\scripts\...`。
+- dsh web 已从 WSL 启动并通过 WSL/Windows localhost 均 HTTP 200 验证。
+- 已推送 dsh-selfuse：`f85e063`（迁移+新 skills）、`a957d92`（WSL 运行管理）。
