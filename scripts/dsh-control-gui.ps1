@@ -11,13 +11,19 @@ if (-not (Test-Path (Join-Path $HarnessRoot 'package.json'))) {
     if ($env:DSH_ROOT -and (Test-Path (Join-Path $env:DSH_ROOT 'package.json'))) {
         $HarnessRoot = $env:DSH_ROOT
     } else {
-        $HarnessRoot = 'F:\tools\deepseek-harness'
+        $wslHarness = '\\wsl.localhost\Ubuntu\home\huangzy\tools\deepseek-harness'
+        if (Test-Path (Join-Path $wslHarness 'package.json')) {
+            $HarnessRoot = $wslHarness
+        } else {
+            $HarnessRoot = 'F:\tools\deepseek-harness'
+        }
     }
 }
 $WatchdogFile = Join-Path $HarnessRoot 'dsh-watchdog.ps1'
 $WatchdogLog  = Join-Path $HarnessRoot 'dsh-watchdog.log'
 $WebLog       = Join-Path $HarnessRoot 'dsh-web.log'
-$UpdateScript = Join-Path $RepoRoot 'scripts\update-dsh.ps1'
+$UpdateScript = Join-Path $PSScriptRoot 'scripts\update-dsh.ps1'
+if (-not (Test-Path $UpdateScript)) { $UpdateScript = Join-Path $PSScriptRoot 'update-dsh.ps1' }
 $IconFile     = Join-Path $HarnessRoot 'dsh.ico'
 $WebUrl       = 'http://127.0.0.1:3080'
 $WebPort      = 3080

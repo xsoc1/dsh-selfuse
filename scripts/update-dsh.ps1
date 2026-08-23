@@ -40,7 +40,12 @@ if (-not $HarnessRoot) {
         if ($env:DSH_ROOT -and (Test-Path (Join-Path $env:DSH_ROOT 'package.json'))) {
             $HarnessRoot = $env:DSH_ROOT
         } else {
-            $HarnessRoot = 'F:\tools\deepseek-harness'
+            $wslHarness = '\\wsl.localhost\Ubuntu\home\huangzy\tools\deepseek-harness'
+            if (Test-Path (Join-Path $wslHarness 'package.json')) {
+                $HarnessRoot = $wslHarness
+            } else {
+                $HarnessRoot = 'F:\tools\deepseek-harness'
+            }
         }
     }
 }
