@@ -5,8 +5,8 @@ $ErrorActionPreference = 'Stop'
 
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 $targets = @(
-    @{ Name = 'mattpocock-skills'; Source = 'F:\tools\mattpocock-skills'; Dest = Join-Path $RepoRoot 'skills\mattpocock-skills' },
-    @{ Name = 'math-research-dsh'; Source = 'C:\Users\HuangZY\.dsh\math-research-dsh'; Dest = Join-Path $RepoRoot 'skills\math-research-dsh' }
+    @{ Name = 'mattpocock-skills'; Source = '\\wsl.localhost\Ubuntu\home\huangzy\tools\mattpocock-skills'; Dest = Join-Path $RepoRoot 'skills\mattpocock-skills' },
+    @{ Name = 'math-research-dsh'; Source = '\\wsl.localhost\Ubuntu\home\huangzy\.dsh\math-research-dsh'; Dest = Join-Path $RepoRoot 'skills\math-research-dsh' }
     @{ Name = 'obsidian-skills'; Source = '\\wsl.localhost\Ubuntu\home\huangzy\tools\obsidian-skills'; Dest = Join-Path $RepoRoot 'skills\obsidian-skills' }
 )
 

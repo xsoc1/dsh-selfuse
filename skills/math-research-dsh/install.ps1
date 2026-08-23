@@ -1,4 +1,4 @@
-# Installs the four skill bundles of this repository into the DSH user skill
+﻿# Installs the four skill bundles of this repository into the DSH user skill
 # root ($DSH_HOME/skills) as directory junctions, so a `git pull` in the
 # checkout hot-updates every skill (the DSH skill watcher follows the links).
 #

@@ -1,4 +1,4 @@
-# dsh-plugin.ps1 - safe plugin installer wrapper: auto-snapshots before and
+﻿# dsh-plugin.ps1 - safe plugin installer wrapper: auto-snapshots before and
 # after every `dsh plugin` operation, and rolls back automatically on failure.
 #
 # Usage:

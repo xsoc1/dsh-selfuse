@@ -9,10 +9,10 @@ importers:
   .:
     dependencies:
       '@dsh-external/dsh-skill-router':
-        specifier: link:F:/tools/dsh-local/plugins/dsh-skill-router
+        specifier: link:/home/huangzy/tools/dsh-local/plugins/dsh-skill-router
         version: link:../../../plugins/dsh-skill-router
       '@dsh-external/dsh-super-injector':
-        specifier: link:F:/tools/dsh-local/plugins/dsh-routing-suite/injector-release
+        specifier: link:/home/huangzy/tools/dsh-local/plugins/dsh-routing-suite/injector-release
         version: link:../../../plugins/dsh-routing-suite/injector-release
       '@huanlin/dsh-plugin-mineru':
         specifier: ^0.2.2
@@ -45,28 +45,28 @@ importers:
         specifier: ^0.2.7
         version: 0.2.7
       '@linxin666/dsh-web-ui-all':
-        specifier: file:F:/tools/dsh-local/plugins/dsh-web-ui-all-slim
+        specifier: file:/home/huangzy/tools/dsh-local/plugins/dsh-web-ui-all-slim
         version: file:../../../plugins/dsh-web-ui-all-slim
       dsh-backup:
-        specifier: link:F:/tools/dsh-local/community-plugins/dsh-backup
+        specifier: link:/home/huangzy/tools/dsh-local/community-plugins/dsh-backup
         version: link:../../../community-plugins/dsh-backup
       dsh-better-sidebar:
-        specifier: link:F:/tools/dsh-local/community-plugins/DSH-better-sidebar
+        specifier: link:/home/huangzy/tools/dsh-local/community-plugins/DSH-better-sidebar
         version: link:../../../community-plugins/DSH-better-sidebar
       dsh-file-upload:
         specifier: ^0.4.2
         version: 0.4.2(unzipper@0.12.5)
       dsh-memory-panel:
-        specifier: link:F:/tools/dsh-local/plugins/dsh-memory-panel
+        specifier: link:/home/huangzy/tools/dsh-local/plugins/dsh-memory-panel
         version: link:../../../plugins/dsh-memory-panel
       dsh-plugin-git-workflow:
-        specifier: link:F:/tools/dsh-local/community-plugins/dsh-plugin-git-workflow
+        specifier: link:/home/huangzy/tools/dsh-local/community-plugins/dsh-plugin-git-workflow
         version: link:../../../community-plugins/dsh-plugin-git-workflow
       dsh-undo-savepoint:
-        specifier: link:F:/tools/dsh-local/community-plugins/dsh-undo-plugin-fixed
+        specifier: link:/home/huangzy/tools/dsh-local/community-plugins/dsh-undo-plugin-fixed
         version: link:../../../community-plugins/dsh-undo-plugin-fixed
       dsh-wsl-workspace:
-        specifier: link:F:/tools/dsh-local/community-plugins/dsh-wsl-workspace
+        specifier: link:/home/huangzy/tools/dsh-local/community-plugins/dsh-wsl-workspace
         version: link:../../../community-plugins/dsh-wsl-workspace
       dshmarket:
         specifier: ^1.17.1

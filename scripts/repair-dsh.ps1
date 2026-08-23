@@ -15,9 +15,9 @@ param(
 )
 
 $ErrorActionPreference = 'Continue'
-$HarnessRoot    = 'F:\tools\deepseek-harness'
-$LocalRoot      = 'F:\tools\dsh-local'
-$CommunityRoot  = 'F:\tools\community-plugins'
+$HarnessRoot    = '\\wsl.localhost\Ubuntu\home\huangzy\tools\deepseek-harness'
+$LocalRoot      = '\\wsl.localhost\Ubuntu\home\huangzy\tools\dsh-local'
+$CommunityRoot  = '\\wsl.localhost\Ubuntu\home\huangzy\tools\community-plugins'
 $PnPmShim       = Join-Path $HarnessRoot 'node_modules\.bin\pnpm.cmd'
 
 function Write-Step([string]$Message) {
@@ -88,14 +88,14 @@ if (-not $SkipDeps) {
     $verify = @'
 const { createRequire } = require('module')
 const cases = [
-  ['F:/tools/community-plugins/dsh-wsl-workspace/lib/index.js', '@deepseek-ai/schemastery'],
-  ['F:/tools/community-plugins/dsh-wsl-workspace/lib/index.js', '@deepseek-ai/dsh-shell'],
-  ['F:/tools/community-plugins/dsh-wsl-workspace/lib/index.js', '@deepseek-ai/dsh-fs-local'],
-  ['F:/tools/community-plugins/dsh-backup/lib/index.js', '@deepseek-ai/dsh-tools'],
-  ['F:/tools/community-plugins/dsh-backup/lib/index.js', '@deepseek-ai/dsh-typert-protocol'],
-  ['F:/tools/community-plugins/DSH-better-sidebar/lib/index.js', '@deepseek-ai/dsh-tools'],
-  ['F:/tools/dsh-local/plugins/dsh-routing-suite/injector-release/lib/index.js', 'schemastery'],
-  ['F:/tools/dsh-local/plugins/dsh-routing-suite/injector-release/lib/index.js', '@deepseek-ai/dsh-llm']
+  ['\\wsl.localhost\Ubuntu\home\huangzy\tools\community-plugins/dsh-wsl-workspace/lib/index.js', '@deepseek-ai/schemastery'],
+  ['\\wsl.localhost\Ubuntu\home\huangzy\tools\community-plugins/dsh-wsl-workspace/lib/index.js', '@deepseek-ai/dsh-shell'],
+  ['\\wsl.localhost\Ubuntu\home\huangzy\tools\community-plugins/dsh-wsl-workspace/lib/index.js', '@deepseek-ai/dsh-fs-local'],
+  ['\\wsl.localhost\Ubuntu\home\huangzy\tools\community-plugins/dsh-backup/lib/index.js', '@deepseek-ai/dsh-tools'],
+  ['\\wsl.localhost\Ubuntu\home\huangzy\tools\community-plugins/dsh-backup/lib/index.js', '@deepseek-ai/dsh-typert-protocol'],
+  ['\\wsl.localhost\Ubuntu\home\huangzy\tools\community-plugins/DSH-better-sidebar/lib/index.js', '@deepseek-ai/dsh-tools'],
+  ['\\wsl.localhost\Ubuntu\home\huangzy\tools\dsh-local/plugins/dsh-routing-suite/injector-release/lib/index.js', 'schemastery'],
+  ['\\wsl.localhost\Ubuntu\home\huangzy\tools\dsh-local/plugins/dsh-routing-suite/injector-release/lib/index.js', '@deepseek-ai/dsh-llm']
 ]
 let failed = 0
 for (const [base, name] of cases) {

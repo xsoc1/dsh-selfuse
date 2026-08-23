@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 $root = 'F:\tools\dsh-skill-router\node_modules'
 $chk = 'F:\tools\deepseek-harness'
 function Link-J($name, $target) {

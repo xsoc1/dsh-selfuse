@@ -1,4 +1,4 @@
-# Patch node-pty 1.1.0 conpty console-list agent so AttachConsole failure is
+﻿# Patch node-pty 1.1.0 conpty console-list agent so AttachConsole failure is
 # tolerated when dsh runs without an interactive console (e.g. hidden watchdog).
 # Idempotent: safe to run multiple times.
 $ErrorActionPreference = 'Stop'

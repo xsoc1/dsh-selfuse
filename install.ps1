@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     dsh-local one-click install / configure / repair.
 
