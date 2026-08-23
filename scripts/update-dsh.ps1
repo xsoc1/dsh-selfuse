@@ -107,6 +107,17 @@ function Invoke-Git {
         if ($AllowFail) { return $true }
         return $true
     }
+    # Run inside WSL when the active repo is the WSL UNC checkout.
+    if ($HarnessRoot -like '\\wsl.localhost*') {
+        $quoted = @()
+        foreach ($a in $Args) { $quoted += "'" + ($a -replace "'", "'\\''") + "'" }
+        $wslCmd = 'cd /home/huangzy/tools/deepseek-harness && git ' + ($quoted -join ' ')
+        $out = & wsl.exe -d Ubuntu -- bash -lc $wslCmd 2>&1 | ForEach-Object { Write-Host "    $_" }
+        if ($LASTEXITCODE -ne 0 -and -not $AllowFail) {
+            throw "git $($Args -join ' ') failed in WSL (exit $LASTEXITCODE)"
+        }
+        return ($LASTEXITCODE -eq 0)
+    }
     Push-Location $HarnessRoot
     try {
         & git @Args 2>&1 | ForEach-Object { Write-Host "    $_" }
@@ -128,16 +139,22 @@ function Update-Dsh {
     Write-Info '拉取上游 master ...'
     $fetchOk = $true
     if (-not $DryRun) {
-        Push-Location $HarnessRoot
-        try {
-            git fetch origin master 2>&1 | ForEach-Object { Write-Host "    $_" }
-            if ($LASTEXITCODE -ne 0) {
-                Write-Warn '普通 fetch 失败，改用 GitHub IP 兜底 ...'
-                git -c http.sslVerify=false -c http.extraHeader='Host: github.com' fetch $GitHubIp master:refs/remotes/origin/master 2>&1 | ForEach-Object { Write-Host "    $_" }
-                if ($LASTEXITCODE -ne 0) { $fetchOk = $false }
+        if ($HarnessRoot -like '\\wsl.localhost*') {
+            $fetchCmd = "cd /home/huangzy/tools/deepseek-harness && (git fetch origin master || git -c http.sslVerify=false -c http.extraHeader='Host: github.com' fetch https://140.82.112.4/deepseek-ai/deepseek-harness.git master:refs/remotes/origin/master)"
+            $out = & wsl.exe -d Ubuntu -- bash -lc $fetchCmd 2>&1 | ForEach-Object { Write-Host "    $_" }
+            if ($LASTEXITCODE -ne 0) { $fetchOk = $false }
+        } else {
+            Push-Location $HarnessRoot
+            try {
+                git fetch origin master 2>&1 | ForEach-Object { Write-Host "    $_" }
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Warn '普通 fetch 失败，改用 GitHub IP 兜底 ...'
+                    git -c http.sslVerify=false -c http.extraHeader='Host: github.com' fetch $GitHubIp master:refs/remotes/origin/master 2>&1 | ForEach-Object { Write-Host "    $_" }
+                    if ($LASTEXITCODE -ne 0) { $fetchOk = $false }
+                }
+            } finally {
+                Pop-Location
             }
-        } finally {
-            Pop-Location
         }
     } else {
         Write-Host '    [dry-run] git fetch origin master (or IP fallback)'
@@ -176,16 +193,11 @@ function Update-Dsh {
     if ($DryRun) {
         Write-Host '    [dry-run] git rebase master'
     } else {
-        Push-Location $HarnessRoot
-        try {
-            git rebase master 2>&1 | ForEach-Object { Write-Host "    $_" }
-            if ($LASTEXITCODE -ne 0) {
-                Write-Err 'rebase 存在冲突，已中止（本机未自动解决）。请手动处理后再运行。'
-                git rebase --abort 2>&1 | Out-Null
-                return $false
-            }
-        } finally {
-            Pop-Location
+        $rebaseOk = Invoke-Git -Args @('rebase', 'master') -AllowFail
+        if (-not $rebaseOk) {
+            Write-Err 'rebase 存在冲突，已中止（本机未自动解决）。请手动处理后再运行。'
+            Invoke-Git -Args @('rebase', '--abort') -AllowFail
+            return $false
         }
     }
 
@@ -193,14 +205,20 @@ function Update-Dsh {
     if ($DryRun) {
         Write-Host '    [dry-run] pnpm install && npm run build:lib:host'
     } else {
-        Push-Location $HarnessRoot
-        try {
-            pnpm install --no-frozen-lockfile 2>&1 | ForEach-Object { Write-Host "    $_" }
-            if ($LASTEXITCODE -ne 0) { throw 'pnpm install failed' }
-            npm run build:lib:host 2>&1 | ForEach-Object { Write-Host "    $_" }
-            if ($LASTEXITCODE -ne 0) { throw 'npm run build:lib:host failed' }
-        } finally {
-            Pop-Location
+        if ($HarnessRoot -like '\\wsl.localhost*') {
+            $buildCmd = "cd /home/huangzy/tools/deepseek-harness && export PATH=/home/huangzy/.local/bin:`$PATH && pnpm install --no-frozen-lockfile && npm run build:lib:host"
+            $out = & wsl.exe -d Ubuntu -- bash -lc $buildCmd 2>&1 | ForEach-Object { Write-Host "    $_" }
+            if ($LASTEXITCODE -ne 0) { throw 'WSL pnpm/npm build failed' }
+        } else {
+            Push-Location $HarnessRoot
+            try {
+                pnpm install --no-frozen-lockfile 2>&1 | ForEach-Object { Write-Host "    $_" }
+                if ($LASTEXITCODE -ne 0) { throw 'pnpm install failed' }
+                npm run build:lib:host 2>&1 | ForEach-Object { Write-Host "    $_" }
+                if ($LASTEXITCODE -ne 0) { throw 'npm run build:lib:host failed' }
+            } finally {
+                Pop-Location
+            }
         }
     }
 
