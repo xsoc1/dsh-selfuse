@@ -113,6 +113,8 @@ function Stop-DshAll {
         } | ForEach-Object { [void]$ids.Add([int]$_.ProcessId) }
     Get-WatchdogProcess | ForEach-Object { [void]$ids.Add([int]$_.ProcessId) }
     foreach ($id in $ids) { taskkill /PID $id /T /F 2>&1 | Out-Null }
+    & wsl.exe -d Ubuntu -- bash -lc "pkill -f 'apps/cli/src/bin.ts' || true" 2>&1 | Out-Null
+    & wsl.exe -d Ubuntu -- bash -lc "pkill -f 'dsh-watchdog.ps1' || true" 2>&1 | Out-Null
     Start-Sleep -Seconds 2
     if (Test-PortOpen $WebPort) {
         Write-Warn '端口 3080 仍被占用'

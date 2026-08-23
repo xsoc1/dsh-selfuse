@@ -212,6 +212,8 @@ function Stop-DshAllAction {
     if ($ids.Count -gt 0) { Write-Activity "正在停止 dsh 进程 (PID $($ids -join ',')) ..." }
     else { Write-Activity '没有检测到 dsh 进程' }
     foreach ($id in $ids) { Stop-Process -Id $id -Force -ErrorAction SilentlyContinue }
+    & wsl.exe -d Ubuntu -- bash -lc "pkill -f 'apps/cli/src/bin.ts' || true" 2>&1 | Out-Null
+    & wsl.exe -d Ubuntu -- bash -lc "pkill -f 'dsh-watchdog.ps1' || true" 2>&1 | Out-Null
     Start-Sleep -Seconds 2
     if (Get-ListenPid $WebPort) {
         Write-Activity "停止完成，但端口 $WebPort 仍被占用"

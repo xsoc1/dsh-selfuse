@@ -2,12 +2,18 @@
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 $RepoRoot = Split-Path -Parent $PSScriptRoot
-$HarnessRoot = Join-Path $RepoRoot "vendor\deepseek-harness"
-if (-not (Test-Path (Join-Path $HarnessRoot "package.json"))) {
-    if ($env:DSH_ROOT -and (Test-Path (Join-Path $env:DSH_ROOT "package.json"))) {
-        $HarnessRoot = $env:DSH_ROOT
-    } else {
-        $HarnessRoot = "$HarnessRoot"
+if (Test-Path (Join-Path $PSScriptRoot 'package.json')) {
+    $HarnessRoot = $PSScriptRoot
+} else {
+    $HarnessRoot = Join-Path $RepoRoot 'vendor\deepseek-harness'
+    if (-not (Test-Path (Join-Path $HarnessRoot 'package.json'))) {
+        if ($env:DSH_ROOT -and (Test-Path (Join-Path $env:DSH_ROOT 'package.json'))) {
+            $HarnessRoot = $env:DSH_ROOT
+        } elseif (Test-Path '\\wsl.localhost\Ubuntu\home\huangzy\tools\deepseek-harness\package.json') {
+            $HarnessRoot = '\\wsl.localhost\Ubuntu\home\huangzy\tools\deepseek-harness'
+        } elseif (Test-Path 'F:\tools\deepseek-harness\package.json') {
+            $HarnessRoot = 'F:\tools\deepseek-harness'
+        }
     }
 }
 Set-Location "$HarnessRoot"
@@ -146,7 +152,7 @@ else {
     Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value "tailscale not found; skipping tailscale serve/trusted-host" -Encoding UTF8
 }
 
-$node = (Get-Command node -ErrorAction SilentlyContinue).Source
-if (-not $node) { $node = "node.exe" }
-& $node --import tsx/esm apps/cli/src/bin.ts web @trustedArgs 2>&1 | ForEach-Object { Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value $_ -Encoding UTF8 }
+# Run dsh inside WSL (Linux filesystem) with WSL native Node/pnpm.
+$wslCommand = "cd '/home/huangzy/tools/deepseek-harness' && export PATH='/home/huangzy/.local/bin:$PATH' && export DSH_HOME='/home/huangzy/.dsh' && unset DSH_SESSION_ID DSH_SESSION_JSONL DSH_WEB_URL DSH_WSL_DISTRO && node --import tsx/esm apps/cli/src/bin.ts web $($trustedArgs -join ' ')"
+& wsl.exe -d Ubuntu -- bash -lc $wslCommand 2>&1 | ForEach-Object { Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value $_ -Encoding UTF8 }
 Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value "==== dsh web exit ====" -Encoding UTF8
