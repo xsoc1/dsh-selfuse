@@ -26,7 +26,7 @@ dsh-better-sidebar:
 remote-web-ui:
   autoTunnel: false
   publicBaseUrl: 'https://xsoc.tail6cf486.ts.net'
-  requirePairingForLan: true
+  requirePairingForLan: false
 llm-deepseek:
   models:
     - id: deepseek-v4-flash
