@@ -1,44 +1,137 @@
 #!/usr/bin/env bash
 # Patch @linxin666/dsh-remote-web-ui so Tailscale/tailnet devices can access
 # without pairing when remote-web-ui.requirePairingForLan=false.
-# This is a local maintenance patch for the npm-installed plugin.
+# Applies to both the bundled lib/ and the src/ tree in the installed package.
 set -euo pipefail
 
 profile="${1:-$HOME/.dsh/profiles/web}"
-file="$profile/node_modules/@linxin666/dsh-remote-web-ui/lib/index.js"
-
-if [ ! -f "$file" ]; then
-    echo "patch-remote-web-ui: file not found: $file" >&2
+pkg="$profile/node_modules/@linxin666/dsh-remote-web-ui"
+if [ ! -f "$pkg/lib/index.js" ]; then
+    echo "patch-remote-web-ui: package not found: $pkg" >&2
     exit 1
 fi
 
-python3 - "$file" <<'PY'
+python3 - "$pkg" <<'PY'
 import sys
-path = sys.argv[1]
-text = open(path, encoding='utf-8').read()
-changed = False
+from pathlib import Path
+pkg = Path(sys.argv[1])
+changed = []
 
-old1 = "\tconst gateOk = (req) => {\n\t\treturn touchDeviceFor(req);\n\t};"
-new1 = "\tconst gateOk = (req) => {\n\t\tif (service.config.requirePairingForLan === false) return true;\n\t\treturn touchDeviceFor(req);\n\t};"
-if old1 in text:
-    text = text.replace(old1, new1, 1)
-    changed = True
+def replace(path, pairs):
+    p = Path(path)
+    if not p.exists():
+        return
+    text = p.read_text(encoding='utf-8')
+    original = text
+    for old, new in pairs:
+        if old in text:
+            text = text.replace(old, new, 1)
+    if text != original:
+        p.write_text(text, encoding='utf-8')
+        changed.append(str(p.relative_to(pkg)))
 
-old2 = "\t\tconst deviceId = readCookie(req.headers.cookie, service.config.cookieName);\n\t\tif (!(deviceId !== void 0 && service.touchDevice(deviceId))) {"
-new2 = "\t\tconst deviceId = readCookie(req.headers.cookie, service.config.cookieName);\n\t\tif (service.config.requirePairingForLan !== false && !(deviceId !== void 0 && service.touchDevice(deviceId))) {"
-if old2 in text:
-    text = text.replace(old2, new2, 1)
-    changed = True
+# ---- src/mobile-api.ts ----
+src_mobile = pkg / 'src/mobile-api.ts'
+if src_mobile.exists():
+    text = src_mobile.read_text(encoding='utf-8')
+    o = text
+    text = text.replace(
+        "  /** The resolved mobile composer preference (live per request). */\n  mobileEnterToSend: () => boolean\n",
+        "  /** The resolved mobile composer preference (live per request). */\n  mobileEnterToSend: () => boolean\n  /** Live LAN-pairing requirement, resolved per request. */\n  requirePairingForLan?: () => boolean\n", 1)
+    text = text.replace(
+        "  const { service, apiProxy, mobileEnterToSend } = deps",
+        "  const { service, apiProxy, mobileEnterToSend, requirePairingForLan } = deps", 1)
+    # replace whatever gateOk exists (unpatched or previous wrong patch)
+    if "requirePairingForLan?.() === false" in text:
+        pass
+    else:
+        # remove any known previous form and insert correct
+        import re
+        text = re.sub(
+            r"  const gateOk = \(req: IncomingMessage\): boolean => \{\n(?:.*\n)*?  \};",
+            "  const gateOk = (req: IncomingMessage): boolean => {\n    if (requirePairingForLan?.() === false) return true\n    return touchDeviceFor(req)\n  };",
+            text, count=1, flags=re.MULTILINE)
+    if text != o:
+        src_mobile.write_text(text, encoding='utf-8')
+        changed.append('src/mobile-api.ts')
 
-old3 = "\t\tconst deviceId = readCookie(req.headers.cookie, service.config.cookieName);\n\t\tif (deviceId === void 0 || !service.touchDevice(deviceId)) {"
-new3 = "\t\tconst deviceId = readCookie(req.headers.cookie, service.config.cookieName);\n\t\tif (service.config.requirePairingForLan !== false && (deviceId === void 0 || !service.touchDevice(deviceId))) {"
-if old3 in text:
-    text = text.replace(old3, new3, 1)
-    changed = True
+# ---- src/remote-api.ts ----
+src_remote = pkg / 'src/remote-api.ts'
+if src_remote.exists():
+    text = src_remote.read_text(encoding='utf-8')
+    o = text
+    text = text.replace(
+        "  /** The local webServer port the loopback proxy connects to. */\n  port: number\n}",
+        "  /** The local webServer port the loopback proxy connects to. */\n  port: number\n  /** Live LAN-pairing requirement, resolved per request. */\n  requirePairingForLan?: () => boolean\n}", 1)
+    text = text.replace("  const { service, port } = deps", "  const { service, port, requirePairingForLan } = deps")
+    text = text.replace(
+        "    const paired = deviceId !== undefined && service.touchDevice(deviceId)",
+        "    const paired = requirePairingForLan?.() === false || (deviceId !== undefined && service.touchDevice(deviceId))", 1)
+    text = text.replace(
+        "    if (deviceId === undefined || !service.touchDevice(deviceId)) {",
+        "    if (requirePairingForLan?.() !== false && (deviceId === undefined || !service.touchDevice(deviceId))) {", 1)
+    if text != o:
+        src_remote.write_text(text, encoding='utf-8')
+        changed.append('src/remote-api.ts')
+
+# ---- src/index.ts call sites ----
+src_index = pkg / 'src/index.ts'
+if src_index.exists():
+    text = src_index.read_text(encoding='utf-8')
+    o = text
+    text = text.replace(
+        "mobileEnterToSend: () => resolve().mobileEnterToSend })",
+        "mobileEnterToSend: () => resolve().mobileEnterToSend, requirePairingForLan: () => resolve().requirePairingForLan })", 1)
+    text = text.replace(
+        "makeRemoteApiRoutes({ service, port: ctx.webServer.port })",
+        "makeRemoteApiRoutes({ service, port: ctx.webServer.port, requirePairingForLan: () => resolve().requirePairingForLan })", 1)
+    text = text.replace(
+        "makeRemoteApiUpgradeRoutes({ service, port: ctx.webServer.port })",
+        "makeRemoteApiUpgradeRoutes({ service, port: ctx.webServer.port, requirePairingForLan: () => resolve().requirePairingForLan })", 1)
+    if text != o:
+        src_index.write_text(text, encoding='utf-8')
+        changed.append('src/index.ts')
+
+# ---- lib/index.js (runtime loaded code) ----
+lib = pkg / 'lib/index.js'
+text = lib.read_text(encoding='utf-8')
+o = text
+text = text.replace("\tconst { service, apiProxy, mobileEnterToSend } = deps;", "\tconst { service, apiProxy, mobileEnterToSend, requirePairingForLan } = deps;", 1)
+# replace any previous gateOk forms
+import re
+if "requirePairingForLan?.() === false" in text:
+    pass
+else:
+    text = re.sub(
+        r"\tconst gateOk = \(req\) => \{\n(?:.*\n)*?\t\};",
+        "\tconst gateOk = (req) => {\n\t\tif (requirePairingForLan?.() === false) return true;\n\t\treturn touchDeviceFor(req);\n\t};",
+        text, count=1, flags=re.MULTILINE)
+text = text.replace(
+    "mobileEnterToSend: () => resolve().mobileEnterToSend\n\t\t})",
+    "mobileEnterToSend: () => resolve().mobileEnterToSend,\n\t\t\trequirePairingForLan: () => resolve().requirePairingForLan\n\t\t})", 1)
+# replace previous wrong checks if present
+text = text.replace(
+    "\t\tif (service.config.requirePairingForLan !== false && !(deviceId !== void 0 && service.touchDevice(deviceId))) {",
+    "\t\tif (requirePairingForLan?.() !== false && !(deviceId !== void 0 && service.touchDevice(deviceId))) {", 1)
+text = text.replace(
+    "\t\tif (service.config.requirePairingForLan !== false && (deviceId === void 0 || !service.touchDevice(deviceId))) {",
+    "\t\tif (requirePairingForLan?.() !== false && (deviceId === void 0 || !service.touchDevice(deviceId))) {", 1)
+# destructure remote routes (2 occurrences)
+text = text.replace("\tconst { service, port } = deps;", "\tconst { service, port, requirePairingForLan } = deps;")
+# remote route call
+text = text.replace(
+    "makeRemoteApiRoutes({\n\t\t\tservice,\n\t\t\tport: ctx.webServer.port\n\t\t})",
+    "makeRemoteApiRoutes({\n\t\t\tservice,\n\t\t\tport: ctx.webServer.port,\n\t\t\trequirePairingForLan: () => resolve().requirePairingForLan\n\t\t})", 1)
+# remote upgrade call
+text = text.replace(
+    "makeRemoteApiUpgradeRoutes({\n\t\tservice,\n\t\tport: ctx.webServer.port\n\t})",
+    "makeRemoteApiUpgradeRoutes({\n\t\tservice,\n\t\tport: ctx.webServer.port,\n\t\trequirePairingForLan: () => resolve().requirePairingForLan\n\t})", 1)
+if text != o:
+    lib.write_text(text, encoding='utf-8')
+    changed.append('lib/index.js')
 
 if changed:
-    open(path, 'w', encoding='utf-8').write(text)
-    print('patch-remote-web-ui: applied pairing-bypass patch')
+    print('patch-remote-web-ui: applied to ' + ', '.join(changed))
 else:
-    print('patch-remote-web-ui: already patched or patterns not found')
+    print('patch-remote-web-ui: already patched')
 PY
