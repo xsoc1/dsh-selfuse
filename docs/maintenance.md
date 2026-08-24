@@ -332,3 +332,19 @@ git commit -m "chore: bump deepseek-harness fork"
   - VBS 调度入口改为 `\\wsl.localhost\Ubuntu\home\huangzy\tools\dsh-local\scripts\...`。
 - dsh web 已从 WSL 启动并通过 WSL/Windows localhost 均 HTTP 200 验证。
 - 已推送 dsh-selfuse：`f85e063`（迁移+新 skills）、`a957d92`（WSL 运行管理）。
+
+### 2026-08-24 selfuse 插件内化 + Web profile 切换到 @dsh-selfuse
+
+- 在 `xsoc1/deepseek-harness` 的 `selfuse` 分支完成第三方插件源码内化：
+  - `packages/selfuse/*` 统一为 `@dsh-selfuse/*`，保留原 LICENSE。
+  - 新吸收本机自研 `memory-panel`、`skill-router`。
+  - 修复自用插件 YAML 引用、缺失 SDK peer 依赖、remote-web-ui 的 `@linxin666` 残留。
+  - 关键修复：DOM data attribute 恢复为稳定的 `data-dsh-better-sidebar` / `data-dsh-backup`，避免 sidebar/skin 选择器崩溃。
+- 源码运行链路：所有 `@dsh-selfuse/*` 已加入 `apps/cli/package.json`，profile bundle 从 dsh 安装区解析。
+- 新增一键脚本：
+  - `scripts/selfuse/generate-profile.mjs`：生成 `~/.dsh/profiles/web`。
+  - `scripts/selfuse/install.mjs` / `install.sh`：同步 profile、settings、skills。
+- live web profile 已切到 selfuse 并重启验证：HTTP 200、各插件 client 路由 200、remote-web-ui 绕过保留。
+- 用户确认当前稳定。
+- 已推送到 GitHub：`xsoc1/deepseek-harness` `selfuse`（`c987a35620`、`57bbc737f9`）。
+- 待办：控制脚本正式入库、F: 旧目录退役、pre-push/pre-commit hooks 对 selfuse 代码的排除策略。
