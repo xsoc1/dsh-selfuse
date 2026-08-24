@@ -130,6 +130,39 @@ if text != o:
     lib.write_text(text, encoding='utf-8')
     changed.append('lib/index.js')
 
+# ---- src/client/index.ts: never install remote desktop channel ----
+src_client = pkg / 'src/client/index.ts'
+if src_client.exists():
+    text = src_client.read_text(encoding='utf-8')
+    o = text
+    import re as _re
+    if 'return false' in text and 'channelActive' in text:
+        pass
+    else:
+        text = _re.sub(
+            r"  const channelActive = \(\): boolean => \{\n(?:.*\n)*?  \}",
+            "  const channelActive = (): boolean => {\n    // Local maintenance: Tailscale/tailnet is trusted; remote pairing is disabled.\n    return false\n  }",
+            text, count=1, flags=_re.MULTILINE)
+    if text != o:
+        src_client.write_text(text, encoding='utf-8')
+        changed.append('src/client/index.ts')
+
+# ---- lib/client.js: server-served desktop bundle never uses remote channel ----
+lib_client = pkg / 'lib/client.js'
+if lib_client.exists():
+    text = lib_client.read_text(encoding='utf-8')
+    o = text
+    if 'return false;' in text and 'channelActive' in text:
+        pass
+    else:
+        text = _re.sub(
+            r"\t\t\tconst channelActive = \(\) => \{\n(?:.*\n)*?\t\t\t\};",
+            "\t\t\tconst channelActive = () => {\n\t\t\t\treturn false;\n\t\t\t};",
+            text, count=1, flags=_re.MULTILINE)
+    if text != o:
+        lib_client.write_text(text, encoding='utf-8')
+        changed.append('lib/client.js')
+
 if changed:
     print('patch-remote-web-ui: applied to ' + ', '.join(changed))
 else:
