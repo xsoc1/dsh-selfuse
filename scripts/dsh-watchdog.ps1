@@ -2,7 +2,10 @@
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 $HarnessRoot = Join-Path $RepoRoot "vendor\deepseek-harness"
 if (-not (Test-Path (Join-Path $HarnessRoot "package.json"))) {
-    if ($env:DSH_ROOT -and (Test-Path (Join-Path $env:DSH_ROOT "package.json"))) {
+    $wslHarness = '\\wsl.localhost\Ubuntu\home\huangzy\tools\deepseek-harness'
+    if (Test-Path (Join-Path $wslHarness "package.json")) {
+        $HarnessRoot = $wslHarness
+    } elseif ($env:DSH_ROOT -and (Test-Path (Join-Path $env:DSH_ROOT "package.json"))) {
         $HarnessRoot = $env:DSH_ROOT
     } else {
         $HarnessRoot = "$HarnessRoot"
@@ -11,6 +14,7 @@ if (-not (Test-Path (Join-Path $HarnessRoot "package.json"))) {
 $log = "$HarnessRoot\dsh-watchdog.log"
 $runner = "$HarnessRoot\run-dsh-web.ps1"
 $heartbeat = "$HarnessRoot\dsh-watchdog.heartbeat"
+$WebLog = "$HarnessRoot\dsh-web.log"
 $probe = "http://127.0.0.1:3080"
 $probeTimeoutSec = 3
 $webPort = 3080
@@ -32,9 +36,24 @@ function Write-Heartbeat {
     } catch {}
 }
 
+function Get-DshWebUrl {
+    $candidates = @($WebLog, 'F:\tools\deepseek-harness\dsh-web.log', '\\wsl.localhost\Ubuntu\home\huangzy\tools\deepseek-harness\dsh-web.log')
+    foreach ($candidate in $candidates) {
+        try {
+            if (Test-Path $candidate) {
+                $line = Get-Content -LiteralPath $candidate -Tail 300 -Encoding UTF8 -ErrorAction SilentlyContinue |
+                    Select-String -Pattern 'http://127\.0\.0\.1:3080/\?token=[A-Za-z0-9_-]+' |
+                    Select-Object -Last 1
+                if ($line -and $line.Matches.Count -gt 0) { return $line.Matches[0].Value }
+            }
+        } catch {}
+    }
+    return $WebUrl
+}
+
 function Test-DshAlive {
     try {
-        $r = Invoke-WebRequest -Uri $probe -UseBasicParsing -TimeoutSec $probeTimeoutSec
+        $r = Invoke-WebRequest -Uri (Get-DshWebUrl) -UseBasicParsing -TimeoutSec $probeTimeoutSec
         return ($r.StatusCode -eq 200)
     }
     catch {

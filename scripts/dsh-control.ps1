@@ -17,15 +17,13 @@ $ErrorActionPreference = 'Continue'
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 $HarnessRoot = Join-Path $RepoRoot 'vendor\deepseek-harness'
 if (-not (Test-Path (Join-Path $HarnessRoot 'package.json'))) {
-    if ($env:DSH_ROOT -and (Test-Path (Join-Path $env:DSH_ROOT 'package.json'))) {
+    $wslHarness = '\\wsl.localhost\Ubuntu\home\huangzy\tools\deepseek-harness'
+    if (Test-Path (Join-Path $wslHarness 'package.json')) {
+        $HarnessRoot = $wslHarness
+    } elseif ($env:DSH_ROOT -and (Test-Path (Join-Path $env:DSH_ROOT 'package.json'))) {
         $HarnessRoot = $env:DSH_ROOT
     } else {
-        $wslHarness = '\\wsl.localhost\Ubuntu\home\huangzy\tools\deepseek-harness'
-        if (Test-Path (Join-Path $wslHarness 'package.json')) {
-            $HarnessRoot = $wslHarness
-        } else {
-            $HarnessRoot = 'F:\tools\deepseek-harness'
-        }
+        $HarnessRoot = 'F:\tools\deepseek-harness'
     }
 }
 $WatchdogFile = Join-Path $HarnessRoot 'dsh-watchdog.ps1'
@@ -36,6 +34,21 @@ if (-not (Test-Path $UpdateScript)) { $UpdateScript = Join-Path $PSScriptRoot 'u
 $WebUrl       = 'http://127.0.0.1:3080'
 $WebPort      = 3080
 # ============ 配置区结束 ============
+
+function Get-DshWebUrl {
+    $candidates = @($WebLog, 'F:\tools\deepseek-harness\dsh-web.log', '\\wsl.localhost\Ubuntu\home\huangzy\tools\deepseek-harness\dsh-web.log')
+    foreach ($candidate in $candidates) {
+        try {
+            if (Test-Path $candidate) {
+                $line = Get-Content -LiteralPath $candidate -Tail 300 -Encoding UTF8 -ErrorAction SilentlyContinue |
+                    Select-String -Pattern 'http://127\.0\.0\.1:3080/\?token=[A-Za-z0-9_-]+' |
+                    Select-Object -Last 1
+                if ($line -and $line.Matches.Count -gt 0) { return $line.Matches[0].Value }
+            }
+        } catch {}
+    }
+    return $WebUrl
+}
 
 function Test-Admin {
     $principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
@@ -95,7 +108,7 @@ function Wait-WebReady([int]$TimeoutSec = 180) {
     while ((Get-Date) -lt $deadline) {
         Start-Sleep -Seconds 2
         try {
-            $r = Invoke-WebRequest -Uri $WebUrl -UseBasicParsing -TimeoutSec 5
+            $r = Invoke-WebRequest -Uri (Get-DshWebUrl) -UseBasicParsing -TimeoutSec 5
             if ($r.StatusCode -eq 200) { return $true }
         } catch { }
     }
@@ -136,7 +149,7 @@ function Show-Status {
     $http = ''
     if ($webUp) {
         try {
-            $r = Invoke-WebRequest -Uri $WebUrl -UseBasicParsing -TimeoutSec 5
+            $r = Invoke-WebRequest -Uri (Get-DshWebUrl) -UseBasicParsing -TimeoutSec 5
             $http = "HTTP $($r.StatusCode)"
         } catch {
             $http = '端口开但 HTTP 无响应'
@@ -169,7 +182,7 @@ function Action-Start {
     Write-Host '---- 启动 dsh ----' -ForegroundColor Cyan
     Start-Watchdog
     if (Wait-WebReady) {
-        Write-Ok "dsh 已就绪: $WebUrl"
+        Write-Ok "dsh 已就绪: $(Get-DshWebUrl)"
     } else {
         Write-Warn 'web 未在预期时间内就绪，watchdog 会在后台继续处理'
     }
@@ -180,7 +193,7 @@ function Action-Restart {
     Stop-DshAll
     Start-Watchdog
     if (Wait-WebReady) {
-        Write-Ok "dsh 已重启就绪: $WebUrl"
+        Write-Ok "dsh 已重启就绪: $(Get-DshWebUrl)"
     } else {
         Write-Warn 'web 未在预期时间内就绪，watchdog 会在后台继续处理'
     }

@@ -8,15 +8,13 @@ $ErrorActionPreference = 'Stop'
 $RepoRoot = Split-Path -Parent $PSScriptRoot
 $HarnessRoot = Join-Path $RepoRoot 'vendor\deepseek-harness'
 if (-not (Test-Path (Join-Path $HarnessRoot 'package.json'))) {
-    if ($env:DSH_ROOT -and (Test-Path (Join-Path $env:DSH_ROOT 'package.json'))) {
+    $wslHarness = '\\wsl.localhost\Ubuntu\home\huangzy\tools\deepseek-harness'
+    if (Test-Path (Join-Path $wslHarness 'package.json')) {
+        $HarnessRoot = $wslHarness
+    } elseif ($env:DSH_ROOT -and (Test-Path (Join-Path $env:DSH_ROOT 'package.json'))) {
         $HarnessRoot = $env:DSH_ROOT
     } else {
-        $wslHarness = '\\wsl.localhost\Ubuntu\home\huangzy\tools\deepseek-harness'
-        if (Test-Path (Join-Path $wslHarness 'package.json')) {
-            $HarnessRoot = $wslHarness
-        } else {
-            $HarnessRoot = 'F:\tools\deepseek-harness'
-        }
+        $HarnessRoot = 'F:\tools\deepseek-harness'
     }
 }
 $WatchdogFile = Join-Path $HarnessRoot 'dsh-watchdog.ps1'
@@ -27,6 +25,21 @@ if (-not (Test-Path $UpdateScript)) { $UpdateScript = Join-Path $PSScriptRoot 'u
 $IconFile     = Join-Path $HarnessRoot 'dsh.ico'
 $WebUrl       = 'http://127.0.0.1:3080'
 $WebPort      = 3080
+function Get-DshWebUrl {
+    $candidates = @($WebLog, 'F:\tools\deepseek-harness\dsh-web.log', '\\wsl.localhost\Ubuntu\home\huangzy\tools\deepseek-harness\dsh-web.log')
+    foreach ($candidate in $candidates) {
+        try {
+            if (Test-Path $candidate) {
+                $line = Get-Content -LiteralPath $candidate -Tail 300 -Encoding UTF8 -ErrorAction SilentlyContinue |
+                    Select-String -Pattern 'http://127\.0\.0\.1:3080/\?token=[A-Za-z0-9_-]+' |
+                    Select-Object -Last 1
+                if ($line -and $line.Matches.Count -gt 0) { return $line.Matches[0].Value }
+            }
+        } catch {}
+    }
+    return $WebUrl
+}
+
 $ImageFile    = 'C:\Users\HuangZY\Pictures\IMG_1891.PNG'
 $DshHome      = Join-Path $env:USERPROFILE '.dsh'
 $DshProfile   = Join-Path $DshHome 'profiles\web'
@@ -153,9 +166,24 @@ function Get-DshVersion {
     return 'unknown'
 }
 
+function Get-DshWebUrl {
+    $candidates = @($WebLog, 'F:\tools\deepseek-harness\dsh-web.log', '\\wsl.localhost\Ubuntu\home\huangzy\tools\deepseek-harness\dsh-web.log')
+    foreach ($candidate in $candidates) {
+        try {
+            if (Test-Path $candidate) {
+                $line = Get-Content -LiteralPath $candidate -Tail 300 -Encoding UTF8 -ErrorAction SilentlyContinue |
+                    Select-String -Pattern 'http://127\.0\.0\.1:3080/\?token=[A-Za-z0-9_-]+' |
+                    Select-Object -Last 1
+                if ($line -and $line.Matches.Count -gt 0) { return $line.Matches[0].Value }
+            }
+        } catch {}
+    }
+    return $WebUrl
+}
+
 function Get-HttpStatus {
     try {
-        $r = Invoke-WebRequest -Uri $WebUrl -UseBasicParsing -TimeoutSec 1
+        $r = Invoke-WebRequest -Uri (Get-DshWebUrl) -UseBasicParsing -TimeoutSec 1
         return "HTTP $($r.StatusCode)"
     } catch {
         return 'HTTP no response'
@@ -391,7 +419,7 @@ while ($true) {
             }
         } elseif ($script:activeAction -in @('start','restart')) {
             if ($webUp -and $http -like 'HTTP 200*') {
-                Write-Activity "web 已就绪: $WebUrl ($http, ${elapsed}s)"
+                Write-Activity "web 已就绪: $(Get-DshWebUrl) ($http, ${elapsed}s)"
                 $script:activeAction = $null
             } elseif ($elapsed -ge 240) {
                 Write-Activity "web 就绪等待超时 (${elapsed}s)，watchdog 仍在后台探测"
@@ -741,7 +769,7 @@ New-ActionButton '更新 DSH' 80 {
 
 
 New-ActionButton '打开 Web UI' 104 {
-    Start-Process $WebUrl
+    Start-Process (Get-DshWebUrl)
     Add-Log "==> 已打开 $WebUrl"
 } '浏览器打开 http://127.0.0.1:3080' | Out-Null
 
