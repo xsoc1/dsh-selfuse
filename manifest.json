@@ -13,11 +13,11 @@
       "localPath": "/home/huangzy/tools/deepseek-harness",
       "targetPath": "vendor/deepseek-harness",
       "action": "submodule",
-      "branch": "local/image-admission",
-      "status": "upstream-updated",
-      "notes": "fork/master at upstream 0.1.1-rc.2; adapter image-admission patch dropped (native multimodal); local branch keeps spawn windowsHide + test",
-      "version": "0.1.1-rc.2",
-      "upstreamCommit": "b150a551b8"
+      "branch": "selfuse",
+      "status": "selfuse-updated",
+      "notes": "active branch selfuse at upstream 0.1.2-alpha.1 (cd5ef81481) plus local selfuse commits; local master also fast-forwarded to cd5ef81481; browser-auth internal/tailnet hostname exemption kept on selfuse",
+      "version": "0.1.2-alpha.1",
+      "upstreamCommit": "cd5ef81481"
     },
     {
       "id": "deepseek-harness-eac",

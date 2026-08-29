@@ -51,7 +51,7 @@ if (-not $HarnessRoot) {
 }
 $GitHubApi = 'https://api.github.com/repos/deepseek-ai/deepseek-harness'
 $GitHubIp = 'https://140.82.112.4/deepseek-ai/deepseek-harness.git'
-$LocalBranch = 'local/image-admission'
+$LocalBranch = 'selfuse'
 
 function Write-Info($msg) { Write-Host "[i] $msg" -ForegroundColor Cyan }
 function Write-Ok($msg)   { Write-Host "[+] $msg" -ForegroundColor Green }
