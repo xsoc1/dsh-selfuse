@@ -152,10 +152,11 @@ else {
     Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value "tailscale not found; skipping tailscale serve/trusted-host" -Encoding UTF8
 }
 
-# Run dsh inside WSL (Linux filesystem) with WSL native Node/pnpm.
-$wslCommand = "cd '/home/huangzy/tools/deepseek-harness' && export PATH=/home/huangzy/.local/bin:`$PATH && export DSH_HOME='/home/huangzy/.dsh' && unset DSH_SESSION_ID DSH_SESSION_JSONL DSH_WEB_URL DSH_WSL_DISTRO && node --import tsx/esm apps/cli/src/bin.ts web $($trustedArgs -join ' ')"
+# Launch dsh inside WSL via a dedicated Linux script (clean PATH, no Windows PATH leak).
+$wslScript = '/home/huangzy/tools/dsh-local/scripts/run-dsh-wsl.sh'
 $launchToken = $null
-& wsl.exe -d Ubuntu -- bash -lc $wslCommand 2>&1 | ForEach-Object {
+Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value "wsl launch script: $wslScript" -Encoding UTF8
+& wsl.exe -d Ubuntu -- bash $wslScript @trustedArgs 2>&1 | ForEach-Object {
     Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value $_ -Encoding UTF8
     if ($_ -match 'http://127\.0\.0\.1:3080/\?token=([A-Za-z0-9_-]+)' -and $launchToken -eq $null) {
         $launchToken = $Matches[1]
