@@ -1,5 +1,7 @@
 # dsh-local 架构说明
 
+> 历史 Windows 架构草案，不代表当前运行态。现役 WSL 0.1.6 拓扑和 Safari/Tailscale 链路分别见 [当前部署说明](current-deployment.md) 与 [远程手册](safari-tailnet.md)；下文仅供追溯，勿用旧 junction/profile 步骤覆盖 WSL 环境。
+
 ## 1. 运行时拓扑（现状）
 
 ```text

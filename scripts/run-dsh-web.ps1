@@ -1,4 +1,4 @@
-﻿$ErrorActionPreference = "Continue"
+$ErrorActionPreference = "Continue"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 $RepoRoot = Split-Path -Parent $PSScriptRoot
@@ -51,6 +51,35 @@ function Test-TcpPort([string]$HostName, [int]$Port) {
     }
 }
 
+function Resolve-TailscaleExe {
+    $candidates = @()
+    if ($env:ProgramFiles) {
+        $candidates += (Join-Path $env:ProgramFiles 'Tailscale\tailscale.exe')
+    }
+    $candidates += 'F:\Tailscale\tailscale.exe'
+    $command = Get-Command tailscale.exe -ErrorAction SilentlyContinue
+    if ($command -and $command.Source) { $candidates += $command.Source }
+    return $candidates | Where-Object { $_ -and (Test-Path -LiteralPath $_) } | Select-Object -First 1
+}
+
+function Get-ConfiguredTailnetHost([string]$SettingsText) {
+    $inRemoteSection = $false
+    foreach ($line in ($SettingsText -split "\r?\n")) {
+        if ($line -match '^[^\s#]') {
+            $inRemoteSection = $line -match '^remote-web-ui:\s*(?:#.*)?$'
+            continue
+        }
+        if (-not $inRemoteSection -or $line -notmatch '^  publicBaseUrl:\s*(.+?)\s*$') { continue }
+        $value = ($Matches[1] -replace '\s+#.*$', '').Trim().Trim("'", '"')
+        $url = $null
+        if (-not [Uri]::TryCreate($value, [UriKind]::Absolute, [ref]$url)) { return $null }
+        if ($url.Scheme -ne 'https' -or -not $url.IsDefaultPort -or $url.AbsolutePath -ne '/' -or $url.Query -or $url.Fragment -or $url.UserInfo) { return $null }
+        if ($url.Host -notmatch '^([a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.){2,}ts\.net$') { return $null }
+        return $url.Host.ToLowerInvariant()
+    }
+    return $null
+}
+
 $wslDistro = "Ubuntu"
 $wslStartTimeoutSec = 20
 $wslGatewayTimeoutSec = 30
@@ -94,7 +123,7 @@ if (-not $gateway) {
     Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value "wsl auto-start: gateway not found after $wslGatewayTimeoutSec s" -Encoding UTF8
 }
 
-$trustedArgs = @("--host", "127.0.0.1")
+$trustedArgs = @("--host", "0.0.0.0")
 if ($gateway) {
     if (Test-TcpPort $gateway 3080) {
         Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value "wsl portproxy already listening on $gateway`:3080; skipping netsh" -Encoding UTF8
@@ -123,9 +152,16 @@ else {
 }
 
 # Tailscale 私有远程：通过 Tailscale Serve 暴露 https://<machine>.<tailnet>.ts.net -> 127.0.0.1:3080
-$tailscaleExe = "F:\Tailscale\tailscale.exe"
+$configuredTailnetHost = $null
+try {
+    $settingsPath = '\\wsl.localhost\Ubuntu\home\huangzy\.dsh\settings.yaml'
+    $configuredTailnetHost = Get-ConfiguredTailnetHost (Get-Content -LiteralPath $settingsPath -Raw -Encoding UTF8 -ErrorAction Stop)
+} catch {
+    Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value "tailscale trusted-host: remote settings unavailable" -Encoding UTF8
+}
+$tailscaleExe = Resolve-TailscaleExe
 $tailscaleHost = $null
-if (Test-Path $tailscaleExe) {
+if ($tailscaleExe) {
     try {
         $tsSelf = & $tailscaleExe status --json 2>$null | ConvertFrom-Json | Select-Object -ExpandProperty Self
         if ($tsSelf) { $tailscaleHost = ($tsSelf.DNSName -replace '\.$', '') }
@@ -133,30 +169,41 @@ if (Test-Path $tailscaleExe) {
         $tailscaleHost = $null
     }
     if ($tailscaleHost) {
-        $trustedArgs += @("--trusted-host", $tailscaleHost)
-        Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value "tailscale serve host: $tailscaleHost (trusted-host added)" -Encoding UTF8
         $serveStatusText = & $tailscaleExe serve status 2>&1 | Out-String
         if ($serveStatusText -match 'No serve config') {
             Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value "tailscale serve not enabled; open https://login.tailscale.com/f/serve?node=ny59qLPW6Y11CNTRL to enable" -Encoding UTF8
         }
         else {
-            & $tailscaleExe serve --bg 3080 2>&1 | Out-Null
+            & $tailscaleExe serve --bg --https=443 http://127.0.0.1:3080 2>&1 | Out-Null
             Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value "tailscale serve ensured: https://$tailscaleHost -> http://127.0.0.1:3080" -Encoding UTF8
         }
     }
     else {
-        Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value "tailscale not logged in; skipping tailscale serve/trusted-host" -Encoding UTF8
+        Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value "tailscale not logged in; skipping tailscale serve" -Encoding UTF8
     }
 }
 else {
-    Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value "tailscale not found; skipping tailscale serve/trusted-host" -Encoding UTF8
+    Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value "tailscale not found; skipping tailscale serve" -Encoding UTF8
+}
+$trustedTailnetHost = if ($tailscaleHost) { $tailscaleHost } else { $configuredTailnetHost }
+if ($trustedTailnetHost) {
+    $trustedArgs += @("--trusted-host", $trustedTailnetHost)
+    Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value "tailscale trusted-host: $trustedTailnetHost" -Encoding UTF8
 }
 
-# Launch dsh inside WSL via a dedicated Linux script (clean PATH, no Windows PATH leak).
-$wslScript = '/home/huangzy/tools/dsh-local/scripts/run-dsh-wsl.sh'
+# Start dsh-bridge.mjs so Windows localhost:3080 forwards to WSL eth0:3080
+$bridgeScript = if (Test-Path "F:\tools\deepseek-harness\dsh-bridge.mjs") { "F:\tools\deepseek-harness\dsh-bridge.mjs" } else { "$HarnessRoot\dsh-bridge.mjs" }
+if (-not (Test-TcpPort "127.0.0.1" 3080)) {
+    Start-Process -FilePath "node.exe" -ArgumentList "`"$bridgeScript`"" -WindowStyle Hidden
+    Start-Sleep -Milliseconds 500
+}
+
+# Run dsh inside WSL (Linux filesystem) with WSL native Node/pnpm. The narrow
+# preset preflight restores canonical selfuse modes before historical sessions
+# are resumed, without rewriting profile/settings/skills.
+$wslCommand = 'cd /home/huangzy/tools/deepseek-harness-current && ([ -f native/system/packages/linux-x64/bin/glibc/system.node ] || pnpm run build:native-system) && export DSH_HOME=/home/huangzy/.dsh && node scripts/selfuse/install.mjs --presets-only --dsh-home "$DSH_HOME" && unset DSH_SESSION_ID DSH_SESSION_JSONL DSH_WEB_URL DSH_WSL_DISTRO && node --import tsx/esm apps/cli/src/bin.ts web ' + ($trustedArgs -join ' ')
 $launchToken = $null
-Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value "wsl launch script: $wslScript" -Encoding UTF8
-& wsl.exe -d Ubuntu -- bash $wslScript @trustedArgs 2>&1 | ForEach-Object {
+& wsl.exe -d Ubuntu -e bash -lc $wslCommand 2>&1 | ForEach-Object {
     Add-Content -LiteralPath "$HarnessRoot\dsh-web.log" -Value $_ -Encoding UTF8
     if ($_ -match 'http://127\.0\.0\.1:3080/\?token=([A-Za-z0-9_-]+)' -and $launchToken -eq $null) {
         $launchToken = $Matches[1]

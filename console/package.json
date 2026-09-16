@@ -1,0 +1,32 @@
+{
+  "name": "@dsh-selfuse/control-gui",
+  "version": "0.1.0",
+  "description": "DeepSeek Harness 图形控制台 (独立 Windows EXE 封装，含状态轮询守护、设置面板、自定义横幅与尺寸记忆)",
+  "scripts": {
+    "build": "powershell -ExecutionPolicy Bypass -File ./build-gui-exe.ps1",
+    "build:installer": "powershell -ExecutionPolicy Bypass -File ./build-installer.ps1",
+    "start": "powershell -ExecutionPolicy Bypass -Command \"Start-Process ./dsh-control-gui.exe\""
+  },
+  "files": [
+    "gui-src",
+    "installer-src",
+    "dsh-gui-poller.ps1",
+    "dsh-gui-probes.ps1",
+    "dsh-update-preflight.sh",
+    "build-gui-exe.ps1",
+    "build-installer.ps1",
+    "install.ps1",
+    "install.bat",
+    "dsh-control-gui.exe",
+    "dsh.ico",
+    "README.md",
+    "README.zh.md"
+  ],
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "control-gui",
+    "winforms"
+  ],
+  "license": "MIT"
+}

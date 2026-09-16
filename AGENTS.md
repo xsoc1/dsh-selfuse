@@ -1,30 +1,20 @@
 # AGENTS.md — dsh-local 维护基线
 
-本文件是 `F:\tools\dsh-local` 的维护基线。任何 agent/human 进入本仓库先读本文件；
-每次变更后更新 `docs/maintenance.md` 中的“维护记录”。
+本文件是 `xsoc1/dsh-selfuse` 管理仓的维护基线。任何 agent/human 进入本仓库先读本文件；每次变更后更新 `docs/maintenance.md` 中的维护记录。
 
 ## 工作方法
 
-1. 进入仓库先读 `README.md`、`AGENTS.md`、`docs/PLAN.md`；了解整体结构与当前阶段。
-2. 改动前先看 `manifest.json`：组件类型、来源、安装目标、当前状态。
+1. 进入仓库先读 `README.md`、`AGENTS.md`、`docs/current-deployment.md`；历史方案单独见 `docs/PLAN.md`。
+2. 改动前先看 `manifest.json` 和活跃 Harness 工作树；区分云端快照、运行源码、用户配置与旧安装器。
 3. 不把密钥/凭据/大模型二进制提交进 Git（见 `.gitignore`）。
-4. 任何路径改写、插件升级、配置变更都要同步更新：
-   - `manifest.json`
-   - `config/profiles/web/package.json` / `cordis.patch.yml` / `settings.yaml`
-   - `docs/maintenance.md`
-5. 本仓与 `F:\tools` 工作区是“管理仓 / 运行区”关系：
-   - 本仓是**规范源**（canonical）。
-   - 运行区里的实际目录（`F:\tools\deepseek-harness` 等）目前仍是线上运行副本；
-     迁移完成前，修改本仓不代表线上生效，需按 `docs/PLAN.md` 执行安装/同步。
+4. 修改当前部署方法时，同步核对 fork 中的 `config/selfuse/`、`scripts/selfuse/` 和 `packages/selfuse/`，更新本仓 `manifest.json`、相关快照及 `docs/maintenance.md`。
+5. 活跃 DSH 源码在 WSL `/home/huangzy/tools/deepseek-harness-current`，实际 `DSH_HOME` 为 `/home/huangzy/.dsh`；Windows `F:\tools\deepseek-harness` 运行管理脚本和桥接。本仓记录可重建的源码引用、管理脚本与步骤，但仅修改本仓不会改变当前服务。
+6. `F:\tools\dsh-local` 旧工作树有用户未提交改动；以云端最新分支的干净工作树维护本仓，不覆盖旧工作树。旧 `install.ps1` 和 `scripts/update-dsh.ps1` 不适用于当前 0.1.6 WSL 部署，未经核验不得执行其应用/更新动作。
 
 ## 关键约束
 
-- **全面弃用 Junction/符号链接**：agent-presets、skills、web profile 一律使用真实复制。
-  - agent-presets：dsh 扫描时 `Dirent.isDirectory()` 对 Windows Junction 返回 false，
-    preset 会从 roster 消失，WSL 变体也不再生成。
-  - skills：同样改为真实目录，避免 watcher/junction 解析问题。
-  - web profile：只复制 `cordis.patch.yml` / `pnpm-workspace.yaml`，不 junction。
-- `install.ps1` 已按真实复制实现；`ProfileMode` 仅保留 `Copy`。
+- agent-presets 与 skills 使用真实目录；现役 WSL profile 由 fork 的 `scripts/selfuse/generate-profile.mjs` 管理，并保留原生 `dsh plugin --profile web` 加入的依赖。
+- 远程入口仅通过 Tailscale Serve 暴露给 Tailnet；确认 `serve status --json` 没有 Funnel，再核对 HTTPS、WebSocket 与 iPad 设备侧状态。DERP debug 变量只是本机临时隔离措施，不能当作默认优化。
 
 ## 组件分类速查
 
@@ -35,14 +25,13 @@
 | 第三方补丁 | `community-plugins/` | dsh-backup、DSH-better-sidebar、git-workflow、undo-fixed、wsl-workspace |
 | 技能 | `skills/` | mattpocock skills、math-research-dsh skills（submodule 或 vendored） |
 | 配置 | `config/` | settings.yaml、agent-presets、profiles/web |
-| 脚本 | `scripts/` | 图形控制台、watchdog、run-dsh-web 等 |
+| 控制台 | `console/` | WinForms 源码、只读诊断及测试，不存预编译 EXE |
+| 脚本 | `scripts/` | 当前 Windows 启动/看门狗快照；旧自动更新脚本不适用于现役 WSL |
 | 服务 | `services/` | 已随识图/生图/Ollama 退役，暂留空目录 |
 | 文档 | `docs/` | 方案、架构、维护手册、ADR |
 
-## 待办（当前阶段）
+## 维护边界
 
-- [ ] 细化 `install.ps1`：profile junction/复制、技能 junction、环境变量、计划任务、服务启动。
-- [ ] 把 `plugins/` 下自研插件源码从 `F:\tools\<name>` 迁入本仓（或 submodule）。
-- [ ] 把 `community-plugins/` 第三方补丁整理为可重建的 fork/submodule + patch。
-- [ ] 创建 GitHub 仓库与 fork（待用户确认执行）。
-- [ ] 在 `docs/PLAN.md` 中更新实际迁移进度。
+- 当前版本的完整 selfuse profile、插件与构建源以锁定的 Harness fork 提交为准；本仓旧 `config/`、`plugins/`、`community-plugins/` 是历史快照，不能覆盖现役 WSL 配置。
+- 控制台源码与 Windows 管理脚本同时镜像到本仓，更新时比较其与 Harness fork 对应文件的内容哈希，并运行定向回归。
+- `docs/PLAN.md` 和 `docs/architecture.md` 是历史设计记录；当前进度以 `docs/current-deployment.md` 和 `docs/maintenance.md` 为准。

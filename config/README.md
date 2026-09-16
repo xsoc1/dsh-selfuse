@@ -1,16 +1,5 @@
-# config
+# 历史配置快照
 
-`~/.dsh` 的“代码化”规范源。
+本目录保存早期 Windows/DSH 0.1.2 部署的 settings、预设和 Web profile，不是当前 WSL 服务的配置源。不要将这里的 `settings.yaml` 或 `profiles/web` 复制到活跃 `/home/huangzy/.dsh`。
 
-- `settings.yaml`：用户级 dsh 配置（含模型能力声明、remote-web-ui 等）。
-- `agent-presets/`：思维模式路由预设（router-standard、router-spec 等）。
-- `profiles/web/`：web profile 的规范目录（package.json、cordis.patch.yml、pnpm lock 等）。
-
-安装器会把本目录同步到 `%USERPROFILE%\.dsh`：
-
-- `settings.yaml` → `~/.dsh/settings.yaml`
-- `agent-presets/*` → `~/.dsh/.agent-presets/`
-- `profiles/web` → `~/.dsh/profiles/web`（推荐 junction 或复制）
-
-> 注意：`settings.yaml` 里可能有机器相关值（Tailscale 域名、端口、模型名）。
-> 新机器部署时建议用 `local.overrides.yaml` 或环境变量覆盖。
+当前配置模板位于 [`vendor/deepseek-harness/config/selfuse/`](../vendor/deepseek-harness/config/selfuse/)，profile 由子模块中的 `scripts/selfuse/generate-profile.mjs` 生成，并保留通过原生 `dsh plugin --profile web` 加入的显式插件。`/home/huangzy/.dsh` 是运行数据目录，含会话、记忆和可能的凭据；它不是要整体上传的代码目录。部署与备份边界见 [当前部署说明](../docs/current-deployment.md)。

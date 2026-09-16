@@ -1,14 +1,12 @@
 ﻿$ErrorActionPreference = "Continue"
-$RepoRoot = Split-Path -Parent $PSScriptRoot
-$HarnessRoot = Join-Path $RepoRoot "vendor\deepseek-harness"
+$HarnessRoot = $PSScriptRoot
 if (-not (Test-Path (Join-Path $HarnessRoot "package.json"))) {
-    $wslHarness = '\\wsl.localhost\Ubuntu\home\huangzy\tools\deepseek-harness'
-    if (Test-Path (Join-Path $wslHarness "package.json")) {
-        $HarnessRoot = $wslHarness
+    if (Test-Path 'F:\tools\deepseek-harness\package.json') {
+        $HarnessRoot = 'F:\tools\deepseek-harness'
     } elseif ($env:DSH_ROOT -and (Test-Path (Join-Path $env:DSH_ROOT "package.json"))) {
         $HarnessRoot = $env:DSH_ROOT
     } else {
-        $HarnessRoot = "$HarnessRoot"
+        $HarnessRoot = '\\wsl.localhost\Ubuntu\home\huangzy\tools\deepseek-harness'
     }
 }
 $log = "$HarnessRoot\dsh-watchdog.log"
@@ -30,9 +28,14 @@ function Write-Log([string]$msg) {
     Add-Content -LiteralPath $log -Value $line -Encoding UTF8
 }
 
+$PidFile = "$HarnessRoot\dsh-watchdog.pid"
+$StopFlag = "$HarnessRoot\dsh-manual-stop.flag"
+Remove-Item $StopFlag -Force -ErrorAction SilentlyContinue
+
 function Write-Heartbeat {
     try {
-        [System.IO.File]::WriteAllText($heartbeat, "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')")
+        [System.IO.File]::WriteAllText($heartbeat, "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') $PID")
+        [System.IO.File]::WriteAllText($PidFile, "$PID")
     } catch {}
 }
 
@@ -164,9 +167,13 @@ function Wait-WebReady([int]$TimeoutSec, [string]$Phase) {
 # privileges (a UAC prompt will appear when launched manually) and exit.
 $principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
 if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Log "not elevated; relaunching with administrator privileges"
-    Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile","-ExecutionPolicy","Bypass","-WindowStyle","Hidden","-File",$PSCommandPath -Verb RunAs -WindowStyle Hidden
-    exit 0
+    try {
+        Write-Log "not elevated; trying to relaunch with administrator privileges"
+        Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile","-ExecutionPolicy","Bypass","-WindowStyle","Hidden","-File",$PSCommandPath -Verb RunAs -WindowStyle Hidden
+        exit 0
+    } catch {
+        Write-Log "elevation not supported or refused; continuing in current user context"
+    }
 }
 
 # Single-instance guard: hold a named mutex for the lifetime of this process.
@@ -196,6 +203,11 @@ else {
 $fails = 0
 $lastWslEnsure = Get-Date
 while ($true) {
+    if (Test-Path $StopFlag) {
+        Write-Log "manual stop flag detected; watchdog exiting"
+        Remove-Item $PidFile -Force -ErrorAction SilentlyContinue
+        exit 0
+    }
     Write-Heartbeat
     if (((Get-Date) - $lastWslEnsure).TotalSeconds -ge $wslEnsureIntervalSec) {
         if (-not (Test-WslGateway)) {

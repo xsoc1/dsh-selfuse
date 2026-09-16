@@ -1,19 +1,28 @@
 ﻿$ErrorActionPreference = "Continue"
-$RepoRoot = Split-Path -Parent $PSScriptRoot
-$HarnessRoot = Join-Path $RepoRoot "vendor\deepseek-harness"
-if (-not (Test-Path (Join-Path $HarnessRoot "package.json"))) {
-    if ($env:DSH_ROOT -and (Test-Path (Join-Path $env:DSH_ROOT "package.json"))) {
-        $HarnessRoot = $env:DSH_ROOT
-    } else {
-        $HarnessRoot = "F:\tools\deepseek-harness"
-    }
-}
-$log = "$HarnessRoot\dsh-watchdog.log"
-$runner = "$HarnessRoot\dsh-watchdog.ps1"
-$heartbeat = "$HarnessRoot\dsh-watchdog.heartbeat"
+$log = "F:\tools\deepseek-harness\dsh-watchdog.log"
+$runner = "F:\tools\deepseek-harness\dsh-watchdog.ps1"
+$heartbeat = "F:\tools\deepseek-harness\dsh-watchdog.heartbeat"
+$pidFile = "F:\tools\deepseek-harness\dsh-watchdog.pid"
+$stopFlag = "F:\tools\deepseek-harness\dsh-manual-stop.flag"
 $staleSec = 90
 
+if (Test-Path $stopFlag) {
+    # User manually stopped DSH, do not auto-relaunch
+    exit 0
+}
+
 function Get-WatchdogProcesses {
+    if (Test-Path $pidFile) {
+        $rawPid = (Get-Content -LiteralPath $pidFile -Raw -ErrorAction SilentlyContinue).Trim()
+        if ($rawPid -match '^\d+$') {
+            try {
+                $proc = [System.Diagnostics.Process]::GetProcessById([int]$rawPid)
+                if ($proc -and -not $proc.HasExited -and ($proc.ProcessName -like '*powershell*' -or $proc.ProcessName -like '*pwsh*')) {
+                    return @($proc)
+                }
+            } catch {}
+        }
+    }
     Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
         Where-Object {
             ($_.Name -eq 'powershell.exe' -or $_.Name -eq 'pwsh.exe') -and
@@ -32,7 +41,10 @@ function Test-WatchdogHealthy {
         return ($age.TotalSeconds -le $staleSec)
     }
     $newest = $procs | Sort-Object CreationDate -Descending | Select-Object -First 1
-    return ($newest.CreationDate -gt (Get-Date).AddSeconds(-120))
+    if ($newest.CreationDate) {
+        return ($newest.CreationDate -gt (Get-Date).AddSeconds(-120))
+    }
+    return $true
 }
 
 if (Test-WatchdogHealthy) {

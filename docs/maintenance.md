@@ -1,30 +1,35 @@
-# dsh-local 维护手册
+# dsh-selfuse 维护手册
+
+> 2026-09-16 起现役 WSL 0.1.6 的配置来源以 [当前部署说明](current-deployment.md) 为准。以下早期 Windows 安装/更新记录保留供追溯，不能直接作为现行操作步骤。
 
 ## 维护原则
 
-- 本仓是规范源；`F:\tools` 下现有运行目录是“待迁移/运行副本”。
+- 本仓是当前源码引用、管理脚本快照和部署方法的云端索引；运行配置实际在 WSL `~/.dsh`，不是本仓旧 `config/` 的副本。
 - 每次变更组件/配置后，同步更新 `manifest.json` 与本文“维护记录”。
 - 不提交：密钥、大模型二进制、node_modules、venv、日志。
 
 ## 常用操作
 
-### 更新外部 submodule
+### 核对锁定的 Harness submodule
 
 ```powershell
 git submodule update --init --recursive
-git -C vendor/deepseek-harness pull --rebase
-git add vendor/deepseek-harness
-git commit -m "chore: bump deepseek-harness fork"
+git submodule status vendor/deepseek-harness
+git -C vendor/deepseek-harness rev-parse HEAD
 ```
 
-### 新增自研插件
+### 历史方法：新增自研插件
+
+> 以下步骤属于旧 Windows profile；当前应修改锁定 Harness 的 `packages/selfuse/` 和 `config/selfuse/`，先验证再单独更新子模块指针。
 
 1. 在 `plugins/<name>/` 放源码（或 submodule）。
 2. 在 `manifest.json` 增加一条 `type: plugin`。
 3. 如需默认装配，更新 `config/profiles/web/package.json` 与 `cordis.patch.yml`。
 4. 在本文“维护记录”追加说明。
 
-### 修改 profile 配置
+### 历史方法：修改 profile 配置
+
+> 以下步骤不适用于现役 WSL profile，不要执行旧 `install.ps1` 的应用动作。
 
 - 直接改 `config/profiles/web/package.json` / `cordis.patch.yml` / `settings.yaml`。
 - 运行 `install.ps1 -DryRun` 查看同步动作；确认后执行。
@@ -348,3 +353,11 @@ git commit -m "chore: bump deepseek-harness fork"
 - 用户确认当前稳定。
 - 已推送到 GitHub：`xsoc1/deepseek-harness` `selfuse`（`c987a35620`、`57bbc737f9`）。
 - 待办：控制脚本正式入库、F: 旧目录退役、pre-push/pre-commit hooks 对 selfuse 代码的排除策略。
+
+### 2026-09-16 当前 WSL 0.1.6 云端同步
+
+- 核对现役 WSL Harness HEAD `52801d41d4ef7af4972ea2b095d7170e32200f3b` 和官方 `0.1.6-alpha.1` 基线；将该提交推到 `xsoc1/deepseek-harness` 的独立 `selfuse-0.1.6-alpha.1-20260916` 分支，本仓子模块锁定该提交，未改 fork `master`。
+- 本仓同步当前 Windows 控制、看门狗、启动脚本；增加 WinForms 控制台的源码、后台探针、只读诊断及测试快照，不提交 EXE、个人壁纸、服务凭据、日志或 `DSH_HOME` 用户数据。
+- 记录 Safari/Tailscale Serve、严格的 `*.ts.net` trusted-host 启动兜底、代理直连检查、DERP 调试开关的回退边界和 iPad 端到端验收方法。旧 `install.ps1`、旧 profile/插件与历史 PLAN/architecture 已醒目标记为非现役资料。
+- 验证：`scripts/run-dsh-web.test.ps1`、`console/tests/status-regression.ps1`、`diagnostic-routes.ps1`、`console-features.ps1` 全部通过；`manifest.json` 可解析，`git diff --check` 通过。只做代码和本机静态/定向回归，不能据此宣称 iPad Safari 已验证。
+- 保留原 `F:\tools\dsh-local` 中的用户未提交改动；云端同步从新克隆的干净工作树完成，没有覆盖旧工作树或自动重启服务。
