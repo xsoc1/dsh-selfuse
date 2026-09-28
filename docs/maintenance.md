@@ -44,6 +44,8 @@ git -C vendor/deepseek-harness rev-parse HEAD
 - 按用户“修完全部门禁再发布”的要求修复候选 `doc-sync` 初始 19 项失败；最终文档门禁 42/42、构建、类型检查、内容隔离测试 20/20、profile 安装测试 9/9 通过。隔离 Web 用原样登录链接验证到 303/Cookie/200；未验证现役模型调用或 iPad 端到端。全仓 `pnpm run lint` 仍因既有自用源码遗留规则失败，不能宣称全仓 lint 通过；本次变更的 staged lint 与提交 hook 通过。
 - 首次隔离启动时发现灵枢模板的硬编码记忆根指向现用目录，并触发 1 项索引对账；立即停止，修复 `${DSH_HOME}` 路径展开并增加回归测试。只读检查未发现近期记忆正文写入，但索引日志、锁和对账日志有写入，不能称其已回滚。后续隔离启动确认记忆根和辅助根均位于临时 `DSH_HOME`。
 - 同步修正 `docs/manifest.schema.json` 中滞后的 `action` 枚举（仅补入现有清单早已使用的 `copied-to-repo`、`vendored-copy`），使完整 `manifest.json` 可通过 JSON Schema 校验。
+- 通过全部文档门禁后，fork 升级分支与本仓子模块 pin 已推送；再停止旧 Web、备份现用 profile/settings/会话/记忆（`/home/huangzy/.dsh/maintenance-backups/upgrade-20260929-FvYBA5`，约 171 MiB）、通过原生 CLI 安装提示词优化器 `0.7.6` 和灵枢 `0.6.0-selfuse.1`、将活跃源码链接切到 `bcf8c14b...` 并重启。期间旧进程再次占用 3080，首个新进程因 `EADDRINUSE` 退出；停止旧进程后新版启动成功。
+- 运行验收：活跃进程工作目录与锁定源码一致、两个外部包实际版本正确、配置 dump 含内容隔离插件，本机登录 303→200、Tailnet HTTPS 未登录 401、Serve 指向 3080 且状态中未见 Funnel。未验证 iPad 端会话同步或真实模型调用。既有 `requirePairingForLan: false` + trusted-host 会使普通 `/api` 对 Tailnet 受信主机开放，插件报 CRITICAL；该安全取舍须限于私有 Tailnet，不能误写为配对模式。
 
 ### 2026-08-19 初始骨架
 

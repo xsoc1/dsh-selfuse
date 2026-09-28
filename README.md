@@ -1,8 +1,8 @@
 # dsh-selfuse
 
-DeepSeek Harness 自用部署的云端管理仓。[`vendor/deepseek-harness`](vendor/deepseek-harness) 子模块锁定已通过文档门禁、构建和隔离启动检查的 `0.2.0-rc.1` 自用候选；它**不代表本机现用服务已切换**。本仓另外保存 Windows [图形控制台源码](console/README-selfuse.md)、[管理脚本快照](scripts/README.md)、[Safari/Tailscale 远程配置方法](docs/safari-tailnet.md)，以及 [0.2.0-rc.1 升级和第三方插件复建说明](docs/upgrade-0.2.0-rc.1.md)。
+DeepSeek Harness 自用部署的云端管理仓。[`vendor/deepseek-harness`](vendor/deepseek-harness) 子模块锁定已通过文档门禁、构建和隔离启动检查的 `0.2.0-rc.1` 自用版本；本机于 2026-09-29 切换到该提交。本仓另外保存 Windows [图形控制台源码](console/README-selfuse.md)、[管理脚本快照](scripts/README.md)、[Safari/Tailscale 远程配置方法](docs/safari-tailnet.md)，以及 [0.2.0-rc.1 升级和第三方插件复建说明](docs/upgrade-0.2.0-rc.1.md)。
 
-当前运行服务仍在本机：WSL `/home/huangzy/tools/deepseek-harness-current` + `/home/huangzy/.dsh`，Windows `F:\tools\deepseek-harness` 负责启动与桥接。云端提交不会自动改动或重启该服务。
+当前运行服务仍在本机：WSL `/home/huangzy/tools/deepseek-harness-current` + `/home/huangzy/.dsh`，Windows `F:\tools\deepseek-harness` 负责启动与桥接。本次已在本机单独完成切换与重启；今后的云端提交仍不会自动改动或重启该服务。
 
 ## 从云端取回
 
