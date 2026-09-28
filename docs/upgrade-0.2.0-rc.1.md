@@ -54,7 +54,7 @@ npm pack --ignore-scripts
 
 全仓 `pnpm run lint` 仍报告 1417 项错误及 5 项警告，主要来自既有自用源码；本次变更的 staged lint 和提交 hook 通过。文档门禁 42/42 通过不等于全仓 lint 通过，后者是单独的待清理技术债。
 
-随后停止旧 Web 进程，备份现用 profile、settings、会话和记忆至 `/home/huangzy/.dsh/maintenance-backups/upgrade-20260929-FvYBA5`（约 171 MiB）；使用原生 `dsh plugin` CLI 在现用 profile 装入上述两个新包，切换源码链接并重启。一次旧进程自动重启占用了 3080，导致首个新版启动报 `EADDRINUSE`；停止该旧进程后重启成功。复核进程工作目录为新提交、插件实际版本分别为 `0.7.6` 与 `0.6.0-selfuse.1`、`--dump-config` 含内容隔离插件与两个外部插件、本机登录链路为 303→200（HTML 39178 字节），Tailnet HTTPS 入口返回预期的未登录 401（约 72 ms），Tailscale 正在运行且 Serve 指向 3080、未发现 Funnel。未从 iPad 发消息，也未作真实模型请求；这些结论不得延伸为设备端会话同步已验证。
+随后停止旧 Web 进程，备份现用 profile、settings、会话和记忆至 `/home/huangzy/.dsh/maintenance-backups/upgrade-20260929-FvYBA5`（约 171 MiB）；使用原生 `dsh plugin` CLI 在现用 profile 装入上述两个新包，切换源码链接并重启。一次旧进程再次占用了 3080，导致首个新版启动报 `EADDRINUSE`；停止该旧进程后重启成功。复核进程工作目录为新提交、插件实际版本分别为 `0.7.6` 与 `0.6.0-selfuse.1`、`--dump-config` 含内容隔离插件与两个外部插件、本机登录链路为 303→200（HTML 39178 字节）；PC 经 Tailnet HTTPS 的未登录入口为预期 401，携带原样登录令牌后也为 303→200。Tailscale 正在运行且 Serve 指向 3080、未发现 Funnel。未从 iPad 发消息，也未作真实模型请求；这些结论不得延伸为设备端会话同步已验证。
 
 当前远程配置显式使用 `requirePairingForLan: false` 与 Tailnet trusted-host，启动日志因普通 `/api` 对该主机开放发出 CRITICAL 告警。这是既有“只依赖 Tailnet 成员身份”的部署选择，不是安全的默认配对模式；不得开放 Funnel 或把该入口变为公网地址。若希望恢复设备配对与 `/remote/api` 围栏，须联动去掉对应 `--trusted-host` 并进行 iPad 端到端复测，不能只改一个开关。
 
