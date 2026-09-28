@@ -13,11 +13,11 @@
       "localPath": "/home/huangzy/tools/deepseek-harness-current",
       "targetPath": "vendor/deepseek-harness",
       "action": "submodule",
-      "branch": "selfuse-0.1.6-alpha.1-20260916",
-      "status": "current-wsl-source",
-      "notes": "Pinned submodule is the running WSL source commit, including current selfuse profile, plugins, console package, Safari/Tailnet fixes, and the offline-boot trusted-host fallback; origin/master 0d1f50007f9b is included",
-      "version": "0.1.6-alpha.1",
-      "upstreamCommit": "0d1f50007f9b"
+      "branch": "upgrade/official-master-20260928",
+      "status": "candidate-pinned-active-source-unchanged",
+      "notes": "Pinned submodule is the tested 0.2.0-rc.1 selfuse candidate, not the running WSL source. The active /home/huangzy/tools/deepseek-harness-current symlink must be checked and switched separately; see docs/upgrade-0.2.0-rc.1.md.",
+      "version": "0.2.0-rc.1",
+      "upstreamCommit": "4878cdabd87d4041bdaff61d04c966883b9fd07a"
     },
     {
       "id": "deepseek-harness-eac",
@@ -170,6 +170,35 @@
       "status": "copied-to-repo",
       "notes": "",
       "version": "0.2.3"
+    },
+    {
+      "id": "dsh-prompt-optimizer",
+      "type": "community-plugin",
+      "name": "@dsh-external/dsh-po06",
+      "repo": "https://github.com/WestFox-AwA/dsh-prompt-optimizer",
+      "upstream": "https://github.com/WestFox-AwA/dsh-prompt-optimizer",
+      "localPath": "/home/huangzy/tools/community-plugins/dsh-external-dsh-po06-0.7.6.tgz",
+      "targetPath": "vendor/deepseek-harness/config/selfuse/profiles.build.yml",
+      "action": "manifest-only",
+      "status": "candidate-tested-not-yet-active",
+      "version": "0.7.6",
+      "sha256": "e98ec8ea935cea4c8634b07ad3daffde35d1194f0132a9c1f68f3c31f95bbdee",
+      "notes": "Verified upstream Release archive; installed through native dsh plugin CLI into disposable candidate profile. See docs/upgrade-0.2.0-rc.1.md."
+    },
+    {
+      "id": "dsh-memory",
+      "type": "community-plugin",
+      "name": "@furongjun1999/dsh-memory",
+      "repo": "https://github.com/FuRongJun-1999/dsh-memory",
+      "upstream": "https://github.com/FuRongJun-1999/dsh-memory",
+      "localPath": "/home/huangzy/tools/community-plugins/furongjun1999-dsh-memory-0.6.0-selfuse.1.tgz",
+      "targetPath": "community-plugins/patches/dsh-memory-0.6.0-selfuse.1.patch",
+      "action": "manifest-only",
+      "status": "candidate-tested-not-yet-active",
+      "version": "0.6.0-selfuse.1",
+      "upstreamCommit": "a84e78d2d5024fef60e9244201323baae1f0b8ee",
+      "sha256": "c75d703c052facb0112a2477caef79194210fd4163736f8c0b7ff877ff5e9d6c",
+      "notes": "Upstream 0.6.0 plus local privacy patch; package and patch are verified in a disposable profile. See docs/upgrade-0.2.0-rc.1.md."
     },
     {
       "id": "dsh-control-scripts",

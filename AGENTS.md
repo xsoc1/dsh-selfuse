@@ -9,7 +9,8 @@
 3. 不把密钥/凭据/大模型二进制提交进 Git（见 `.gitignore`）。
 4. 修改当前部署方法时，同步核对 fork 中的 `config/selfuse/`、`scripts/selfuse/` 和 `packages/selfuse/`，更新本仓 `manifest.json`、相关快照及 `docs/maintenance.md`。
 5. 活跃 DSH 源码在 WSL `/home/huangzy/tools/deepseek-harness-current`，实际 `DSH_HOME` 为 `/home/huangzy/.dsh`；Windows `F:\tools\deepseek-harness` 运行管理脚本和桥接。本仓记录可重建的源码引用、管理脚本与步骤，但仅修改本仓不会改变当前服务。
-6. `F:\tools\dsh-local` 旧工作树有用户未提交改动；以云端最新分支的干净工作树维护本仓，不覆盖旧工作树。旧 `install.ps1` 和 `scripts/update-dsh.ps1` 不适用于当前 0.1.6 WSL 部署，未经核验不得执行其应用/更新动作。
+6. `F:\tools\dsh-local` 旧工作树有用户未提交改动；以云端最新分支的干净工作树维护本仓，不覆盖旧工作树。旧 `install.ps1` 和 `scripts/update-dsh.ps1` 不适用于当前 WSL 部署，未经核验不得执行其应用/更新动作。
+7. 子模块 pin、活跃源码链接、活跃 `DSH_HOME` 和第三方包是四种状态；版本升级要先跑全部文档门禁、构建、定向测试和隔离启动，再分别记录云端同步与本机切换。第三方上游包只通过原生 `dsh plugin` CLI 装入 profile，补丁与校验值由 [升级说明](docs/upgrade-0.2.0-rc.1.md)记录。
 
 ## 关键约束
 
@@ -35,3 +36,7 @@
 - 当前版本的完整 selfuse profile、插件与构建源以锁定的 Harness fork 提交为准；本仓旧 `config/`、`plugins/`、`community-plugins/` 是历史快照，不能覆盖现役 WSL 配置。
 - 控制台源码与 Windows 管理脚本同时镜像到本仓，更新时比较其与 Harness fork 对应文件的内容哈希，并运行定向回归。
 - `docs/PLAN.md` 和 `docs/architecture.md` 是历史设计记录；当前进度以 `docs/current-deployment.md` 和 `docs/maintenance.md` 为准。
+
+## 对话记录（2026-09-29）
+
+用户要求先更新 DSH 官方最新版、保留插件适配，特别核对本地网络内容隔离插件，再把配置方法同步到 `xsoc1/dsh-selfuse`。候选合并官方 `0.2.0-rc.1` 后，用户被告知完整文档门禁有 19 项失败，明确回复“修完全部门禁再发布”。候选后来通过 `doc-sync` 42/42、构建和隔离 Web 验证；首个临时 profile 仍错误指向现用灵枢记忆目录，启动日志记录 1 项索引对账，随后修复为 `${DSH_HOME}` 路径展开并通过回归测试。同步本仓时发现旧 manifest schema 的 `action` 枚举未收录已有值，补齐并验证。不能把云端候选、隔离测试或本地隐私检查误报为现用服务升级、iPad 端到端验证或绕过服务商策略。

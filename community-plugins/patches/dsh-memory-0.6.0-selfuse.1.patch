@@ -1,0 +1,54 @@
+diff --git a/package-lock.json b/package-lock.json
+index 14ebc8e..b897bbd 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -3 +3 @@
+-  "version": "0.6.0",
++  "version": "0.6.0-selfuse.1",
+@@ -9 +9 @@
+-      "version": "0.6.0",
++      "version": "0.6.0-selfuse.1",
+diff --git a/package.json b/package.json
+index bb2822e..ab6cc3c 100644
+--- a/package.json
++++ b/package.json
+@@ -3 +3 @@
+-  "version": "0.6.0",
++  "version": "0.6.0-selfuse.1",
+diff --git a/src/hooks.ts b/src/hooks.ts
+index 019b99f..f1f9cf6 100644
+--- a/src/hooks.ts
++++ b/src/hooks.ts
+@@ -112,0 +113,5 @@ export const SENSITIVE_PATTERNS: Array<{ re: RegExp; label: string }> = [
++/** A full proxy link or credential URL must not be split into partially visible fragments. */
++const PRIVATE_NETWORK_URI = /\b(?:socks(?:4a?|5h?)?|ssr?|vmess|vless|trojan|hysteria2?|tuic):\/\/[^\s"'<>]+/i
++const CREDENTIAL_URL = /\b[a-z][a-z0-9+.-]*:\/\/[^\s/@:]+:[^\s/@]+@[^\s/]+/i
++const NETWORK_CONFIG_BLOCK = /(?:^|\n)\s*(?:proxies|append)\s*:\s*(?:\r?\n|$)/i
++
+@@ -114,0 +120 @@ export function desensitize(text: string): string | null {
++  if (PRIVATE_NETWORK_URI.test(text) || CREDENTIAL_URL.test(text) || NETWORK_CONFIG_BLOCK.test(text)) return null
+@@ -165 +171 @@ const RECALL_SKIP_LAYERS = new Set(['anchor', 'self'])
+-function formatTimelineDecayed(payload: unknown): string {
++export function formatTimelineDecayed(payload: unknown): string {
+@@ -175 +181 @@ function formatTimelineDecayed(payload: unknown): string {
+-    const preview = String(it['preview'] ?? '').replace(/\s+/g, ' ').trim()
++    const preview = desensitize(String(it['preview'] ?? ''))?.replace(/\s+/g, ' ').trim()
+diff --git a/test/verify_desensitize.ts b/test/verify_desensitize.ts
+index 7adccde..ec30991 100644
+--- a/test/verify_desensitize.ts
++++ b/test/verify_desensitize.ts
+@@ -7 +7 @@
+-import { desensitize } from '../src/hooks.ts'
++import { desensitize, formatTimelineDecayed } from '../src/hooks.ts'
+@@ -68,0 +69,11 @@ check('⑤e 前缀不误伤', r14 !== null && r14.includes('tk_ 是前缀') && r
++const proxyMemory = '请把 socks5://demo-user:fictional-pass@example.test:443 加入配置'
++check('⑥a 代理 URI 不写入记忆', desensitize(proxyMemory) === null)
++check('⑥b 带账户密码的 URL 不写入记忆', desensitize('https://demo-user:fictional-pass@example.test/account') === null)
++check('⑥c 代理 YAML 块不写入记忆', desensitize('proxies:\n  - type: socks5\n    server: example.test') === null)
++check('⑥d 普通网页链接不误伤', desensitize('参考 https://example.test/docs') === '参考 https://example.test/docs')
++const recalled = formatTimelineDecayed({ items: [
++  { layer: 'contextual', preview: proxyMemory },
++  { layer: 'contextual', preview: '用户喜欢猫' },
++] })
++check('⑥e 旧库代理 URI 不自动召回', !recalled.includes('fictional-pass') && !recalled.includes('example.test') && recalled.includes('用户喜欢猫'))
++

@@ -1,6 +1,6 @@
 # dsh-selfuse 维护手册
 
-> 2026-09-16 起现役 WSL 0.1.6 的配置来源以 [当前部署说明](current-deployment.md) 为准。以下早期 Windows 安装/更新记录保留供追溯，不能直接作为现行操作步骤。
+> 现役 WSL 配置来源与已锁定候选版本以 [当前部署说明](current-deployment.md) 为准。以下早期 Windows 安装/更新记录保留供追溯，不能直接作为现行操作步骤。
 
 ## 维护原则
 
@@ -36,6 +36,14 @@ git -C vendor/deepseek-harness rev-parse HEAD
 - 当前线上环境未自动跟随，需要安装器同步或手动复制。
 
 ## 维护记录
+
+### 2026-09-29 官方 0.2.0-rc.1 候选与 selfuse 同步
+
+- 将 Harness 子模块候选锁定到 fork 提交 `bcf8c14b1927fb1ee3701e5e3852ff2c3ef25249`；其中包含官方 `4878cdabd87d4041bdaff61d04c966883b9fd07a`、selfuse 兼容修改与文档修复。云端 pin 不等于现役服务切换，切换前后须另做备份和运行验收。
+- 更新 `manifest.json`、`README.md`、`docs/current-deployment.md` 与 [升级说明](upgrade-0.2.0-rc.1.md)，分开记录源码、外部插件包、活跃链接及用户配置。第三方提示词优化器锁定上游 `v0.7.6`，灵枢记忆锁定上游 `v0.6.0` 加本地隐私补丁；补丁和包 SHA-256 可在升级说明中复核。
+- 按用户“修完全部门禁再发布”的要求修复候选 `doc-sync` 初始 19 项失败；最终文档门禁 42/42、构建、类型检查、内容隔离测试 20/20、profile 安装测试 9/9 通过。隔离 Web 用原样登录链接验证到 303/Cookie/200；未验证现役模型调用或 iPad 端到端。全仓 `pnpm run lint` 仍因既有自用源码遗留规则失败，不能宣称全仓 lint 通过；本次变更的 staged lint 与提交 hook 通过。
+- 首次隔离启动时发现灵枢模板的硬编码记忆根指向现用目录，并触发 1 项索引对账；立即停止，修复 `${DSH_HOME}` 路径展开并增加回归测试。只读检查未发现近期记忆正文写入，但索引日志、锁和对账日志有写入，不能称其已回滚。后续隔离启动确认记忆根和辅助根均位于临时 `DSH_HOME`。
+- 同步修正 `docs/manifest.schema.json` 中滞后的 `action` 枚举（仅补入现有清单早已使用的 `copied-to-repo`、`vendored-copy`），使完整 `manifest.json` 可通过 JSON Schema 校验。
 
 ### 2026-08-19 初始骨架
 

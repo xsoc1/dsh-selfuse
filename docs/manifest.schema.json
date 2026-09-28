@@ -20,7 +20,7 @@
           "upstream": { "type": ["string", "null"] },
           "localPath": { "type": ["string", "null"] },
           "targetPath": { "type": "string" },
-          "action": { "enum": ["submodule", "copy-to-repo", "junction-or-copy", "manifest-only", "vendor-or-copy", "submodule-or-copy", "submodule-or-vendor"] },
+          "action": { "enum": ["submodule", "copy-to-repo", "copied-to-repo", "vendored-copy", "junction-or-copy", "manifest-only", "vendor-or-copy", "submodule-or-copy", "submodule-or-vendor"] },
           "branch": { "type": ["string", "null"] },
           "status": { "type": "string" },
           "notes": { "type": ["string", "null"] }
