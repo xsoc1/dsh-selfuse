@@ -13,11 +13,11 @@
       "localPath": "/home/huangzy/tools/deepseek-harness-current",
       "targetPath": "vendor/deepseek-harness",
       "action": "submodule",
-      "branch": "upgrade/official-master-20260928",
+      "branch": "upgrade/official-rc2-20260929",
       "status": "current-wsl-source",
-      "notes": "Pinned submodule and active /home/huangzy/tools/deepseek-harness-current checkout are both bcf8c14b1927fb1ee3701e5e3852ff2c3ef25249 as verified 2026-09-29. Cloud changes do not automatically switch the runtime; see docs/upgrade-0.2.0-rc.1.md.",
-      "version": "0.2.0-rc.1",
-      "upstreamCommit": "4878cdabd87d4041bdaff61d04c966883b9fd07a"
+      "notes": "Pinned submodule and active WSL source are c9896317dd6 (official rc.2 plus selfuse build fix and migration record) as verified 2026-09-29. Windows Desktop is installed separately; a disposable profile accepts two plugins, but GUI and WSL session migration are not verified. See docs/desktop-migration-0.2.0-rc.2.md.",
+      "version": "0.2.0-rc.2",
+      "upstreamCommit": "639ed015397290b3745d163aafe02ffee4aa3f84"
     },
     {
       "id": "deepseek-harness-eac",

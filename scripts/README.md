@@ -4,6 +4,8 @@
 
 `run-dsh-web.ps1` 在 Tailscale 启动时不可用的情况下，会从活跃 WSL `settings.yaml` 的 `remote-web-ui.publicBaseUrl` 读取严格限定的 HTTPS `*.ts.net` 根域名，作为 DSH 的 `--trusted-host` 兜底；Tailscale 恢复后不会再因启动顺序造成远程 WebSocket 403。回归检查：
 
+2026-09-29 rc.2 切换时，`dsh-control.ps1` 曾缓存上一轮 Web 启动令牌，实际 HTTP 200 却把 `start` 报为超时；现每次探测重读日志中最新令牌。现役 Windows 脚本和本仓快照均已修改，复测 `start` 显示就绪。此状态检查仍不能代替 iPad 会话同步验收。
+
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\run-dsh-web.test.ps1
 ```

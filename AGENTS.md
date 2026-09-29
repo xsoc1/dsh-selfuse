@@ -10,7 +10,7 @@
 4. 修改当前部署方法时，同步核对 fork 中的 `config/selfuse/`、`scripts/selfuse/` 和 `packages/selfuse/`，更新本仓 `manifest.json`、相关快照及 `docs/maintenance.md`。
 5. 活跃 DSH 源码在 WSL `/home/huangzy/tools/deepseek-harness-current`，实际 `DSH_HOME` 为 `/home/huangzy/.dsh`；Windows `F:\tools\deepseek-harness` 运行管理脚本和桥接。本仓记录可重建的源码引用、管理脚本与步骤，但仅修改本仓不会改变当前服务。
 6. `F:\tools\dsh-local` 旧工作树有用户未提交改动；以云端最新分支的干净工作树维护本仓，不覆盖旧工作树。旧 `install.ps1` 和 `scripts/update-dsh.ps1` 不适用于当前 WSL 部署，未经核验不得执行其应用/更新动作。
-7. 子模块 pin、活跃源码链接、活跃 `DSH_HOME` 和第三方包是四种状态；版本升级要先跑全部文档门禁、构建、定向测试和隔离启动，再分别记录云端同步与本机切换。第三方上游包只通过原生 `dsh plugin` CLI 装入 profile，补丁与校验值由 [升级说明](docs/upgrade-0.2.0-rc.1.md)记录。
+7. 子模块 pin、活跃源码链接、活跃 `DSH_HOME` 和第三方包是四种状态；版本升级要先跑全部文档门禁、构建、定向测试和隔离启动，再分别记录云端同步与本机切换。第三方上游包只通过原生 `dsh plugin` CLI 装入 profile，补丁与校验值由 [升级说明](docs/upgrade-0.2.0-rc.1.md)记录；官方桌面版另用独立 profile，见 [迁移评估](docs/desktop-migration-0.2.0-rc.2.md)。
 
 ## 关键约束
 
@@ -42,3 +42,5 @@
 用户要求先更新 DSH 官方最新版、保留插件适配，特别核对本地网络内容隔离插件，再把配置方法同步到 `xsoc1/dsh-selfuse`。候选合并官方 `0.2.0-rc.1` 后，用户被告知完整文档门禁有 19 项失败，明确回复“修完全部门禁再发布”。候选后来通过 `doc-sync` 42/42、构建和隔离 Web 验证；首个临时 profile 仍错误指向现用灵枢记忆目录，启动日志记录 1 项索引对账，随后修复为 `${DSH_HOME}` 路径展开并通过回归测试。同步本仓时发现旧 manifest schema 的 `action` 枚举未收录已有值，补齐并验证。不能把云端候选、隔离测试或本地隐私检查误报为现用服务升级、iPad 端到端验证或绕过服务商策略。
 
 本日后续：完整门禁通过后先发布 fork 分支和本仓 pin，再独立备份、更新现用 profile 的两个外部插件、切换活跃源码链接并重启。现用进程已核对为 `0.2.0-rc.1` 提交，PC 本机登录与 Tailnet HTTPS 登录均为 303→200；iPad 会话及真实模型调用尚未验证。当前 Tailnet 直通模式关闭远程设备配对，启动日志因此提示普通 `/api` 对受信主机开放；不得将它误称为配对保护或公网安全配置。详细步骤、备份与回退边界见 `docs/upgrade-0.2.0-rc.1.md`。
+
+用户随后要求更新最新 DSH，并从 DeepSeek 官网而非 GitHub 调研新发布桌面端，评估并实践有用功能的全量迁移。2026-09-29 将官方 `0.2.0-rc.2` 合入隔离 WSL 工作树，修复自用私有插件构建遗漏，跑通构建、定向测试、隔离 Web 和 43 项文档门禁后备份现役 profile、切换活跃链接并重启；本机与 Tailnet 带令牌页面均 HTTP 200。官方签名的 Windows 桌面端已安装；隔离 Windows home 初始化 Desktop profile 后，随包 CLI 可安装两个外部插件，但实际 GUI、会话和 iPad 迁移均未验证，不可宣称 Web 已退役。控制脚本的旧令牌缓存误报也已修复并复测；详细证据和方法见 `docs/desktop-migration-0.2.0-rc.2.md`。

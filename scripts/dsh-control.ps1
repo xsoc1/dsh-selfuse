@@ -33,17 +33,14 @@ $WebUrl       = 'http://127.0.0.1:3080'
 $WebPort      = 3080
 # ============ 配置区结束 ============
 
-$script:CachedWebUrl = $null
 function Get-DshWebUrl {
-    if ($script:CachedWebUrl) { return $script:CachedWebUrl }
     if (Test-Path $WebLog) {
         try {
-            $line = Get-Content -LiteralPath $WebLog -Tail 80 -Encoding UTF8 -ErrorAction SilentlyContinue |
+            $line = Get-Content -LiteralPath $WebLog -Tail 2000 -Encoding UTF8 -ErrorAction SilentlyContinue |
                 Select-String -Pattern 'http://127\.0\.0\.1:3080/\?token=[A-Za-z0-9_-]+' |
                 Select-Object -Last 1
             if ($line -and $line.Matches.Count -gt 0) {
-                $script:CachedWebUrl = $line.Matches[0].Value
-                return $script:CachedWebUrl
+                return $line.Matches[0].Value
             }
         } catch {}
     }

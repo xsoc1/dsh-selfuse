@@ -37,6 +37,13 @@ git -C vendor/deepseek-harness rev-parse HEAD
 
 ## 维护记录
 
+### 2026-09-29 官方 0.2.0-rc.2 与桌面版评估
+
+- 用户要求更新最新 DSH，从 DeepSeek 官网而非 GitHub 调研新发布的桌面端，并实践有用功能的全量迁移。核对官方 Windows 更新源为 `0.2.0-rc.2`；官方源码修订 `639ed015` 合入自用构建提交 `a096be31e89`，修复风险防护插件未随官方 build 生成运行文件的问题；最终含迁移记录的子模块 pin 为 `c9896317dd6`。完整构建、定向测试、临时 profile 插件启动及文档门禁 43/43 通过。
+- 本机备份现役 Web profile 五个顶层文件后切换 WSL 活跃链接到 rc.2，进程 cwd、CLI 版本、本机与 Tailnet 带令牌页面 HTTP 200 已核验。外部 prompt optimizer 和 memory 插件仍为锁定版本。未验证真实模型调用、iPad 会话同步或移动端重连情况。
+- 官方 Windows 安装包 SHA512 和 Authenticode 检查通过并已安装；随包 CLI 报 rc.2。独立临时 Windows home 已初始化 Desktop profile，经校验的两个外部插件 tarball 用本地路径安装并由 CLI 列出；实际桌面 GUI、插件运行、会话迁移和移动端访问仍未验收。评估结论是保留 WSL Web/Tailnet，桌面端先作为独立 Windows 入口试用；逐项验证后才可考虑全量替换。证据与回退路径见 [桌面版迁移评估](desktop-migration-0.2.0-rc.2.md)。
+- 切换后发现 `dsh-control.ps1 start` 把旧令牌缓存在同一进程中，服务可用时仍报超时。已同步修正现役 Windows 脚本和本仓快照，复测 `start` 返回就绪。既有 Tailnet 受信主机 `/api` 不配对警告仍存在，不把私有 Tailnet 等同于设备配对或公网安全。
+
 ### 2026-09-29 官方 0.2.0-rc.1 候选与 selfuse 同步
 
 - 将 Harness 子模块候选锁定到 fork 提交 `bcf8c14b1927fb1ee3701e5e3852ff2c3ef25249`；其中包含官方 `4878cdabd87d4041bdaff61d04c966883b9fd07a`、selfuse 兼容修改与文档修复。云端 pin 不等于现役服务切换，切换前后须另做备份和运行验收。

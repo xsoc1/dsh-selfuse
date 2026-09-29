@@ -1,7 +1,7 @@
 [submodule "vendor/deepseek-harness"]
 	path = vendor/deepseek-harness
 	url = https://github.com/xsoc1/deepseek-harness.git
-	branch = selfuse-0.1.6-alpha.1-20260916
+	branch = upgrade/official-rc2-20260929
 
 [submodule "vendor/awesome-dsh-plugin"]
 	path = vendor/awesome-dsh-plugin
