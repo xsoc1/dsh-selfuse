@@ -1,5 +1,5 @@
-# 历史配置快照
+# 配置来源
 
-本目录保存早期 Windows/DSH 0.1.2 部署的 settings、预设和 Web profile，不是当前 WSL 服务的配置源。不要将这里的 `settings.yaml` 或 `profiles/web` 复制到活跃 `/home/huangzy/.dsh`。
+当前仅 [Desktop profile 补丁模板](desktop/cordis.patch.yml) 用于本机官方 Windows Desktop：合并 `webserver` 动态 loopback 端口与 `agent-preset-registry` 官方 `standard` 新会话选择。应用前备份真实 `C:\Users\HuangZY\.dsh\profiles\desktop\cordis.patch.yml`，按行合并，不要覆盖用户已有设置。
 
-当前配置模板位于 [`vendor/deepseek-harness/config/selfuse/`](../vendor/deepseek-harness/config/selfuse/)，profile 由子模块中的 `scripts/selfuse/generate-profile.mjs` 生成，并保留通过原生 `dsh plugin --profile web` 加入的显式插件。`/home/huangzy/.dsh` 是运行数据目录，含会话、记忆和可能的凭据；它不是要整体上传的代码目录。部署与备份边界见 [当前部署说明](../docs/current-deployment.md)。
+本目录其余 `settings.yaml` 与预设是早期部署快照；原 WSL Web profile 已从仓库移除并在本机归档，不应复制这些文件到 Desktop。旧 [Safari/Tailscale 资料](../docs/safari-tailnet.md)仅供历史查询，不是当前远程入口操作指南。实际数据与归档位置见 [当前部署](../docs/current-deployment.md)。

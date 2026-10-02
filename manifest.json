@@ -14,8 +14,8 @@
       "targetPath": "vendor/deepseek-harness",
       "action": "submodule",
       "branch": "upgrade/official-rc2-20260929",
-      "status": "current-wsl-source",
-      "notes": "Pinned submodule and active WSL source are c9896317dd6 (official rc.2 plus selfuse build fix and migration record) as verified 2026-09-29. Windows Desktop is installed separately; a disposable profile accepts two plugins, but GUI and WSL session migration are not verified. See docs/desktop-migration-0.2.0-rc.2.md.",
+      "status": "native-desktop-development-source",
+      "notes": "The submodule pin references the published native Desktop adaptation and retirement source. Official signed Windows Desktop at F:\\Apps\\DeepSeekHarness remains the runtime; WSL is development only. Approved legacy packages are recoverably archived and user data is preserved. Seventy-one full source checks, browser lane and lint passed, followed by eleven memory-home regressions and final documentation checks. Ten packages are installed through the official CLI, external runtime dependencies are routed without copying WSL or ASAR modules, and the exact accepted memory package was updated after normal exit. The new formal Host and Client verification pass; the user confirmed finding the panels. Isolated memory persistence passes; formal saves, real GitHub backup/restore and provider acceptance remain separate. Remote refs must be read back after publication; no passing GitHub CI result is claimed. See scripts/README.md and docs/maintenance.md.",
       "version": "0.2.0-rc.2",
       "upstreamCommit": "639ed015397290b3745d163aafe02ffee4aa3f84"
     },
@@ -80,7 +80,7 @@
       "targetPath": "plugins/dsh-memory-panel",
       "action": "copy-to-repo",
       "status": "copied-to-repo",
-      "notes": "local file memory panel"
+      "notes": "Historical copied local file panel, not the Desktop installation source. Desktop uses packages/selfuse/memory-panel from the pinned native source. Official CLI installation, external F-drive dependency routing and native bootstrap home resolution are complete. After normal exit on 2026-10-03, the exact Windows-accepted package was installed with the old package archived and five profile files unchanged. The new formal Host and served Client verification pass; the user confirmed finding the settings panels. Eleven focused tests and isolated Windows panel rendering and memory save/readback pass without home overrides; formal save and model acceptance are separate. This panel manages local Markdown for people, not automatic model memory injection. See docs/maintenance.md."
     },
     {
       "id": "dsh-skill-router",
@@ -114,7 +114,7 @@
       "targetPath": "community-plugins/dsh-backup",
       "action": "vendor-or-copy",
       "status": "copied-to-repo",
-      "notes": "vendored copy; local fix: backupPanel/remove -> deleteBackup",
+      "notes": "Historical upstream copy; Desktop uses packages/selfuse/backup from the pinned native source. Official CLI installation and external F-drive dependency routing are complete. The new formal Host and served Client verification pass on 2026-10-03, and the user confirmed finding the settings panels. Isolated actual settings rendering, archive operations and two local Git remotes were tested in disposable homes; real GitHub HTTPS backup/restore acceptance is not claimed. See docs/maintenance.md.",
       "version": "0.5.0"
     },
     {
@@ -154,8 +154,8 @@
       "localPath": "/home/huangzy/tools/community-plugins/dsh-undo-plugin-fixed",
       "targetPath": "community-plugins/dsh-undo-plugin-fixed",
       "action": "copy-to-repo",
-      "status": "copied-to-repo",
-      "notes": "vendored local fixed copy: main lib/index2.js",
+      "status": "retired-native-recovery-preferred",
+      "notes": "User explicitly approved archiving undo on 2026-10-02; keep backup and official native recovery. Active candidate source was moved to /home/huangzy/tools/dsh-retired-20261001/undo-retirement/undo and verified: 36 records, 869861 bytes. User snapshot data is untouched. This repository copy is historical, not a Desktop installation source.",
       "version": "0.3.3"
     },
     {
@@ -180,10 +180,10 @@
       "localPath": "/home/huangzy/tools/community-plugins/dsh-external-dsh-po06-0.7.6.tgz",
       "targetPath": "vendor/deepseek-harness/config/selfuse/profiles.build.yml",
       "action": "manifest-only",
-      "status": "current-wsl-profile",
+      "status": "retired-wsl-profile",
       "version": "0.7.6",
       "sha256": "e98ec8ea935cea4c8634b07ad3daffde35d1194f0132a9c1f68f3c31f95bbdee",
-      "notes": "Verified upstream Release archive; installed through native dsh plugin CLI into disposable and live profiles. See docs/upgrade-0.2.0-rc.1.md."
+      "notes": "Verified upstream Release archive previously installed through native CLI into WSL profiles; that live Web profile is now archived. Not installed or activated in the current Windows Desktop. See docs/upgrade-0.2.0-rc.1.md and docs/current-deployment.md."
     },
     {
       "id": "dsh-memory",
@@ -194,33 +194,11 @@
       "localPath": "/home/huangzy/tools/community-plugins/furongjun1999-dsh-memory-0.6.0-selfuse.1.tgz",
       "targetPath": "community-plugins/patches/dsh-memory-0.6.0-selfuse.1.patch",
       "action": "manifest-only",
-      "status": "current-wsl-profile",
+      "status": "retired-wsl-profile",
       "version": "0.6.0-selfuse.1",
       "upstreamCommit": "a84e78d2d5024fef60e9244201323baae1f0b8ee",
       "sha256": "c75d703c052facb0112a2477caef79194210fd4163736f8c0b7ff877ff5e9d6c",
-      "notes": "Upstream 0.6.0 plus local privacy patch; verified in a disposable profile and installed in the live profile. See docs/upgrade-0.2.0-rc.1.md."
-    },
-    {
-      "id": "dsh-control-scripts",
-      "type": "script",
-      "name": "dsh management scripts",
-      "repo": null,
-      "localPath": "F:/tools/deepseek-harness",
-      "targetPath": "scripts",
-      "action": "copy-to-repo",
-      "status": "current-snapshot",
-      "notes": "Current Windows launcher, watchdog, control CLI, VBS entries, and trusted-host regression; active runtime uses F:/tools/deepseek-harness copies"
-    },
-    {
-      "id": "dsh-control-gui",
-      "type": "script",
-      "name": "DSH WinForms control console",
-      "repo": null,
-      "localPath": "/home/huangzy/tools/deepseek-harness-current/packages/selfuse/control-gui",
-      "targetPath": "console",
-      "action": "copy-to-repo",
-      "status": "source-snapshot",
-      "notes": "Current GUI source, status/remote probes, read-only diagnostics and tests; no local executable, icon or personal wallpaper in this repository"
+      "notes": "Upstream 0.6.0 plus local privacy patch previously verified in disposable and live WSL profiles; the live Web profile is now archived. Not installed or activated in the current Windows Desktop. Data remains preserved. See docs/upgrade-0.2.0-rc.1.md and docs/current-deployment.md."
     },
     {
       "id": "settings",
@@ -231,18 +209,18 @@
       "targetPath": "config/settings.yaml",
       "action": "copy-to-repo",
       "status": "legacy-snapshot",
-      "notes": "Not the active WSL settings; current source template is vendor/deepseek-harness/config/selfuse/settings.yaml and the live file is /home/huangzy/.dsh/settings.yaml"
+      "notes": "Historical WSL settings snapshot. The WSL Web runtime is retired; this file and the source-side selfuse template are not Windows Desktop configuration. Do not copy them over the active Desktop profile. See config/README.md and docs/current-deployment.md."
     },
     {
-      "id": "web-profile",
+      "id": "windows-desktop-port-patch",
       "type": "config",
-      "name": "web profile",
+      "name": "Windows Desktop dynamic loopback port template",
       "repo": null,
-      "localPath": "/home/huangzy/.dsh/profiles/web",
-      "targetPath": "config/profiles/web",
+      "localPath": "C:\\Users\\HuangZY\\.dsh\\profiles\\desktop\\cordis.patch.yml",
+      "targetPath": "config/desktop/cordis.patch.yml",
       "action": "copy-to-repo",
-      "status": "legacy-snapshot",
-      "notes": "Do not install over the active WSL profile; current profile is generated by vendor/deepseek-harness/scripts/selfuse/generate-profile.mjs and preserves CLI-added plugins"
+      "status": "current-windows-template",
+      "notes": "Merge only the webserver and agent-preset-registry rows into the live Desktop patch after backup; port 0 avoids the Windows exclusion covering official default 19387, and new sessions select native standard. Do not overwrite other user patch rows."
     },
     {
       "id": "agent-presets",
@@ -253,18 +231,7 @@
       "targetPath": "config/agent-presets",
       "action": "copy-to-repo",
       "status": "legacy-snapshot",
-      "notes": "Current preset source is vendor/deepseek-harness/config/selfuse/agent-presets; deploy as real directories, never Windows junctions"
-    },
-    {
-      "id": "dsh-web-ui-all-slim",
-      "type": "plugin",
-      "name": "@linxin666/dsh-web-ui-all",
-      "repo": "https://github.com/zhu1090093659/dsh-web-ui",
-      "localPath": "/home/huangzy/tools/dsh-local/plugins/dsh-web-ui-all-slim",
-      "targetPath": "plugins/dsh-web-ui-all-slim",
-      "action": "copied-to-repo",
-      "status": "copied-to-repo",
-      "notes": "local slim aggregate: keeps community/remote/settings/task/git/ssh/skins, drops unused subplugins"
+      "notes": "Historical WSL preset snapshot, not a Desktop deployment source. Legacy Windows session copies were archived by user choice; the native Desktop baseline uses official standard and does not register these WSL presets. Preserve current user choices rather than overwriting them with old templates. See docs/current-deployment.md."
     },
     {
       "id": "obsidian-skills",

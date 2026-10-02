@@ -1,5 +1,7 @@
 # Safari 经 Tailscale 访问 DSH
 
+> 历史资料：用户于 2026-09-30 决定放弃 DSH 远程插件；当前 Serve 映射已清空，WSL Web profile 已归档。下述配置和“当前”均指退役前状态，不是现行操作指南。参见 [当前部署](current-deployment.md)。
+
 本机采用 iPad Safari → Tailnet HTTPS（Windows Tailscale Serve）→ `127.0.0.1:3080` → WSL DSH Web 的链路。`xsoc.tail6cf486.ts.net` 是本机当前 MagicDNS 主机名，并非通用安装常量。Tailscale Serve 只给 Tailnet 内设备访问；不启用 Funnel。配置与验收要分开：本机 HTTP/WS 检查成功不能证明 iPad 的页面、思考过程和最终状态同步正常。
 
 ## 运行配置

@@ -1,0 +1,15 @@
+# Merge these rows into the official Windows Desktop profile patch; do not
+# overwrite any other user-maintained rows in cordis.patch.yml.
+# Port 0 asks Windows for an available loopback port on each launch.
+- id: webserver
+  config:
+    host: 127.0.0.1
+    port: 0
+    compression: gzip
+    compressionLevel: 1
+    compressionThresholdBytes: 1024
+- id: agent-preset-registry
+  name: "@deepseek-ai/dsh-agent-preset-registry"
+  config:
+    default: standard
+    selectedDefault: standard
