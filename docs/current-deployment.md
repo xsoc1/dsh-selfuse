@@ -2,7 +2,7 @@
 
 ## 当前界面验收结论
 
-最新远程反馈：用户在清除遗留强制 DERP、恢复 iPad 直连后确认“效果非常好”，并授权把这套同 Host 方案上云。iPad 使用改善按实际反馈确认，下面“尚待反馈”属于先前时点；手机与长期换网仍未独立验收。源码/方法/匿名模板已通过 [fd4659bb5d87](https://github.com/xsoc1/dsh-selfuse/commit/fd4659bb5d87aaa1526f1d01a43bfe9c726998d4) 同步至 main，远端 ref 与 35 份文件 blob 读回一致；未上传真实 profile/state/凭据，未重启现行 Desktop。完整发布证据及无 CI 报告的边界见最新 maintenance。
+最新远程反馈：用户在清除遗留强制 DERP、恢复 iPad 直连后确认“效果非常好”，并授权把这套同 Host 方案上云；发布后补充“手机我已验收”。当前 iPad 与手机实际验收均按用户反馈确认，下面“尚待反馈”属于先前时点；长期换网仍未独立验收。源码/方法/匿名模板已通过 [fd4659bb5d87](https://github.com/xsoc1/dsh-selfuse/commit/fd4659bb5d87aaa1526f1d01a43bfe9c726998d4) 同步至 main，远端 ref 与 35 份文件 blob 读回一致；未上传真实 profile/state/凭据，未重启现行 Desktop。完整发布证据及无 CI 报告的边界见最新 maintenance。
 
 十个保留包已由 CLI 安装，F 盘外置 link 目录的依赖连接已补齐。2026-10-03 用户正常退出后，只更新已通过 Windows 隔离验收的 memory-panel 包；旧包完整归档、五份 profile 文件哈希不变。新正式实例 PID 32384 的只读验收通过：九个 Host 激活、五个 Client 行和资源正常。用户起初报告仅见皮肤中心，在明确“设置 → 内置插件”的页内标签位置后回复“有了”；按实际反馈记录面板已找到，不等同正式保存或模型验收。11 项源码回归及隔离三面板/记忆保存读回通过。方法见 [安装与运行验收](../scripts/README.md)。本仓源码 pin 为已发布的 [42d47032d3d](https://github.com/xsoc1/deepseek-harness/commit/42d47032d3da839f088142c4b439f95128973a21)，包括退役、保留包源码及原生记忆修复；发布前文档 43/43、暂存空白及正常提交/push 类型检查通过。以下旧日期记录是阶段证据，不替代本结论。
 

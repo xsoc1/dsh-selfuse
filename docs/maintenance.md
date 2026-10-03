@@ -2,6 +2,12 @@
 
 > 官方 Windows Desktop、独立管理层扩展和真实 profile 以 [当前部署说明](current-deployment.md) 为准；早期 WSL/Windows 记录仅供追溯，不能直接作为现行步骤。
 
+## 2026-10-03 手机实际验收补充
+
+具体对话：发布后用户补充“手机我已验收”。据此将当前同 Host、tailnet 直接访问方案的手机实际验收记为用户确认通过，覆盖下方历史“手机未验收/待反馈”；iPad 已确认结果保留。用户未提供长期前后台或跨网络观察记录，长期换网不自动记为通过，也不据此扩大真实备份/恢复等功能验收。
+
+工作方法：仅同步 README、manifest、当前部署、专用部署和两级 AGENTS 的现行结论，历史失败与各测试当时的 pending 保留。沿用用户对本方案的上云授权，完成文档/模板检查、暂存空白检查后普通快进发布，再读回远端 ref 和本轮文件 blob；本轮不重新跑移动实机、不采集私有消息、不修改或重启 Desktop/Tailscale，不改源码 pin。
+
 ## 2026-10-03 用户接受直连方案并完成发布
 
 发布完成：源码/方法提交 [fd4659bb5d87](https://github.com/xsoc1/dsh-selfuse/commit/fd4659bb5d87aaa1526f1d01a43bfe9c726998d4) 已正常快进推送至 `origin/main`，再次 fetch 后本地 HEAD 与远端 ref 一致，35 份发布文件的 Git blob 逐一一致；Harness gitlink 保持 `42d47032d3da839f088142c4b439f95128973a21`。仓库未配置活跃 Git hooks，未跳过门禁；GitHub API 本次返回 workflows=0、check-runs=0，只能报告本地复检和远端内容核验通过，不能称 CI 通过。完成状态在本节及 manifest/README/两级 AGENTS 补记后另作普通文档提交，不改正在使用的 Desktop 或 Tailscale。首个发布提交后工作树干净。
