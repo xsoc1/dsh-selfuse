@@ -18,7 +18,7 @@ git submodule status vendor/deepseek-harness
 
 完整的当前目录关系和验收边界见 [当前部署说明](docs/current-deployment.md)；旧远程链路仅作为历史记录保留在 [Safari/Tailscale 手册](docs/safari-tailnet.md)。组件索引见 [manifest.json](manifest.json)，历次维护见 [docs/maintenance.md](docs/maintenance.md)。
 
-用户已授权接入并清理：manager-owned relay 通过原生 CLI 安装，真实 HTTPS 隔离 26 项、现行正式只读 44 项通过，iPad 最新使用改善已确认；手机确认仍单列。RustDesk 专属规则、程序/配置已精确退役并可恢复归档。当前方法以[专用部署](docs/desktop-remote-20261003.md)为准，历史选型与报错保留在[原调研](docs/remote-access-options-20261003.md)和[RustDesk 记录](docs/rustdesk-trial-20261003.md)，不作为活跃安装入口。本次已获源码和方法发布授权，推送/远端读回结果见维护记录。
+用户已授权接入并清理：manager-owned relay 通过原生 CLI 安装，真实 HTTPS 隔离 26 项、现行正式只读 44 项通过，iPad 最新使用改善已确认；手机确认仍单列。RustDesk 专属规则、程序/配置已精确退役并可恢复归档。当前方法以[专用部署](docs/desktop-remote-20261003.md)为准，历史选型与报错保留在[原调研](docs/remote-access-options-20261003.md)和[RustDesk 记录](docs/rustdesk-trial-20261003.md)，不作为活跃安装入口。源码和方法已[发布至 main](https://github.com/xsoc1/dsh-selfuse/commit/fd4659bb5d87aaa1526f1d01a43bfe9c726998d4)，35 份文件远端读回一致；完整证据和未验收范围见维护记录。
 
 `install.ps1`、旧 `config/` 和旧 `plugins/` 属于早期部署快照，不应覆盖 Desktop `DSH_HOME`。当前 Desktop profile 先以官方 bundle 为基线，只合并必要的本机补丁；API Key、登录凭据、会话、记忆和模型文件不入库。
 

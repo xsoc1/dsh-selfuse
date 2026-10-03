@@ -2,7 +2,9 @@
 
 > 官方 Windows Desktop、独立管理层扩展和真实 profile 以 [当前部署说明](current-deployment.md) 为准；早期 WSL/Windows 记录仅供追溯，不能直接作为现行步骤。
 
-## 2026-10-03 用户接受直连方案并授权发布
+## 2026-10-03 用户接受直连方案并完成发布
+
+发布完成：源码/方法提交 [fd4659bb5d87](https://github.com/xsoc1/dsh-selfuse/commit/fd4659bb5d87aaa1526f1d01a43bfe9c726998d4) 已正常快进推送至 `origin/main`，再次 fetch 后本地 HEAD 与远端 ref 一致，35 份发布文件的 Git blob 逐一一致；Harness gitlink 保持 `42d47032d3da839f088142c4b439f95128973a21`。仓库未配置活跃 Git hooks，未跳过门禁；GitHub API 本次返回 workflows=0、check-runs=0，只能报告本地复检和远端内容核验通过，不能称 CI 通过。完成状态在本节及 manifest/README/两级 AGENTS 补记后另作普通文档提交，不改正在使用的 Desktop 或 Tailscale。首个发布提交后工作树干净。
 
 具体对话：用户“效果非常好, 就按这个方案上云”。按实际反馈接受当前 iPad 使用改善，授权向 xsoc1/dsh-selfuse 发布同 Host relay 0.2.0、显式 tailnet 匿名模板、隔离/只读验收、精确 DERP 清理/恢复脚本和部署/退役文档；手机、长期换网及模型/备份操作不据此记为通过。仅管理仓变更，官方签名程序、现用配置、会话、Tailscale 服务和源码 fork pin 本轮不动；不恢复远控或旧 WSL 服务。
 

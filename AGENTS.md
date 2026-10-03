@@ -20,6 +20,8 @@
 
 发布触发：用户“效果非常好, 就按这个方案上云”，接受当前 iPad 使用改善并授权同步 `xsoc1/dsh-selfuse`；手机/长期换网另验。按 writing-for-agents 收敛现用与历史分支，发布前核对差异归属、敏感信息、模板/schema/文档链接、回归与原生隔离；普通快进推送后读回 ref/选定blob。只发布管理层独立扩展与方法，不改源码fork pin、官方ASAR或运行配置，不上传真实state/日志/会话。具体过程与提交见最新maintenance。
 
+发布结果：同 Host 接入和直连维护已以 `fd4659bb5d87aaa1526f1d01a43bfe9c726998d4` 快进同步至 main，fetch ref 与全部35份发布blob一致，gitlink未变。本地复检通过不等于GitHub CI：本次API无workflow/check-run报告。完成状态另作文档提交；继续维护以当前部署/maintenance为准，不复用历史“候选”结论。
+
 连接稳定性触发：用户“经常跳重新连接”，确认 iPad 打开页面仍跳。先核对现行 PID/端口，再用 90 秒只读 mux/RPC 探针与实际移动反馈对照，方法见[连接稳定性](docs/desktop-remote-20261003.md#连接稳定性与旧调试项)。本轮精确清除遗留强制 DERP 开关后 iPad 恢复直连、探测从 467–1671 ms 降为 3–65 ms；正常停止卡住的 Tailscale 已窄范围恢复，最终状态读回与初始失败收据分开记录。未改 Desktop profile/会话，不把电脑探针成功当作实机长期稳定。具体对话、备份和脚本失败见最新 maintenance。
 
 授权最新变更：用户“还是使用旧的授权方案: 在tailnet内就直接能够访问”，并确认“已退出”。当前 relay 0.2.0 显式 tailnet 模式：固定根地址直接进入，Native cookie 只在上游中继内存使用，本地 Desktop 鉴权不变。读取[当前模式与切换](docs/desktop-remote-20261003.md#当前模式tailnet-直接访问)后再维护认证；使用正常退出、备份、AST 精确改远程行的 mode helper，保留 CLI link 和无关 profile。44 项新实例只读、15 项回归与原生隔离通过，不等于手机/iPad 人类验收。下方二维码记录为历史 owner-browser 模式，不能作为现行步骤。
