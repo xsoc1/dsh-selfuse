@@ -1,0 +1,10 @@
+{
+  "name": "@dsh-selfuse/desktop-remote",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "main": "index.mjs",
+  "exports": { ".": "./index.mjs", "./package.json": "./package.json" },
+  "dsh": { "pluginType": "host" },
+  "scripts": { "test": "node --test test.mjs tailnet.test.mjs" }
+}

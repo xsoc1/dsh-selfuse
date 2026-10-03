@@ -1,10 +1,90 @@
 # dsh-selfuse 维护手册
 
-> 现役 WSL 配置来源与已锁定候选版本以 [当前部署说明](current-deployment.md) 为准。以下早期 Windows 安装/更新记录保留供追溯，不能直接作为现行操作步骤。
+> 官方 Windows Desktop、独立管理层扩展和真实 profile 以 [当前部署说明](current-deployment.md) 为准；早期 WSL/Windows 记录仅供追溯，不能直接作为现行步骤。
+
+## 2026-10-03 用户接受直连方案并授权发布
+
+具体对话：用户“效果非常好, 就按这个方案上云”。按实际反馈接受当前 iPad 使用改善，授权向 xsoc1/dsh-selfuse 发布同 Host relay 0.2.0、显式 tailnet 匿名模板、隔离/只读验收、精确 DERP 清理/恢复脚本和部署/退役文档；手机、长期换网及模型/备份操作不据此记为通过。仅管理仓变更，官方签名程序、现用配置、会话、Tailscale 服务和源码 fork pin 本轮不动；不恢复远控或旧 WSL 服务。
+
+发布预检：正常 fetch origin/main，候选与远端0 ahead/0 behind；已有改动均属于本次连续远程工作，旧 dsh-local/deepseek-harness脏树未处理。15项relay/验收器回归、Windows PowerShell及当前PowerShell各10项字节保持/拒绝回归通过；签名随包CLI在独立 native-install-GVGtb5完成5项安装/Host/无浏览器凭据认证，退出connection/connect状态清除。运行日志仅存受限部署根；一次过宽日志末尾输出包含已退出隔离实例的临时启动信息，后续只抽取NATIVE_INSTALL_RESULT，不复述或上传该日志。不能把隔离凭据和正式实例混淆。
+
+新增只读check-remote-publication：候选35份常规文件，62个相对链接/标题锚、12个MJS语法、JSON/schema必需项和枚举、显式tailnet模板通过；实际运行域名、tailnet IP、账户标识及常见凭据/私钥特征无命中，源码中只有匿名模板/fixture。不扫描或发布F盘私有运行目录、真实profile/state/log/session；模式扫描不是完整安全保证。存续RustDesk方法和原目录布局明确放在retired、仅供历史追溯，不作为现行安装入口。用户反馈、现行分支和历史记录按writing-for-agents收敛指针，更新两级AGENTS；暂存、提交及普通快进push后的实际结果另记，不提前宣称远端或CI已通过。
+
+## 2026-10-03 晚间连接稳定性：清除遗留强制 DERP
+
+具体对话：用户“经常跳重新连接, 能不能稳定连接质量”，对是否主动退出 Desktop 回复“我不知道, 但是重连应该是打开时的事情”，随后确认“ipad, 还是有跳”。先发现原 state 的 PID 44752 不存在，native/relay ECONNREFUSED、私网 HTTPS 502，Tailscale Running；不能猜测谁退出程序或把它当作所有间歇重连的原因。启动原官方程序，主进程13940/Host34256、动态端口20418、relay17893；持久受限日志保持 EPIPE 防护，没有修改官方 ASAR、profile、会话或 QQ 配置。
+
+按 diagnosing-bugs 建立可重跑反馈：`node scripts/verify-desktop-remote-stability.mjs --seconds=90`，前台移动尺寸 Chromium 包装原生 WebSocket 只记录构造/open/close/code/elapsed，不读写消息/帧正文，每10秒只读 RPC。首次90秒两端无断开、10次 RPC 成功，不能覆盖同期 iPad 实机仍报重连。进一步实际 ping：10次回应、无超时、无直连，五次 DERP(nue) 为1671/1107/527/467/1045 ms；netcheck UDP=true、IPv4=true、映射不随目标变化。普通权限读取 ProgramData 被拒；管理员只读 helper 用 GetFinalPathNameByHandle 核实原生路径，发现仅一个活跃 TS_DEBUG_ALWAYS_USE_DERP=1。没有因 DERP 本身就断言故障，也没有改 DSH 心跳阈值来掩盖问题。
+
+有针对性修复：在受限 `F:\Apps\DeepSeekHarnessRemote\tailscale-before-direct-20261003-213954` 保存原文件并核对摘要，只移除该调试行；原文件仅含该行，新文件为空，其他字节/文件 ACL 保持。Windows PowerShell 和当前 PowerShell 各10项字节保持/拒绝负例通过后才运行管理员更改。旧强制 DERP 调试不是常态 Safari 优化；恢复正常 NAT/UDP 尝试，不改代理订阅、全局防火墙、tailnet 授权、登录、Serve 或 Desktop 插件。
+
+保留真实失败：首个纯函数测试发现文化相关 StartsWith 把 BOM 当作可忽略字符，先改为首字符严格比较，十项通过后才接触正式文件；手写延迟探针最初只支持 ms、后又被嵌套正则改写 $Matches，修正本地变量后取得上述实际数值。一个假定的 PowerShell7安装路径不存在，改用当前进程实际路径。正常 Restart-Service 卡在 Stop Pending；确认超过60秒后，窄范围 recovery 校验官方签名、服务7140及直接子进程9692，只回收该停止中的服务链，不终止其他应用。原正常重启 helper 随后启动新服务46456；初始 Serve 查询处于初始化阶段，恢复 helper 又因另一个 helper 已启动而错过 Stopped 状态，两份收据分别仍有 false，不伪造通过。后续源码改为有界停止、受限5秒CLI读取、等待同一 Serve 配置就绪并处理并发恢复；本次实际状态另作读回，不重跑已移除开关的更改。
+
+最终现场：Tailscale service/Backend均Running、健康告警为空；管理员新读回 forcedDerp=false、activeFlagCount=0。原443→127.0.0.1:17893映射和无Funnel保持、HTTPS200；iPad CurAddr存在，十次恢复后的直连回应为65/23/4/44/24/3/43/25/3/44 ms。质量显著改善，但“移除并重启后改善”不证明所有历史重连只有此原因。修复后第二次90秒两端零断开、10次RPC成功；重新运行正式44项只读通过（绑定Host34256），原生loopback index/RPC/mux仍401，foreign Origin403，十项relay回归及双PowerShell字节回归再次通过。未发送模型消息，真实 iPad 后续稳定/换网与手机仍待用户确认；长时间不掉线不能由90秒推出。没有推送或改 gitlink。
+
+writing-for-agents 用于把现行诊断/回退顺序集中到专用部署“连接稳定性与旧调试项”，两级AGENTS只保留触发指针和具体对话。新增探针、只读管理员检查、精确移除与窄范围恢复脚本，运行材料在受限部署根，私有地址/凭据不写入源码。后续如仍重连，继续实际移动侧与当前Host时间线定位，不把这次直连改善当作无条件验收。
+
+## 2026-10-03 tailnet 直接访问模式（当前）
+
+具体对话：用户“还是使用旧的授权方案: 在tailnet内就直接能够访问”，在正常退出协调问题回复“已退出”。已告知这意味着 tailnet 网络策略允许到达该入口的设备可使用现有 DSH 文件、命令、模型及会话权限；不是继续精确 owner 加二维码的模式，也没有新增设备配对。按明确授权实施，没有开放公网/Funnel或整机远控。
+
+方法：先核对两级 AGENTS、管理源码、真实 Desktop/profile与Serve；读取官方 Connection 公共 API/鉴权源文件及 Tailscale 固定 1.102.4 源码。Serve 覆盖 X-Forwarded-For 并清理冒用身份字段，tagged 节点不带用户登录头，因此显式 tailnet 模式以私网 Serve 的真实 peer-address、loopback/精确 HTTPS authority/Origin/无 Funnel 为 carrier fence；owner-browser 默认兼容分支保留。中继不关闭官方认证，而经公开 authenticatedUrl 调原生 loopback 认证，原生签名 cookie 仅缓存上游内存、过期前更新、失败关闭、退出清理，不写 state或交给浏览器；HTTP/RPC/mux 共用同一 Host。旧浏览器 cookie 被替换为私有上游 cookie，不会影响准入；旧 token 根链接清理后跳固定入口。本机进程在该网络信任边界内，没有声称 loopback 字段可认证进程。
+
+实施：manager-owned 扩展升 0.2.0，新增 native-auth 模块及六项 tailnet 回归，连同四项 legacy 和五项原验收器共 15 项通过。原生 CLI 隔离首次 fixture native-install-lCzoql 使用 fetch 探针返回 403；改为 node:http 明确构造与 Serve 相同的 Host/转发头后 native-install-qMPbRt 为 200，未放宽 carrier。补 mode AST 正反切换后 native-install-hm12ep 五项通过，实际签名认证及无凭据 state成立、退出状态清理通过。保留失败证据，不将其说成正式服务故障或实际手机失败。
+
+收尾只读探针：首次 Node 单行检查混用 require 与顶层 await，触发 ERR_AMBIGUOUS_MODULE_SYNTAX；随后误把 manifest 的 components 项当成顶层 desktopRemote，断言失败。修正为显式 ESM 和按组件 id 查找后，当前模式元数据、示例配置检查通过；44 项报告与现行 PID 44752 一致、进程仍存活、官方 exe 签名 Valid。这两次仅是检查命令错误，没有改动部署或影响服务。
+
+部署：用户正常退出后确认没有其他 Desktop 进程，mode helper 备份旧 payload、五份 profile、私有配置到 `F:\Apps\DeepSeekHarnessRemote\mode-before-ob056v`；源 payload 逐项哈希匹配，四份核心配置哈希不变，patch 只改远程行的 authorizationMode/ownerLogin，其他行语义深比较不变。保留 CLI link、native trustedHosts、私网 Serve 443 映射与现有插件/QQ设置。持久受限 stdout/stderr 启动新实例 PID 44752、动态端口21875、relay17893；这些仅为本轮快照。state/HTML 已无启动登录凭据，旧二维码以固定根地址的无 token 图片覆盖。没有改官方 ASAR、WSL fork或旧远控，也没强制关程序。
+
+新实例验收：44 项正式只读全部通过；native loopback index/RPC/mux 无凭据仍401，tailnet HTTPS root/RPC无浏览器凭据为200、mux可打开，错误 Origin403，过期/坏浏览器cookie不影响进入。九个既有 Host加relay、五个Client资源保持；两种移动尺寸context各15秒稳定、断线恢复、无凭据刷新通过，未向浏览器返回/存储native cookie。额外全新Chrome直接/合成外链固定根地址都200、无cookie阻止和token。没有发送模型请求，真实手机/iPad输入/流式完成仍须用户确认；早期iPad通过是此前模式的反馈，不冒充本轮通过。
+
+维护：writing-for-agents 用于把最新授权/当前步骤与历史扫码记录分开，两级AGENTS给明确切换触发指针，维护部署手册、mode helper/回退、模板、README和manifest。本扩展归管理仓独立持有，无fork中同名包需要改，未覆盖有用户改动的旧树。本轮仅本地维护，没有commit/push；runtime检测不是云端CI或实际手机验收。后续按[当前模式](desktop-remote-20261003.md#当前模式tailnet-直接访问)接手，不重复执行旧安装器、恢复RustDesk或关全局Connection认证。
+
+## 2026-10-03 正式同 Host 远程接入及 RustDesk 清理
+
+具体对话：用户先纠正“我没需要远程桌面的访问, 我只要远程dsh的访问”，选择“必须保留官方桌面客户端，先验证专用远程接入”；本轮明确“接入, 然后把之前失败方案的遗留清理一下”。询问正常退出后用户回答“已退出”。工具内管理员 PowerShell 因 MSIX 存储重定向停止清理后，告知须从开始菜单的正常管理员 PowerShell 执行精确 helper，用户回答“已清理”。这些授权分别覆盖正式安装、正常启停和本次试行退役，不扩大到其他应用或公网访问。
+
+方法：先核对真实 profile、签名 rc.2、动态 loopback Host 与无 Serve 映射；区分 WSL 开发 fork、管理仓新源包、外置部署、用户配置和实际移动结果。依据 Tailscale 1.102.4 官方源码核对 Host 保留及身份注入后，写独立零依赖 relay；先单位/原生 CLI/真实 HTTPS 隔离，再备份五类 profile、官方 CLI add、只合并精确 trust 与扩展行。连接保持原生认证、Secure cookie、HTTP 流及 native mux，同进程 disposer，私有凭据只进受限 F 盘状态文件；不另挂前端、不修改 ASAR、WSL fork 或已有 QQ 配置。详见[唯一部署方法](desktop-remote-20261003.md)。writing-for-agents 技能用于把当前入口、回退分支和具体对话收敛成明确指针，两级 AGENTS 已维护。
+
+实际失败记录：单位探针首次手写中文字符长度错误，改为逐字节内容比较；关闭后 Windows 返回 ECONNRESET 而非仅 ECONNREFUSED，两者均为拒绝已关闭连接。首个原生 Host relay probe `desktop-seam-l2w4on` 因异步 effect 尚未产生状态而失败，改 async apply + 同步 disposer 后 `desktop-seam-mJ8cKH` 为 26 项通过、五份正式哈希仍相同。native-install 首次漏 DSH_CLIENT_VERSION，遥测及依赖行未激活；补 rc.2 版本后 `native-install-tSFKZm` 的四项真实 CLI/激活/清理通过且 stderr 无该警告。保留失败材料，不把它们误报为产品原生 bug或已验收。
+
+正式安装：官方随包 JS CLI 直接 Node 模式执行，不调用 CMD/.cmd，独立根 F:\Apps\DeepSeekHarnessRemote；ACL 三主体，profile-before manifest 摘要读回一致。38 项正式只读检查通过：原九个 Host + 新 relay 唯一 active、五 Client bundle、现有会话目录、HTTPS cookie、匿名 root/RPC/mux 401、错误 Origin 403、两种移动视口各 15 秒空闲连接稳定及主动断开后恢复、刷新无 token/错误。Host PID 36792、动态端口 16445、relay 17893 均为同 PID 的 127.0.0.1 监听；这是本轮实例证据，不保证后续 PID/端口不变。登录链接/二维码不入报告和 Git；QR 用固定 qrcode 8.2 本地辅助生成，不成为 Host 依赖，重启后需重新生成。
+
+清理：首次 RunAs 返回真实 PID 33040，但句柄确认仍是应用私有 AppData，helper 拒绝且四规则不变。用户外部原生命令 completed 后，两种防火墙视图四规则为零、RustDesk 进程/服务零、原根不存在；程序与原生目录完整归档至 F:\tools\dsh-retired-20261003\rustdesk-trial-20261003-160233，保护 ACL 保持。MSIX 缓存仅一 TOML、SHA-256 与 staging 同为 B29DB23265A8DE9C14C0472B7FDC29A3BF2C5DA057EA24F2CD9B83E70B9D6F09，验证确属本轮后只把该目录归档。三份脚本与模板保持目录布局及逐项摘要移出活跃 scripts/config，退役材料根为 retired/rustdesk-trial-20261003。没有卸载 Tailscale、调整全局防火墙、删会话或清其他 AppData；移动端 App 由用户自行决定。
+
+尚待：已请用户通过当前私有 QR 在真实 iPad Safari 登录，并只在 iPad 发唯一“远程验收-iPad-当前时间”，PC 不重复；核对实际流式思考/共同结束，再单独验证手机。当前 Chromium/隔离本地模型不能代替上述人类结果。原生界面截图/真实移动验收、GitHub 远程 CI 和真实备份/模型功能不在本轮通过声明里。本轮源码、manifest、方法及两级 AGENTS 本地更新，没有提交/push 或改 gitlink。
+
+收尾复检：relay 与既有正式插件验收器的 8 项单位正反例全部通过，新增 JS syntax、三份 JSON、manifest 必需字段/枚举、46 个相对文档链接及 git diff --check 通过；新源包/方法无实际 tailnet 身份或启动凭据。最新 native-install-yek3Rb 实际 CLI/Host 复检通过，并核验私有 connect.html 随退出清除；生产 relay 仍只在同一 Host PID 36792 的 127.0.0.1:17893，官方 exe 签名 Valid、基础 cordis.yml 与安装前摘要一致。曾重跑封存 RustDesk 测试，因其硬编码的活动 trial-state 已退役而退出 1；没有重建旧根或规则，也不把历史 57 项当本轮结果。该测试保留原样供带旧 fixture 的恢复审计，现役扩展无此依赖。源码/部署 index.mjs 摘要一致；二维码已本地生成并查看，实际解码登录仍由用户验证。
+
+实际移动最终反馈：用户先回复“出现了, 手机还没做”，仅据此记录 iPad 消息出现；单独询问实时思考/回复及结束状态后，用户明确回复“实时显示，已经结束”。iPad 本轮实际输入/同步、实时内容及正常结束按人类反馈通过；不伪称工具观察到了 Safari。手机仍未执行，不能记为通过。此前 pending 是各检查当时的时点，本更新覆盖它们。接入、精确清理与维护记录完成，手机及长时间前后台/换网仍属后续验收。本轮未推送。
+
+### 手机首连准备（2026-10-03）
+
+用户要求“弄一下手机端接入”。先读当前部署和两级 AGENTS，核对当前 state/Serve 而非引用旧实例：已登记 Android 手机同 owner 且 Online=true，Desktop Host 仍为原 PID；匿名 HTTPS 401、当前私有启动链接交换 303、Secure cookie 成立。QR 用本地既有工具重生成并核对三主体 ACL，已展示并打开到用户侧；没有装新远控、另起服务、重启 Desktop、改 profile/trust/端口或扩大设备身份。按 writing-for-agents 将手机流程和独立完成标准收敛到专用部署指针，两级 AGENTS 记录本次请求。
+
+已请用户手机系统浏览器扫码并仅发送“远程验收-手机”，PC 不重复；询问电脑收到、手机实时显示和正常结束。当前仅网络在线及服务端鉴权就绪，实际手机输入/流式/完成尚待反馈，不用 iPad 成功或旧 Chromium 结果替代。方法本地维护，未提交/push。
+
+### 手机扫码失败与认证边界（2026-10-03）
+
+具体对话：用户反馈“你这个授权不是授权的设备, Google智能镜头扫描以后chrome是打不开的”。已说明当前是 Tailscale 账户加原生浏览器凭据，不是逐设备配对；二维码只是登录链接，不能称为设备授权。手机首连记为失败，iPad 已通过结果保留。
+
+方法和现场证据：按 diagnosing-bugs 先要求真实 Chrome 错误/截图，并提醒遮住 `token=` 后的凭据。只读复检当前 Desktop/Serve/state：Host 仍存活，已登记 Android 和 iPad 在线，二维码生成时间晚于现实例启动；Node 在电脑侧用当前受限 state 内的链接 fetch，匿名根地址为 401，当前登录交换为 303、相对跳转 `./`、cookie 含 Secure，输出不含 token/cookie 值。没有实际 Android Chrome 请求记录，不能建立覆盖 Google Lens 交接失败的自动化复现，电脑侧成功不等于手机成功；已向用户明确此限制并询问实际错误。直接复制扫码所得网址到 Chrome 的人工对照尚未执行，不假设 Lens 改写或阻断了链接。
+
+维护：writing-for-agents 用于更正认证边界和接手指针，两级 AGENTS、专用部署与当前部署记录了具体反馈；未修改运行插件/profile/trust、没有重启、放宽鉴权、读取会话内容或提交/push。手机修复及真实输入/流式/结束验收尚未完成。
+
+### Chrome 跨站首登修复与正式替换（2026-10-03）
+
+用户随后明确错误为 `dsh web authentication required; reopen the URL printed by dsh web`，在安装协调问题回复“已退出”。诊断以该实际错误为信号，不把手机在线或此前 iPad 成功当修复证据。先写 `node scripts/verify-desktop-remote-login.mjs`：全新真实 HTTPS Chrome context 直接链接为 303→200，合成外链为 303→401、cookie 已存储，CDP 报 `SchemefulSameSiteStrict`；刷新仍 401、同 context 直接导航为 200。命令退出 1。继而展示三个可证伪分支：Strict 跳转链、交接丢参数、cookie audience；303 已签 cookie 且直接导航成功排除了复现中的后两项。不是 Google Lens 实机抓包，实际扫码参数是否保留仍须用户验证。
+
+回归先红：新增单位测试期望浏览器提交同源登录文档，实得 303；临时源 relay/原生正式认证/Chrome 对照也复现 401。0.1.1 仅在原生有效 token 303/Strict cookie 与顶层导航成立时返回最小 CSP nonce 文档，再同源跳转；保持账户/Host/Origin、native RPC/mux、签名/audience、Strict/HttpOnly/Secure，不把 cookie 改为 Lax/None，不发自定义凭据。HTML 不重复 token，no-store/no-referrer。9 项回归为绿，两种源 relay Chrome 首登都是 200、无 cookie 阻止原因；隔离原生 CLI/激活 fixture native-install-k5SOYt 四项通过并清除私有 state。
+
+正式替换：用户正常退出后确认零 Desktop 进程；部署 ACL 仍为当前用户、Administrators、SYSTEM。旧 plugin 可恢复备份至 `F:\Apps\DeepSeekHarnessRemote\plugin-before-login-fix-20261003-165408`，三个原 payload 摘要读回一致，再复制四份新 payload 与源码逐项比对；五份 profile 配置哈希不变，官方签名仍 Valid。持久受限日志启动新实例 PID 19724、动态端口 21479，relay 17893 不变；PID/端口仅为本轮快照。未修改官方 ASAR/WSL fork、重新安装 CLI link、重置 Serve 或发模型请求。安装版 `verify-desktop-remote-login.mjs` 已通过直接及合成外链真实 HTTPS 首登，cookie 阻止原因为空；新启动私有 QR 已本地重生成、ACL 三主体。手机及本次重启后的 iPad 人类验收尚未完成。本地维护代码、manifest、方法及两级 AGENTS，未推送。
+
+安装后新实例正式只读检查再次 38 项通过，live-acceptance.json PID 对应 19724：原有 Host/Client、匿名 index/RPC/mux 拒绝、外部 Origin 拒绝、两个移动尺寸的空闲稳定/主动断开恢复/刷新均通过。这是本轮新实例结果而非重用旧报告，未发送真实模型请求；实际手机扫码验收仍待反馈。
 
 ## 维护原则
 
-- 本仓是当前源码引用、管理脚本快照和部署方法的云端索引；运行配置实际在 WSL `~/.dsh`，不是本仓旧 `config/` 的副本。
+- 本仓是源码引用、管理层扩展与部署方法索引；运行配置是 Windows Desktop 的真实 profile，不是本仓旧 config 或 WSL home 副本。云端 ref、安装版和未推送工作树分别核对。
 - 每次变更组件/配置后，同步更新 `manifest.json` 与本文“维护记录”。
 - 不提交：密钥、大模型二进制、node_modules、venv、日志。
 
@@ -778,3 +858,67 @@ Windows 隔离验收沿用真实 ASAR runProfile 和外置目录，先备份隔�
 普通 push 至 xsoc fork 的 upgrade/official-rc2-20260929，pre-push 的真实类型检查通过（16.59 秒），未 bypass。随后 fetch 同一远端分支，远端和本地 HEAD 均为 42d47032d3da839f088142c4b439f95128973a21，工作树干净。WSL gh 不存在、浏览器 API 与连接器查询失败后，Windows 只读 GitHub API 返回该提交 workflow_count 0、combined status pending/status_count 0；没有已报告 CI 检查，不能把这个 pending 当运行中的已验证任务或声称 CI 全绿。
 
 管理仓此次同步包含当前 Desktop 模板、十包原生 CLI 安装器及其回归、只读 Host/Client 验收器、真实设置位置和启动环境处理方法，源码 gitlink 固定已发布提交。旧远程/控制台脚本删除保持可由 Git 历史找回；真实会话、备份、记忆、安装恢复目录、用户配置和官方签名二进制均不入提交。管理仓将普通快进发布至 main，再分别读回远端 HEAD、源码 gitlink 和方法文件；管理仓发布结果以最终验收回复为准，不用源码 fork 的成功替代。
+
+## 2026-10-03 仅访问 DSH 的同 Host 接缝验证
+
+用户先确认 RustDesk“正常”，然后纠正：“我没需要远程桌面的访问, 我只要远程dsh的访问”；对于电脑端入口明确选择“必须保留官方桌面客户端，先验证专用远程接入”。先核对 RustDesk ActiveStore 四条规则、许可移动连接和零非预期连接/服务，记录技术连接成功但需求不符；没有停用正在使用的程序或删规则。research 技能要求背景一手源码调查，writing-for-agents 用于维护明确触发条件和证据边界；整机远控不再是首选，独立 Web Host 不是用户选择。
+
+只读实际 ASAR 为官方 Desktop/CLI/Web bundle 0.2.0-rc.2。官方 Desktop createPluginProfile 正是 initProfile(PROFILE_TEMPLATES.web.bundles)，随后 runProfile 使用 desktop 身份；无需读取/复制正式凭据。正常浏览器分支不要求 Electron 桥，公开 authenticatedUrl 和 frontend-static 负责原生令牌换 cookie。正式 loopback 匿名根请求 401，仅确认鉴权存在，没有取正式启动令牌。
+
+新增 scripts/verify-desktop-remote-seam.mjs，以签名安装包的 Electron Node 模式和安装锚点加载原生组件；F 盘每轮唯一隔离 home/workspace、三主体受限 ACL、隔离 USERPROFILE/AppData、移除继承的敏感环境项。初始官方 bundle 以真正 desktop profileContext 运行，仅系统分配 loopback 端口；不启动第二个正式 profile Host。两个独立 Chromium context 模拟桌面/iPad，手机另检查小视口，不等同真正 Safari/Electron 窗口。
+
+测试先查匿名和错误 Origin 拒绝、签名 HttpOnly/SameSite cookie、实际 inventory RPC、原生页面/WS；再创建隔离工作区和会话，用本地 LlmAdapter 由移动 context 发送独有中文输入，持续 reasoning 后放行完成。首轮失败保留：RPC 参数需命名 request/_request、首次说明是共享设置且异步出现、空会话被原生列表过滤。均修正测试装配/定位，不改产品或删除失败日志；流式/同步完整结果仍在继续。每轮五份正式 profile 哈希相同；程序、会话、登录数据、Tailscale、活动规则和子模块 pin 未写入，不把退出码 0 代替 result.passed。
+
+证据仅在受限 F:\tools\dsh-remote-validation-20261003；认证 URL/cookie 和日志不入仓。源码 research 页为 remote-dsh-only-20261003.md，本轮本地验证，未提交/push；真实 Desktop 生命周期、外部 authority/TLS/原生授权链接、现用插件及 Safari/手机前后台重连均尚未通过，不能称远程已经恢复。
+
+最终加强复检：probe-12 的 desktop-seam-KNdwKR/result.json 为 passed=true、23 checks、liveProfileUnchanged=true，真正进程退出 0。两界面可见同一独有中文用户内容，手动展开原生“思考”后都出现流式正文；持续时“停止生成”存在，终止后“已完成”与发送按钮出现且停止按钮消失。只调用一次纯本地 adapter，不支付或发送外部模型请求。真实 WebSocket 仅做构造观察及主动 close，不伪造帧/回复；移动 context 自动重连后仍收到结束，随后刷新恢复相同会话。桌面 context 1 个 socket、69 帧，移动 context 3 个 socket、80 帧，其中两次关闭分别为故障测试和刷新；页面未捕获异常。手机 390×844 仅检渲染并查看截图，不冒称手机操作已验收。
+
+加强探针首败仍保留：隐藏的状态预览副本被 first 定位误选，以及响应式变宽后侧栏按钮切换；先看 aria/截图，再选实际可见思考正文并在尺寸变化前操作侧栏，不改产品行为。受限证据目录 ACL 为当前用户/管理员/SYSTEM 三主体。试验结束无 probe Host 残留，正式 DSH 仍只监听原 loopback；本轮方法、入口及具体对话已同步两级 AGENTS，没有自动停用 RustDesk、安装远程插件、恢复 Serve、推送或宣称正式上线。
+
+独立复跑 probe-13 的 desktop-seam-aKtnjl 同样退出 0、23 checks、passed=true、五份正式 profile 不变。最后修正 waitForFunction 的第三参数超时位置后执行该轮；两次成功不是引用同一旧结果。此轮 mobile WS 79 帧，允许正常调度造成帧数差异，不把固定帧数当成功断言。脚本语法与差异空白检查通过；未执行完整源码 CI/构建门禁，未发布。
+
+## 2026-10-03 新远程访问方案调研
+
+用户原话“想想, 查查, 有没有全新的更合适的远程访问方案”。先读取两级维护约束、README 和当前部署，沿用已退役远程/控制台的事实，未将本轮调研视为恢复授权。research 技能要求背景调研，分工核对 RustDesk、Chrome Remote Desktop、RDP 和 Moonlight 的官方资料；主 agent 从 DeepSeek 官网开发者链接核对 Web 和 Desktop 资料、固定上游 master，再汇总至唯一研究页。writing-for-agents 技能用于给维护入口增加明确的触发条件和只调研范围。
+
+只读系统查询为 Windows 11 家庭版中文版，原生 RDP Host 不适用；进程查询当时未见 DeepSeek Harness.exe，没有执行退出或重启。本轮官方 master 读回 da00f7f5358f2949383b35c14f548bc20187d80c（2026-10-02T23:44:05Z），新增 public-url 与反向代理文档；本地已发布 pin 未变。GitHub releases/latest 返回 404，列表首项为预发布 rc.2，所以分别说明 master、GitHub 发布列表和官网安装器，未声称新源码已装入本机。
+
+建议先试受控 RustDesk + 私有 tailnet，接手同一 Windows 桌面，不开发第二套 DSH 状态同步；保留整机远控权限、direct-IP 加密依赖、公共注册、小屏和网络验收限制。Chrome Remote Desktop 增加 Google 网络依赖，iPad 官方可证入口包括网页，未承诺原生 App 或绕开 Safari。官方新 Web 反代作为另一条待验证路线，不直接转发 Desktop 内部动态端口；Cloudflare 只换隧道不能保证解决状态同步。
+
+新增 `docs/remote-access-options-20261003.md`，更新 README 与两级 AGENTS 的研究入口和具体对话。没有修改运行配置、安装包、会话、插件、启动任务、防火墙或 Tailscale，没有提交/push、改 gitlink 或执行远程端到端测试；本轮验证仅为资料、文档读回、本地链接和差异空白检查。试用清单要求 iPad/手机不同输入、同一实例、思考/完成画面、中文输入、外部 Wi-Fi/蜂窝、断网及锁屏恢复；执行前另行选择方案。
+
+## 2026-10-03 RustDesk 私有直连试行准备
+
+用户要求“试行一下首选的这套方案”，随后回答“先用 iPad”。Windows Tailscale 1.102.4 后端 Running、自身在线；同 owner 两台移动设备，iPad 由离线转在线，Android 仍离线；Serve 无配置。三种防火墙 profile 均开启且默认入站 Block；实查已有较宽 WSL 规则，不修改它。RustDesk 原配置/进程/服务均不存在；DSH Desktop 当前进程为零，不引用旧 PID 32384 为现用实例。
+
+官方 1.5.0 MSI 下载到仅当前用户/管理员/SYSTEM 的 F 盘目录，发布摘要与本地相同、Authenticode Valid（PURSLANE）。MSI administrative extraction 退出 0，仅提取文件；程序移动到 F:\Apps\RustDeskTrial\app，exe 与核心 DLL 签名和固定摘要通过，版本资源 1.5.0+68。无系统服务、C 盘 Program Files 安装或开机任务。首次组合执行 RustDesk --version 被工具策略拒绝，未执行；随后仅只读源代码/资产及准备文件，不换通道绕过启动拒绝。
+
+新增模板与 rustdesk-trial.ps1：本账户移动设备单个 IPv4 白名单、10 位临时密码、键鼠/剪贴板，关闭其他控制通道；新建原生 AppData 配置，原 DSH 五份配置哈希保存且读回不变。配置 custom ID/relay/API 为 loopback 未使用端口，固定源码确认优先级；stop-service 必须 N，否则连 direct server 一起停。公共连接抑制须另由四条程序专属防火墙规则与运行观察验证，不把 loopback 配置说成已建服务或已无公网流量。
+
+原生 UAC Firewall helper 请求未能启动（Started false），截断的系统异常不足以判定是用户取消或其他具体原因；规则仍未创建，不擅自换提权路径。脚本不会关闭全局防火墙或改 Tailscale ACL，规则包含精确 Allow 和来源/目的地址/公网出站补集 Block，用于防止既有宽松 Allow。当前 Verify 为配置/固定二进制通过、防火墙 false、零进程/监听/连接、零服务、原 DSH profile 哈希不变，移动端验收 pending；不报告试行已可用。
+
+首轮回归因 AST 抽取函数使 PSScriptRoot 空而失败，提取模板路径至脚本上下文后 23 项纯逻辑/配置负例通过，生产语法零错误；这不是原生运行、密码或移动端测试。脚本错误将留在私有 last-error.json；方法、人工启动、验收和可恢复回退在 docs/rustdesk-trial-20261003.md，两级 AGENTS 同步实际对话。没有改 DSH 程序/插件/会话、恢复 Web/控制台/看门狗、提交/push 或修改 gitlink。等待人工完成防火墙权限及启动后，再做 iPad 与后续 Android 验收。
+
+最终只读复检：Windows PowerShell 5.1 下也为 23 passed；原生配置用 tomllib 成功解析，37 个 options，认证/直连键值符合模板。F 盘私有根及新 RustDesk 配置根为 protected ACL，文件只继承当前用户/管理员/SYSTEM 三个主体，额外 Allow 为 0。最后 Verify 实际退出 2，iPad online、Android offline、防火墙 false、RustDesk 零进程/监听/服务、五份 DSH profile 相同；没有以测试通过改写移动验收 pending。新增私有 iPad-start.md，仅供用户取得本机真实地址与完成权限/启动/首验，不纳入 Git；配置和方法本地保存，云端未发布。
+
+### 用户原生 Firewall 失败与 MSIX 配置路径修复
+
+用户执行原命令报“未能找到路径 C:\Users\HuangZY\AppData\Roaming\RustDesk\config\RustDesk2.toml 的一部分”。私有 last-error.json 记录 Action=Firewall、时间 2026-10-03 14:01 +08:00。两种工具子进程仍能读出逻辑文件，直接重放该路径不失败；不据此声称用户误报。以 GetFinalPathNameByHandle 构建实际路径反馈，真实句柄为 OpenAI.Codex_2p2nqsd0c76g0\LocalCache\Roaming\RustDesk\config，与逻辑原生路径不同，失败信号已复现。候选按 MSIX 重定向、原目录后来移动、管理员账号不同排序；实际创建/写入时间均为 12:48，Microsoft 的 AppData 合并视图文档与句柄证据共同确认首项。
+
+原配置就绪与两种 PowerShell 验收结论撤回：子进程都继承 Codex 私有文件视图，TOML/ACL 通过不能证明外部 RustDesk 可读取。先新增“重定向 AppData 不得算原生配置”回归，旧代码实际失败；修复 Assert-Config 的物理句柄检查后通过。进一步测试发现 package identity API 没有报告子进程身份，但仍存在实际重定向，因此不以该 API 单独判定执行世界。
+
+Prepare/Stage 现在仅生成受限 F 盘 staged/RustDesk2.toml；实际 Stage 已运行成功，不再写逻辑 AppData。用户从 Windows 开始菜单启动管理员 PowerShell 运行原 Firewall 命令后，先验证账户/暂存摘要/移动地址/防火墙基线，再初始化缺失的真实配置。CreateNew 防止覆盖竞态，已有文件不覆盖；创建后验证实际路径、记录真实配置摘要及时间才创建规则。回退必须有 NativeRootCreated 证明整目录归属，已有用户目录拒绝整目录归档。失败缓存保留，不禁用 MSIX 隔离、不换自动启动通道，也不安装服务或改变 DSH 配置。
+
+两个 PowerShell 各 31 passed；其中真实重定向拒绝、隔离 F 盘 fixture 中的缺失原生配置初始化、写入字节、物理路径、持久状态、重复调用、已有坏配置不覆盖、变动暂存摘要拒绝均执行，生产语法零错误。模拟的普通上下文仅限独立 fixture，不冒充用户原生目录已经初始化。新原生命令尚待用户执行，完整规则读回、实际启动及 iPad/Android 认证/输入/完成/重连仍未验收；不称端到端修复完成。双级 AGENTS、试行说明和私有首连指引同步更正，本轮本地修复、未发布。
+
+### 用户原生 Firewall 地址前缀修复（本地完成，实际提交待重跑）
+
+用户重跑原 Firewall 命令，报告 New-NetFirewallRule 三次“一个或多个地址前缀无效”（HRESULT 0x80070057），随后 Firewall readback failed。只读现场核对：状态记录原生配置物理路径、初始化时间，NativeRootCreated=true；FirewallApplied=false；唯一现存规则为程序专属 AllowDirect；RustDesk 进程/服务均为零。已有规则和 DSH 数据保持原状。
+
+按 diagnosing-bugs 构建实际提供器反馈：New-NetFirewallRule 使用 Microsoft 文档注明只读的 SystemDefaults，规则禁用且限定试行程序，不写实际策略。IPv4 首/尾边界分别得到访问拒绝 5，而 `::/0` 和原完整混合输入得到用户相同 0x80070057；仅把 `::/0` 替换为 `::/1,8000::/1` 后同一输入变为访问拒绝 5，说明通过该地址校验再到只读/权限边界。COM 未附加 FWRule 的 setter 接受原字符串，不能作为该提供器的有效验收；此前纯逻辑测试没有覆盖此 seam。来源：[Microsoft New-NetFirewallRule 的 PolicyStore 与地址参数文档](https://learn.microsoft.com/en-us/powershell/module/netsecurity/new-netfirewallrule?view=windowsserver2025-ps)。
+
+新增原生回归后先执行 `& 'F:\tools\dsh-selfuse-sync-20260928\scripts\rustdesk-trial.test.ps1'`，旧生产写法失败于 `FAILED: Native address validation passes before read-only denial: BlockOtherSources`。修复为两个不相交 /1，覆盖范围不变；四条 fixture 规则及本机实际暂存计划均通过提供器地址校验。另从唯一实际 AllowDirect 的 Get-NetFirewallApplicationFilter 确认 Package 为空，旧 Any 字符串要求会误拒绝；现接受未设置或 Any，继续拒绝限定包，并新增 RemotePort=Any 读回。
+
+实际 Firewall 入口调用 Set-TrialFirewall：程序/服务必须停止；在 PersistentStore 对每条现存规则核对精确名称、group、exe、profile、动作、协议、双向端口、地址、接口、service、package，碰撞拒绝且不改动。先写 FirewallApplied=false，暂禁本次 Allow，缺失 Block 优先创建，已有精确规则仅启用，最后恢复 Allow；所有创建显式 ErrorAction Stop。任何失败记录具体步骤，保留 Block，并在归属约束仍匹配时禁用本次 Allow。完整 ActiveStore 读回通过才由调用入口记录 true；无需用户先删除现存规则，也不放宽移动白名单。
+
+pwsh 与 Windows PowerShell 5.1 各 57 passed。原生提供器只读校验及现存 Allow 的空 Package 真实执行；生产修复流程则在 F 盘 fixture 与模拟规则库验证空库、仅 Allow 的用户故障状态、幂等、非终止提供器错误变终止、失败后补齐、ActiveStore 不匹配、六种归属/约束碰撞不改动、运行中拒绝。模拟不冒充管理员提交。最终实际规则仍只有原 AllowDirect（保持 Enabled=true），FirewallApplied=false，RustDesk 进程/服务零，五份 DSH profile 摘要均不变；本轮未写活动防火墙或原生 AppData，未提交/push 或改 gitlink。双级 AGENTS、README、试行说明与私有 iPad-start.md 已更新；待用户从原生管理员 PowerShell 重跑同一 Firewall 命令，出现完成行后才手动启动并做 iPad 首验及后续 Android 验收。

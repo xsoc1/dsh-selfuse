@@ -1,0 +1,6 @@
+{
+  "publicUrl": "https://example.tail123456.ts.net/",
+  "authorizationMode": "tailnet",
+  "relayPort": 17893,
+  "stateDirectory": "F:/Apps/DeepSeekHarnessRemote/state"
+}

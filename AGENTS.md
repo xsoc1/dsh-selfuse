@@ -16,10 +16,28 @@
 10. 外置 F 盘 link 插件须验证实际运行依赖。部署根声明由官方安装提供的 peer，并逐包连接原生依赖，不复制 WSL/ASAR node_modules；实际九个 Host fiber 与客户端 boot graph 均须核验，profile bundle 能解析不是激活证明。
 11. Electron Node 工具调用结束后，以 `Remove-Item Env:ELECTRON_RUN_AS_NODE` 移除该进程环境项再启动桌面窗口；本机 PowerShell 的 null setter 保留空变量，不能视为移除。记录实际实例、当前日志和人类界面反馈，不复用旧实例的成功证据。
 
+## 2026-10-03 同 Host 专用接入与清理
+
+发布触发：用户“效果非常好, 就按这个方案上云”，接受当前 iPad 使用改善并授权同步 `xsoc1/dsh-selfuse`；手机/长期换网另验。按 writing-for-agents 收敛现用与历史分支，发布前核对差异归属、敏感信息、模板/schema/文档链接、回归与原生隔离；普通快进推送后读回 ref/选定blob。只发布管理层独立扩展与方法，不改源码fork pin、官方ASAR或运行配置，不上传真实state/日志/会话。具体过程与提交见最新maintenance。
+
+连接稳定性触发：用户“经常跳重新连接”，确认 iPad 打开页面仍跳。先核对现行 PID/端口，再用 90 秒只读 mux/RPC 探针与实际移动反馈对照，方法见[连接稳定性](docs/desktop-remote-20261003.md#连接稳定性与旧调试项)。本轮精确清除遗留强制 DERP 开关后 iPad 恢复直连、探测从 467–1671 ms 降为 3–65 ms；正常停止卡住的 Tailscale 已窄范围恢复，最终状态读回与初始失败收据分开记录。未改 Desktop profile/会话，不把电脑探针成功当作实机长期稳定。具体对话、备份和脚本失败见最新 maintenance。
+
+授权最新变更：用户“还是使用旧的授权方案: 在tailnet内就直接能够访问”，并确认“已退出”。当前 relay 0.2.0 显式 tailnet 模式：固定根地址直接进入，Native cookie 只在上游中继内存使用，本地 Desktop 鉴权不变。读取[当前模式与切换](docs/desktop-remote-20261003.md#当前模式tailnet-直接访问)后再维护认证；使用正常退出、备份、AST 精确改远程行的 mode helper，保留 CLI link 和无关 profile。44 项新实例只读、15 项回归与原生隔离通过，不等于手机/iPad 人类验收。下方二维码记录为历史 owner-browser 模式，不能作为现行步骤。
+
+用户最新授权“接入, 然后把之前失败方案的遗留清理一下”，随后“已退出”，完成原生管理员清理后回复“已清理”。当前仅在官方 Desktop 内新增 manager-owned `plugins/desktop-remote`；接手接入、认证、移动验收或回退时先读 [专用部署](docs/desktop-remote-20261003.md)。正式 38 项只读、真实 HTTPS 隔离 26 项通过；iPad 本轮已由用户确认，手机未验收。RustDesk 规则、原生目录和本轮缓存精确退役，源码在 `retired/rustdesk-trial-20261003`；历史准备不构成再部署授权。具体对话、失败/修复见最新 maintenance。
+
 ## 关键约束
 
+手机接入维护触发：用户报告扫码后 DSH authentication required，并确认“已退出”。现用 relay 0.1.1 已修跨站首登 Strict cookie 跳转：先原生认证、再同源过渡文档，不改账户/Host/Origin/RPC/mux 或 cookie 强度；旧插件可恢复备份，五份 profile 哈希不变。真实 HTTPS Chrome 的直接/合成外链登录回归通过，新 QR 已刷新；实际手机与本次重启后的 iPad 待验收。认证仍是账户加浏览器凭据，没有逐设备配对。接手时读专用部署“手机首连与独立验收”和 maintenance 的 Chrome 修复记录，区分合成外链与真实 Lens。
+
+移动最新反馈：先“出现了, 手机还没做”，后“实时显示，已经结束”。iPad 本轮实际输入/同步、实时内容及正常结束由用户确认通过，手机未验收。更新只依据专用部署与 maintenance 的实际反馈，不把 Chromium 成功推断成人类端通过。
+
+- 2026-10-03 正式接入已获上述授权；只访问同一 Desktop Host，非整机远控。新的外部入口、身份范围或后台服务仍需确认，不能凭隔离成功扩大范围。
+
+早期 23 项 loopback 检查仅是接缝证据；正式安装、HTTPS 和实际移动验收按新部署记录分别核对，不复用旧 PID/凭据。
+
 - Desktop 使用官方 `standard` 新会话；不要改写追加式旧会话日志来伪造预设兼容。恢复归档前先停止 Desktop 并备份当前数据。
-- DSH 专用 Tailscale Serve 映射和看门狗任务已退役；不能把桌面内部 loopback Web Host 当作手机/iPad 远程入口，也不能重新开启公网 Funnel。
+- 旧 WSL Serve 与看门狗继续退役；新 Serve 只映射 Desktop 随进程运行的 loopback relay。先验精确 authority、原生 cookie、mux 和动态端口；Funnel 关闭。
 
 ## 组件分类速查
 
@@ -122,3 +140,15 @@
 2026-10-03 用户回复“已退出”，实际进程为零后更新精确的 Windows 已验收记忆产物，旧包归档、五份 profile 哈希不变。两次启动因本轮 null setter 留下空 Node 模式变量而退出 0；差分探针证实环境项仍在，改为真正移除后新实例九个 Host/五个 Client 通过。用户先称“有皮肤中心，没有备份和记忆”，说明页内标签位置后回复“有了”；按该实际反馈记录，不冒充正式保存/模型验收。未执行的额外浏览器探针已移除；当前检查与云端同步仍分别记录在维护手册。
 
 随后发布前暂存检查发现新增文件的末尾空行和播放器模板中的行尾空格；修正格式并证明嵌入页面每字节不变，快速文档及 43 项完整文档通过。正常源码提交/push 钩子运行，464 份候选哈希未被修复器改变；源码 42d47032d3d 已发布并从远端 fetch 读回相同提交。GitHub API 此时 workflow_count 为零、status_count 为零，未报告 CI，不称通过。管理仓通过原生 Windows Git 精确更新 gitlink 和方法文件，普通快进发布后另核远端，保留私有归档和运行数据。
+
+## 对话记录（2026-10-03，远程方案调研）
+
+用户原话“想想, 查查, 有没有全新的更合适的远程访问方案”。本轮按 research 技能并行核对一手候选资料，主 agent 查官网、上游固定提交及本机系统版别；仅写研究文档，不安装、改配置、恢复 Serve/看门狗或推送。重新评估远程时读 `docs/remote-access-options-20261003.md`：区别同实例屏幕控制和独立 Web Host，官方 master 的新参数不是现用 rc.2 的验收结果；选择部署路线后再征求所需权限、做移动端真实验收。具体方法与未验证项见 maintenance.md，本轮不改变当前部署。
+
+## 对话记录（2026-10-03，私有远控试行）
+
+用户原话“试行一下首选的这套方案”，回答“先用 iPad”。方法是先核对真实 Tailscale/系统/旧入口，再验证官方固定资产、仅解包 F 盘、原生最小配置和指定设备防火墙；配置、监听和移动操作分别取证。自动执行 RustDesk 被工具策略拒绝后，只继续文件/系统准备，不用替代执行通道规避。程序启动及 iPad 输入、完成、重连需用户操作验收。重建、排错或回退试行时必须先读 `docs/rustdesk-trial-20261003.md`，再只读 Verify；无服务、开机项、旧 Web 或 DSH profile 写入。本轮具体结果与权限阻塞见 maintenance.md。
+
+用户执行 Firewall 报“未能找到路径…RustDesk2.toml 的一部分”。句柄复现证明原配置在 Codex LocalCache\Roaming，逻辑路径/TOML/同源两个 PowerShell 的存在检查被重定向误导，原生就绪结论撤回。按 diagnosing-bugs 建红测、比较实际存储后改为 F 盘暂存、外部原生 PowerShell 初始化、物理路径核验、幂等且不覆盖；31 项双 PowerShell 回归通过，真正用户环境的初始化/规则和移动验收仍待重跑。维护者在 Codex 中只能暂存，不把缓存检查冒充原生；具体步骤见上述试行说明。子进程未报告 package identity 仍可继承重定向，必须保留句柄检查；不修改 Codex 全局隔离策略或 DSH 数据。
+
+用户原生 Firewall 随后报三次“一个或多个地址前缀无效”及读回失败。排错/重试先读 `docs/maintenance.md` 的原生验证记录：只读 SystemDefaults 重放确认 `::/0` 复现 0x80070057，两个 /1 消除该地址错误。脚本已支持精确校验现存规则、禁用本次 Allow 后补齐 Block、失败即止及安全重试，并接受原生空 Package；两种 PowerShell 各 57 项通过，其中原生地址校验与模拟规则修复分开标注。本轮未写活动规则、原生配置或 DSH 数据；现场仍仅一条 AllowDirect、程序未运行。用户须重跑同一原生管理员命令，再验收移动连接；不能把只读校验冒充实际提交成功。
